@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from .utils import get_valid_ref, flow_from_matrix
+from .utils import get_valid_ref, flow_from_matrix, matrix_from_transform
 
 
 class Flow(object):
@@ -135,3 +135,54 @@ class Flow(object):
             # meshgrid in the warped image, are subtracted from the start points to yield flow vectors.
             flow_vectors = -flow_from_matrix(np.linalg.pinv(matrix), size)
             return cls(flow_vectors, ref, mask)
+
+    @classmethod
+    def from_transforms(cls, transform_list: list, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
+        """Flow object constructor, zero everywhere.
+
+        :param transform_list: List of transforms to be turned into a flow field. Options for each transform in list:
+            ['translation', horizontal shift in px, vertical shift in px]
+            ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
+            ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
+        :param size: List [H, W] of flow field size
+        :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
+        :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
+            True everywhere.
+        :return: Flow object
+        """
+
+        # Process for flow reference 's' is straightforward: get the transformation matrix for each given transform in
+        #   the transform_list, and get the final transformation matrix by multiplying the transformation matrices for
+        #   each individual transform sequentially. Finally, call flow_from_matrix to get the corresponding flow field,
+        #   which works by applying that final transformation matrix to a meshgrid of vector locations, and subtracting
+        #   the start points from the end points.
+        #   flow_s = transformed_coords - coords
+        #          = final_transform * coords - coords
+        #          = t_1 * ... * t_n * coords - coords
+        #
+        # Process for flow reference 't' can be done in two ways:
+        #   1) get the transformation matrix for each given transform in the transform_list, and get the final
+        #     transformation matrix by multiplying the transformation matrices for each individual transform in inverse
+        #     order. Then, call flow_from_matrix on the *inverse* of this final transformation matrix to get the
+        #     negative of the corresponding flow field, which means applying the inverse of that final transformation
+        #     matrix to a meshgrid of vector locations, and subtracting the end points from the start points.
+        #     flow_t = coords - transformed_coords
+        #            = coords - inv(final_transform) * coords
+        #            = coords - inv(t_1 * ... * t_n) * coords
+        #   2) get the transformation matrix for the reverse of each given transform in the "inverse inverse order",
+        #     i.e. in the given order of the transform_list, and get the final transformation matrix by multiplying the
+        #     results sequentially. Then, call flow_from_matrix on this final transformation matrix (already
+        #     corresponding to the inverse as in method 1)) to get the negative of the corresponding flow field as
+        #     before. This method is more complicated, but avoids any numerical issues potentially arising from
+        #     calculating the inverse of a matrix.
+        #     flow_t = coords - transformed_coords
+        #            = coords - final_transform * coords
+        #            = coords - inv(t_n) * ... * inv(t_1) * coords
+        #     ... because: inv(t_n) * ... * inv(t_1) = inv(t_1 * ... * t_n)
+
+        # Here implemented: method 1, via calling from_matrix where the inverse of the matrix is used if reference 't'
+        ref = get_valid_ref(ref)
+        matrix = np.identity(3)
+        for transform in reversed(transform_list):
+            matrix = matrix @ matrix_from_transform(transform[0], transform[1:])
+        return cls.from_matrix(matrix, size, ref, mask)
