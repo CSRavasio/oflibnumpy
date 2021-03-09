@@ -1,5 +1,6 @@
+from __future__ import annotations
 import numpy as np
-from .utils import get_valid_ref
+from .utils import get_valid_ref, flow_from_matrix
 
 
 class Flow(object):
@@ -96,3 +97,41 @@ class Flow(object):
         """
 
         return list(self.vecs.shape[:2])
+
+    @classmethod
+    def zero(cls, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
+        """Flow object constructor, zero everywhere
+
+        :param size: List [H, W] of flow field size
+        :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
+        :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
+            True everywhere.
+        :return: Flow object
+        """
+
+        return cls(np.zeros((size[0], size[1], 2), 'float32'), ref, mask)
+
+    @classmethod
+    def from_matrix(cls, matrix: np.ndarray, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
+        """Flow object constructor, based on transformation matrix input
+
+        :param matrix: Transformation matrix to be turned into a flow field, as Numpy array 3-3
+        :param size: List [H, W] of flow field size
+        :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
+        :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
+            True everywhere.
+        :return: Flow object
+        """
+
+        ref = get_valid_ref(ref)
+        if ref == 's':
+            # Coordinates correspond to the meshgrid of the original ('s'ource) image. They are transformed according
+            # to the transformation matrix. The start points are subtracted from the end points to yield flow vectors.
+            flow_vectors = flow_from_matrix(matrix, size)
+            return cls(flow_vectors, ref, mask)
+        elif ref == 't':
+            # Coordinates correspond to the meshgrid of the warped ('t'arget) image. They are inversely transformed
+            # according to the transformation matrix. The end points, which correspond to the flow origin for the
+            # meshgrid in the warped image, are subtracted from the start points to yield flow vectors.
+            flow_vectors = -flow_from_matrix(np.linalg.pinv(matrix), size)
+            return cls(flow_vectors, ref, mask)
