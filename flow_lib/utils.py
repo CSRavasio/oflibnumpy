@@ -22,6 +22,9 @@ def get_valid_ref(ref: str = None) -> str:
 def flow_from_matrix(matrix: np.ndarray, dims: Union[list, np.ndarray]) -> np.ndarray:
     """Flow calculated from a transformation matrix
 
+    NOTE: This corresponds to a flow with reference 's': based on meshgrid in image 1, warped to image 2, flow vectors
+      at each meshgrid point in image 1 corresponding to (warped end points in image 2 - start points in image 1)
+
     :param matrix: Transformation matrix, numpy array 3-3
     :param dims: List or numpy array [H, W] containing required size of the flow field
     :return: Flow field according to cv2 standards, ndarray H-W-2
