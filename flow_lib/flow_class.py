@@ -90,13 +90,13 @@ class Flow(object):
             self._mask = input_mask.astype('bool')
 
     @property
-    def shape(self) -> list:
+    def shape(self) -> tuple:
         """Gets shape (resolution) of the flow
 
-        :return: Shape (resolution) of the flow field as a list
+        :return: Shape (resolution) of the flow field as a tuple
         """
 
-        return list(self.vecs.shape[:2])
+        return self.vecs.shape[:2]
 
     @classmethod
     def zero(cls, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
