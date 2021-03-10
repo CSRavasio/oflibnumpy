@@ -354,3 +354,14 @@ class Flow(object):
         """
 
         return self * -1
+
+    def pad(self, padding: list = None) -> Flow:
+        """Pads the flow with the given padding, inserting 0 values
+
+        :param padding: [top, bot, left, right] list of padding values
+        :return: Padded flow
+        """
+
+        padded_vecs = np.pad(self.vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)))
+        padded_mask = np.pad(self.mask, (tuple(padding[:2]), tuple(padding[2:])))
+        return Flow(padded_vecs, self.ref, padded_mask)
