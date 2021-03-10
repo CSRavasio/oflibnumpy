@@ -158,6 +158,192 @@ class TestFlow(unittest.TestCase):
             self.assertIsNone(np.testing.assert_allclose(flow.vecs[i[0]:i[0] + 40, i[1]:i[1] + 40],
                                                          vectors[i[0]:i[0] + 40, i[1]:i[1] + 40]))
 
+    def test_add(self):
+        mask1 = np.ones((100, 200), 'bool')
+        mask1[:40] = 0
+        mask2 = np.ones((100, 200), 'bool')
+        mask2[60:] = 0
+        vecs1 = np.random.rand(100, 200, 2)
+        vecs2 = np.random.rand(100, 200, 2)
+        vecs3 = np.random.rand(200, 200, 2)
+        flow1 = Flow(vecs1, mask=mask1)
+        flow2 = Flow(vecs2, mask=mask2)
+        flow3 = Flow(vecs3)
+
+        # Addition
+        self.assertIsNone(np.testing.assert_allclose((flow1 + flow2).vecs, vecs1 + vecs2, rtol=1e-6, atol=1e-6))
+        self.assertIsNone(np.testing.assert_equal(np.sum((flow1 + flow2).mask), (60 - 40) * 200))
+        with self.assertRaises(TypeError):
+            flow1 + vecs1
+        with self.assertRaises(ValueError):
+            flow1 + flow3
+
+    def test_sub(self):
+        mask1 = np.ones((100, 200), 'bool')
+        mask1[:40] = 0
+        mask2 = np.ones((100, 200), 'bool')
+        mask2[60:] = 0
+        vecs1 = np.random.rand(100, 200, 2)
+        vecs2 = np.random.rand(100, 200, 2)
+        vecs3 = np.random.rand(200, 200, 2)
+        flow1 = Flow(vecs1, mask=mask1)
+        flow2 = Flow(vecs2, mask=mask2)
+        flow3 = Flow(vecs3)
+
+        # Subtraction
+        self.assertIsNone(np.testing.assert_allclose((flow1 - flow2).vecs, vecs1 - vecs2, rtol=1e-6, atol=1e-6))
+        self.assertIsNone(np.testing.assert_equal(np.sum((flow1 - flow2).mask), (60 - 40) * 200))
+        with self.assertRaises(TypeError):
+            flow1 - vecs1
+        with self.assertRaises(ValueError):
+            flow1 - flow3
+
+    def test_mul(self):
+        vecs1 = np.random.rand(100, 200, 2)
+        vecs2 = np.random.rand(100, 200, 2)
+        flow1 = Flow(vecs1)
+
+        # Multiplication
+        ints = np.random.randint(-10, 10, 100)
+        floats = (np.random.rand(100) - .5) * 20
+        # ... using ints and floats
+        for i, f in zip(ints, floats):
+            self.assertIsNone(np.testing.assert_allclose((flow1 * i).vecs, vecs1 * i, rtol=1e-6, atol=1e-6))
+            self.assertIsNone(np.testing.assert_allclose((flow1 * f).vecs, vecs1 * f, rtol=1e-6, atol=1e-6))
+        # ... using a list of length 2
+        int_list = np.random.randint(-10, 10, (100, 2))
+        for li in int_list:
+            v = vecs1.astype('f')
+            v[..., 0] *= li[0]
+            v[..., 1] *= li[1]
+            self.assertIsNone(np.testing.assert_allclose((flow1 * list(li)).vecs, v, rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of size 2
+        int_list = np.random.randint(-10, 10, (100, 2))
+        for li in int_list:
+            v = vecs1.astype('f')
+            v[..., 0] *= li[0]
+            v[..., 1] *= li[1]
+            self.assertIsNone(np.testing.assert_allclose((flow1 * li).vecs, v, rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of the same shape as the flow
+        self.assertIsNone(np.testing.assert_allclose((flow1 * vecs2[..., 0]).vecs, vecs1 * vecs2[..., :1],
+                                                     rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of the same shape as the flow vectors
+        self.assertIsNone(np.testing.assert_allclose((flow1 * vecs2).vecs, vecs1 * vecs2, rtol=1e-6, atol=1e-6))
+        # ... using a list of the wrong length
+        with self.assertRaises(ValueError):
+            flow1 * [0, 1, 2]
+        # ... using a numpy array of the wrong size
+        with self.assertRaises(ValueError):
+            flow1 * np.array([0, 1, 2])
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 * np.random.rand(200, 200)
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 * np.random.rand(200, 200, 2)
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 * np.random.rand(200, 200, 2, 1)
+
+    def test_div(self):
+        vecs1 = np.random.rand(100, 200, 2)
+        vecs2 = np.random.rand(100, 200, 2)
+        flow1 = Flow(vecs1)
+
+        # Divison
+        ints = np.random.randint(-10, 10, 100)
+        floats = (np.random.rand(100) - .5) * 20
+        # ... using ints and floats
+        for i, f in zip(ints, floats):
+            self.assertIsNone(np.testing.assert_allclose((flow1 / i).vecs, vecs1 / i, rtol=1e-6, atol=1e-6))
+            self.assertIsNone(np.testing.assert_allclose((flow1 / f).vecs, vecs1 / f, rtol=1e-6, atol=1e-6))
+        # ... using a list of length 2
+        int_list = np.random.randint(-10, 10, (100, 2))
+        for li in int_list:
+            v = vecs1.astype('f')
+            v[..., 0] /= li[0]
+            v[..., 1] /= li[1]
+            self.assertIsNone(np.testing.assert_allclose((flow1 / list(li)).vecs, v, rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of size 2
+        int_list = np.random.randint(-10, 10, (100, 2))
+        for li in int_list:
+            v = vecs1.astype('f')
+            v[..., 0] /= li[0]
+            v[..., 1] /= li[1]
+            self.assertIsNone(np.testing.assert_allclose((flow1 / li).vecs, v, rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of the same shape as the flow
+        self.assertIsNone(np.testing.assert_allclose((flow1 / vecs2[..., 0]).vecs, vecs1 / vecs2[..., :1],
+                                                     rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of the same shape as the flow vectors
+        self.assertIsNone(np.testing.assert_allclose((flow1 / vecs2).vecs, vecs1 / vecs2, rtol=1e-6, atol=1e-6))
+        # ... using a list of the wrong length
+        with self.assertRaises(ValueError):
+            flow1 / [0, 1, 2]
+        # ... using a numpy array of the wrong size
+        with self.assertRaises(ValueError):
+            flow1 / np.array([0, 1, 2])
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 / np.random.rand(200, 200)
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 / np.random.rand(200, 200, 2)
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 / np.random.rand(200, 200, 2, 1)
+
+    def test_pow(self):
+        vecs1 = np.random.rand(100, 200, 2)
+        vecs2 = np.random.rand(100, 200, 2)
+        flow1 = Flow(vecs1)
+
+        # Divison
+        ints = np.random.randint(-2, 2, 100)
+        floats = (np.random.rand(100) - .5) * 4
+        # ... using ints and floats
+        for i, f in zip(ints, floats):
+            self.assertIsNone(np.testing.assert_allclose((flow1 ** i).vecs, vecs1 ** i, rtol=1e-6, atol=1e-6))
+            self.assertIsNone(np.testing.assert_allclose((flow1 ** f).vecs, vecs1 ** f, rtol=1e-6, atol=1e-6))
+        # ... using a list of length 2
+        int_list = np.random.randint(-10, 10, (100, 2))
+        for li in int_list:
+            v = vecs1.astype('f')
+            v[..., 0] **= li[0]
+            v[..., 1] **= li[1]
+            self.assertIsNone(np.testing.assert_allclose((flow1 ** list(li)).vecs, v, rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of size 2
+        int_list = np.random.randint(-10, 10, (100, 2))
+        for li in int_list:
+            v = vecs1.astype('f')
+            v[..., 0] **= li[0]
+            v[..., 1] **= li[1]
+            self.assertIsNone(np.testing.assert_allclose((flow1 ** li).vecs, v, rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of the same shape as the flow
+        self.assertIsNone(np.testing.assert_allclose((flow1 ** vecs2[..., 0]).vecs, vecs1 ** vecs2[..., :1],
+                                                     rtol=1e-6, atol=1e-6))
+        # ... using a numpy array of the same shape as the flow vectors
+        self.assertIsNone(np.testing.assert_allclose((flow1 ** vecs2).vecs, vecs1 ** vecs2, rtol=1e-6, atol=1e-6))
+        # ... using a list of the wrong length
+        with self.assertRaises(ValueError):
+            flow1 ** [0, 1, 2]
+        # ... using a numpy array of the wrong size
+        with self.assertRaises(ValueError):
+            flow1 ** np.array([0, 1, 2])
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 ** np.random.rand(200, 200)
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 ** np.random.rand(200, 200, 2)
+        # ... using a numpy array of the wrong shape
+        with self.assertRaises(ValueError):
+            flow1 ** np.random.rand(200, 200, 2, 1)
+
+    def test_neg(self):
+        vecs1 = np.random.rand(100, 200, 2)
+        flow1 = Flow(vecs1)
+        self.assertIsNone(np.testing.assert_allclose((-flow1).vecs, -vecs1))
+
 
 if __name__ == '__main__':
     unittest.main()
