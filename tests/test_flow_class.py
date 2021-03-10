@@ -344,6 +344,19 @@ class TestFlow(unittest.TestCase):
         flow1 = Flow(vecs1)
         self.assertIsNone(np.testing.assert_allclose((-flow1).vecs, -vecs1))
 
+    def test_pad(self):
+        dims = [100, 80]
+        for ref in ['t', 's']:
+            flow = Flow.zero(dims, ref, np.ones(dims, 'bool'))
+            flow = flow.pad([10, 20, 30, 40])
+            self.assertIsNone(np.testing.assert_equal(flow.shape[:2], [dims[0] + 10 + 20, dims[1] + 30 + 40]))
+            self.assertIsNone(np.testing.assert_equal(flow.vecs, 0))
+            self.assertIsNone(np.testing.assert_equal(flow[10:-20, 30:-40].mask, 1))
+            flow.mask[10:-20, 30:-40] = 0
+            self.assertIsNone(np.testing.assert_equal(flow.mask, 0))
+            self.assertIs(flow.ref, ref)
+
+
 
 if __name__ == '__main__':
     unittest.main()
