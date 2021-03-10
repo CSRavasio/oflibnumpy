@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Union
 import numpy as np
 from .utils import get_valid_ref, flow_from_matrix, matrix_from_transform
 
@@ -186,3 +187,14 @@ class Flow(object):
         for transform in reversed(transform_list):
             matrix = matrix @ matrix_from_transform(transform[0], transform[1:])
         return cls.from_matrix(matrix, size, ref, mask)
+
+    def __getitem__(self, item: Union[int, list, slice]) -> Flow:
+        """Mimics __getitem__ of a numpy array, returning a flow object cut accordingly
+
+        Will throw an error if mask.__getitem__(item) or vecs.__getitem__(item) throw an error
+
+        :param item: Slice used to select a part of the flow
+        :return: New flow cut as a corresponding numpy array would be cut
+        """
+
+        return Flow(self.vecs.__getitem__(item), self.ref, self.mask.__getitem__(item))
