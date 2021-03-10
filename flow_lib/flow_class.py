@@ -362,6 +362,12 @@ class Flow(object):
         :return: Padded flow
         """
 
+        if not isinstance(padding, list):
+            raise TypeError("Error padding flow: padding needs to be a list [top, bot, left, right]")
+        if not len(padding) == 4:
+            raise ValueError("Error padding flow: padding needs to be a list of length 4 [top, bot, left, right]")
+        if not all(isinstance(item, int) for item in padding):
+            raise ValueError("Error padding flow: padding needs to be a list of ins [top, bot, left, right]")
         padded_vecs = np.pad(self.vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)))
         padded_mask = np.pad(self.mask, (tuple(padding[:2]), tuple(padding[2:])))
         return Flow(padded_vecs, self.ref, padded_mask)
