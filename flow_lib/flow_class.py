@@ -81,11 +81,11 @@ class Flow(object):
         else:
             if not isinstance(input_mask, np.ndarray):
                 raise TypeError("Error setting flow mask: Input is not a numpy array")
-            if not input_mask.ndim == 3:
-                raise ValueError("Error setting flow mask: Input not 3-dimensional")
-            if not input_mask.shape[2] == 2:
-                raise ValueError("Error setting flow mask: Input does not have 2 channels")
-            if any((input_mask != 0) & (input_mask != 1)):
+            if not input_mask.ndim == 2:
+                raise ValueError("Error setting flow mask: Input not 2-dimensional")
+            if not input_mask.shape == self.shape:
+                raise ValueError("Error setting flow mask: Input has a different shape than the flow vectors")
+            if ((input_mask != 0) & (input_mask != 1)).any():
                 raise ValueError("Error setting flow mask: Values must be 0 or 1")
             self._mask = input_mask.astype('bool')
 
