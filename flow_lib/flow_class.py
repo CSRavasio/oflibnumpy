@@ -110,7 +110,7 @@ class Flow(object):
         :return: Flow object
         """
 
-        return cls(np.zeros((size[0], size[1], 2), 'float32'), ref, mask)
+        return cls(np.zeros((size[0], size[1], 2)), ref, mask)
 
     @classmethod
     def from_matrix(cls, matrix: np.ndarray, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
