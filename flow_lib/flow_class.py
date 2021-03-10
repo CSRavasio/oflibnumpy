@@ -203,3 +203,154 @@ class Flow(object):
         """
 
         return Flow(self.vecs.__getitem__(item), self.ref, self.mask.__getitem__(item))
+
+    def __copy__(self) -> Flow:
+        """Returns a copy of the flow object
+
+        :return: Copy of the flow object
+        """
+
+        return Flow(self.vecs, self.ref, self.mask)
+
+    def __add__(self, other: Flow) -> Flow:
+        """Adds flow objects
+
+        Note: this is NOT equal to applying the two flows sequentially. For that, use combine_flows(flow1, flow2, None).
+        The function also does not check whether the two flow objects have the same reference.
+
+        DO NOT USE if you're not certain about what you're aiming to achieve.
+
+        :param other: Flow object corresponding to the addend
+        :return: Flow object corresponding to the sum
+        """
+
+        if not isinstance(other, Flow):
+            raise TypeError("Error adding to flow: Addend is not a flow object")
+        if not self.shape == other.shape:
+            raise ValueError("Error adding to flow: Augend and addend are not the same size")
+        vecs = self.vecs + other.vecs
+        mask = np.logical_and(self.mask, other.mask)
+        return Flow(vecs, self.ref, mask)
+
+    def __sub__(self, other: Flow) -> Flow:
+        """Subtracts flow objects.
+
+        Note: this is NOT equal to subtracting the effects of applying flow fields to an image. For that, used
+        combine_flows(flow1, None, flow2) or combine_flows(None, flow1, flow2). The function also does not check whether
+        the two flow objects have the same reference.
+
+        DO NOT USE if you're not certain about what you're aiming to achieve.
+
+        :param other: Flow object corresponding to the subtrahend
+        :return: Flow object corresponding to the difference
+        """
+
+        if not isinstance(other, Flow):
+            raise TypeError("Error subtracting from flow: Subtrahend is not a flow object")
+        if not self.shape == other.shape:
+            raise ValueError("Error subtracting from flow: Minuend and subtrahend are not the same size")
+        vecs = self.vecs - other.vecs
+        mask = np.logical_and(self.mask, other.mask)
+        return Flow(vecs, self.ref, mask)
+
+    def __mul__(self, other: Union[float, int, bool, list, np.ndarray]) -> Flow:
+        """Multiplies a flow object
+
+        :param other: Multiplier: can be converted to float or is a list length 2, an array of the same shape as the
+            flow object, or an array of the same shape as the flow vectors
+        :return: Flow object corresponding to the product
+        """
+
+        try:  # other is int, float, or can be converted to it
+            return Flow(self.vecs * float(other), self.ref, self.mask)
+        except TypeError:
+            if isinstance(other, list):
+                if len(other) != 2:
+                    raise ValueError("Error multiplying flow: Multiplier list not length 2")
+                return Flow(self.vecs * np.array(other)[np.newaxis, np.newaxis, :], self.ref, self.mask)
+            elif isinstance(other, np.ndarray):
+                if other.ndim == 1 and other.size == 2:
+                    other = other[np.newaxis, np.newaxis, :]
+                elif other.ndim == 2 and other.shape == self.shape[:2]:
+                    other = other[:, :, np.newaxis]
+                elif other.shape == self.shape + (2,):
+                    pass
+                else:
+                    raise ValueError("Error multiplying flow: Multiplier array is not one of the following: size 2, "
+                                     "shape of the flow object, shape of the flow vectors")
+                return Flow(self.vecs * other, self.ref, self.mask)
+            else:
+                raise TypeError("Error multiplying flow: Multiplier cannot be converted to float, "
+                                "or isn't a list or numpy array")
+
+    def __truediv__(self, other: Union[float, int, bool, list, np.ndarray]) -> Flow:
+        """Divides a flow object
+
+        :param other: Divisor: can be converted to float or is a list length 2, an array of the same shape as the flow
+            object, or an array of the same shape as the flow vectors
+        :return: Flow object corresponding to the quotient
+        """
+
+        try:  # other is int, float, or can be converted to it
+            return Flow(self.vecs / float(other), self.ref, self.mask)
+        except TypeError:
+            if isinstance(other, list):
+                if len(other) != 2:
+                    raise ValueError("Error dividing flow: Divisor list not length 2")
+                return Flow(self.vecs / np.array(other)[np.newaxis, np.newaxis, :], self.ref, self.mask)
+            elif isinstance(other, np.ndarray):
+                if other.ndim == 1 and other.size == 2:
+                    other = other[np.newaxis, np.newaxis, :]
+                elif other.ndim == 2 and other.shape == self.shape[:2]:
+                    other = other[:, :, np.newaxis]
+                elif other.shape == self.shape + (2,):
+                    pass
+                else:
+                    raise ValueError("Error dividing flow: Divisor array is not one of the following: size 2, "
+                                     "shape of the flow object, shape of the flow vectors")
+                return Flow(self.vecs / other, self.ref, self.mask)
+            else:
+                raise TypeError("Error dividing flow: Divisor cannot be converted to float, "
+                                "or isn't a list or numpy array")
+
+    def __pow__(self, other: Union[float, int, bool, list, np.ndarray]) -> Flow:
+        """Exponentiates a flow object
+
+        :param other: Exponent: can be converted to float or is a list length 2, an array of the same shape as the flow
+            object, or an array of the same shape as the flow vectors
+        :return: Flow object corresponding to the power
+        """
+
+        try:  # other is int, float, or can be converted to it
+            return Flow(self.vecs ** float(other), self.ref, self.mask)
+        except TypeError:
+            if isinstance(other, list):
+                if len(other) != 2:
+                    raise ValueError("Error exponentiating flow: Exponent list not length 2")
+                return Flow(self.vecs ** np.array(other)[np.newaxis, np.newaxis, :], self.ref, self.mask)
+            elif isinstance(other, np.ndarray):
+                if other.ndim == 1 and other.size == 2:
+                    other = other[np.newaxis, np.newaxis, :]
+                elif other.ndim == 2 and other.shape == self.shape[:2]:
+                    other = other[:, :, np.newaxis]
+                elif other.shape == self.shape + (2,):
+                    pass
+                else:
+                    raise ValueError("Error exponentiating flow: Exponent array is not one of the following: size 2, "
+                                     "shape of the flow object, shape of the flow vectors")
+                return Flow(self.vecs ** other, self.ref, self.mask)
+            else:
+                raise TypeError("Error exponentiating flow: Exponent cannot be converted to float, "
+                                "or isn't a list or numpy array")
+
+    def __neg__(self) -> Flow:
+        """Returns the negative of a flow object
+
+        CAREFUL: this is NOT equal to correctly inverting a flow! For that, use invert().
+
+        DO NOT USE if you're not certain about what you're aiming to achieve.
+
+        :return: Negative flow
+        """
+
+        return self * -1
