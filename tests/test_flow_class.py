@@ -6,6 +6,80 @@ import math
 
 class TestFlow(unittest.TestCase):
     # All numerical values tested were calculated manually as an independent check
+    def test_flow(self):
+        # Flow from vectors
+        vectors = np.random.rand(200, 200, 2)
+        flow = Flow(vectors)
+        self.assertIsNone(np.testing.assert_allclose(flow.vecs, vectors))
+        self.assertEqual(flow.ref, 't')
+        self.assertEqual(flow.shape, vectors.shape[:2])
+        self.assertEqual(flow.mask.shape, vectors.shape[:2])
+        self.assertEqual(np.sum(flow.mask), vectors.size // 2)
+
+        # Incorrect flow type
+        vectors = np.random.rand(200, 200, 2).tolist()
+        with self.assertRaises(TypeError):
+            Flow(vectors)
+
+        # Incorrect flow shape
+        vectors = np.random.rand(200, 200)
+        with self.assertRaises(ValueError):
+            Flow(vectors)
+
+        # Incorrect flow shape
+        vectors = np.random.rand(200, 200, 3)
+        with self.assertRaises(ValueError):
+            Flow(vectors)
+
+        # Flow from vectors and reference
+        vectors = np.random.rand(200, 200, 2)
+        ref = 's'
+        flow = Flow(vectors, ref)
+        self.assertEqual(flow.ref, 's')
+
+        # Incorrect reference value
+        ref = 'test'
+        with self.assertRaises(ValueError):
+            Flow(vectors, ref)
+        ref = 10
+        with self.assertRaises(TypeError):
+            Flow(vectors, ref)
+
+        # Flow from vectors, reference, mask dtype 'bool'
+        mask = np.ones((200, 200), 'bool')
+        ref = 's'
+        flow = Flow(vectors, ref, mask)
+        self.assertIsNone(np.testing.assert_equal(flow.mask, mask))
+        self.assertEqual(flow.ref, 's')
+
+        # Flow from vectors, reference, mask dtype 'f'
+        mask = np.ones((200, 200), 'f')
+        ref = 't'
+        flow = Flow(vectors, ref, mask)
+        self.assertIsNone(np.testing.assert_equal(flow.mask, mask))
+        self.assertEqual(flow.ref, 't')
+
+        # Incorrect mask type
+        mask = np.ones((200, 200), 'bool').tolist()
+        with self.assertRaises(TypeError):
+            Flow(vectors, mask=mask)
+
+        # Incorrect mask shape
+        mask = np.ones((210, 200), 'bool')
+        with self.assertRaises(ValueError):
+            Flow(vectors, mask=mask)
+
+        # Incorrect mask shape
+        mask = np.ones((210, 200, 2), 'bool')
+        with self.assertRaises(ValueError):
+            Flow(vectors, mask=mask)
+
+        # Incorrect mask shape
+        mask = np.ones((200, 200), 'f')
+        mask[[10, 10], [20, 30]] = 2
+        with self.assertRaises(ValueError):
+            Flow(vectors, mask=mask)
+
     def test_zero(self):
         dims = [200, 300]
         zero_flow = Flow.zero(dims)
