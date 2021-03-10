@@ -145,6 +145,19 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
         self.assertEqual(flow.ref, 't')
 
+    def test_getitem(self):
+        vectors = np.random.rand(200, 200, 2)
+        flow = Flow(vectors)
+        indices = np.random.randint(0, 150, size=(20, 2))
+        for i in indices:
+            # Cutting a number of elements
+            self.assertIsNone(np.testing.assert_allclose(flow.vecs[i], vectors[i]))
+            # Cutting a specific item
+            self.assertIsNone(np.testing.assert_allclose(flow.vecs[i[0], i[1]], vectors[i[0], i[1]]))
+            # Cutting an area
+            self.assertIsNone(np.testing.assert_allclose(flow.vecs[i[0]:i[0] + 40, i[1]:i[1] + 40],
+                                                         vectors[i[0]:i[0] + 40, i[1]:i[1] + 40]))
+
 
 if __name__ == '__main__':
     unittest.main()
