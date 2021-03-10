@@ -188,6 +188,11 @@ class Flow(object):
             matrix = matrix @ matrix_from_transform(transform[0], transform[1:])
         return cls.from_matrix(matrix, size, ref, mask)
 
+    def __str__(self):
+        info_string = "Flow object, reference {}, shape {}*{}; ".format(self.ref, *self.shape)
+        info_string += self.__repr__()
+        return info_string
+
     def __getitem__(self, item: Union[int, list, slice]) -> Flow:
         """Mimics __getitem__ of a numpy array, returning a flow object cut accordingly
 
