@@ -1,7 +1,9 @@
 import unittest
-from flow_lib.flow_class import Flow
 import numpy as np
+import cv2
 import math
+from flow_lib.flow_class import Flow
+from flow_lib.flow_operations import apply_flow
 
 
 class TestFlow(unittest.TestCase):
@@ -366,6 +368,61 @@ class TestFlow(unittest.TestCase):
         with self.assertRaises(ValueError):
             flow.pad([-10, 10, 10, 10])
 
+    def test_apply(self):
+        img = cv2.imread('lena.png')
+        # Check flow.apply results in the same as using apply_flow directly
+        for ref in ['t', 's']:
+            flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], ref)
+            # Target is a numpy array
+            warped_img_desired = apply_flow(flow.vecs, img, ref)
+            warped_img_actual = flow.apply(img)
+            self.assertIsNone(np.testing.assert_equal(warped_img_actual, warped_img_desired))
+            # Target is a flow object
+            warped_flow_desired = apply_flow(flow.vecs, flow.vecs, ref)
+            warped_flow_actual = flow.apply(flow)
+            self.assertIsNone(np.testing.assert_equal(warped_flow_actual.vecs, warped_flow_desired))
+        # Check using a smaller flow field on a larger target works the same as a full flow field on the same target
+        ref = 't'
+        flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], ref)
+        warped_img_desired = apply_flow(flow.vecs, img, ref)
+        dims = [img.shape[0] - 90, img.shape[1] - 110]
+        padding = [50, 40, 30, 80]
+        cut_flow = Flow.from_transforms([['rotation', 0, 0, 30]], dims, ref)
+        # ... not cutting (target numpy array)
+        warped_img_actual = cut_flow.apply(img, padding=padding, cut=False)
+        self.assertIsNone(np.testing.assert_equal(warped_img_actual[padding[0]:-padding[1], padding[2]:-padding[3]],
+                                                  warped_img_desired[padding[0]:-padding[1],
+                                                                     padding[2]:-padding[3]]))
+        # ... cutting (target numpy array)
+        warped_img_actual = cut_flow.apply(img, padding=padding, cut=True)
+        self.assertIsNone(np.testing.assert_equal(warped_img_actual, warped_img_desired[padding[0]:-padding[1],
+                                                                                        padding[2]:-padding[3]]))
+        # ... not cutting (target flow object)
+        target_flow = Flow(img[..., :2])
+        warped_flow_desired = apply_flow(flow.vecs, target_flow.vecs, ref)
+        warped_flow_actual = cut_flow.apply(target_flow, padding=padding, cut=False)
+        self.assertIsNone(np.testing.assert_equal(warped_flow_actual.vecs[padding[0]:-padding[1],
+                                                                          padding[2]:-padding[3]],
+                                                  warped_flow_desired[padding[0]:-padding[1],
+                                                                      padding[2]:-padding[3]]))
+        # ... cutting (target flow object)
+        warped_flow_actual = cut_flow.apply(target_flow, padding=padding, cut=True)
+        self.assertIsNone(np.testing.assert_equal(warped_flow_actual.vecs, warped_flow_desired[padding[0]:-padding[1],
+                                                                                               padding[2]:-padding[3]]))
+
+        # Non-valid padding values
+        with self.assertRaises(TypeError):
+            cut_flow.apply(target_flow, padding=100, cut=True)
+        with self.assertRaises(ValueError):
+            cut_flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=True)
+        with self.assertRaises(ValueError):
+            cut_flow.apply(target_flow, padding=[10., 20, 30, 40], cut=True)
+        with self.assertRaises(ValueError):
+            cut_flow.apply(target_flow, padding=[-10, 10, 10, 10], cut=True)
+        with self.assertRaises(TypeError):
+            cut_flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=2)
+        with self.assertRaises(TypeError):
+            cut_flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut='true')
 
 
 if __name__ == '__main__':
