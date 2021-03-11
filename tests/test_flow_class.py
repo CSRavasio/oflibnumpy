@@ -424,6 +424,34 @@ class TestFlow(unittest.TestCase):
         with self.assertRaises(TypeError):
             cut_flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut='true')
 
+    def test_switch_ref(self):
+        img = cv2.imread('lena.png')
+        # Mode 'invalid'
+        for refs in [['t', 's'], ['s', 't']]:
+            flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], refs[0])
+            flow = flow.switch_ref(mode='invalid')
+            self.assertEqual(flow.ref, refs[1])
+
+        # Mode 'valid'
+        transforms = [['rotation', 256, 256, 30]]
+        flow_s = Flow.from_transforms(transforms, img.shape[:2], 's')
+        flow_t = Flow.from_transforms(transforms, img.shape[:2], 't')
+        switched_s = flow_t.switch_ref()
+        self.assertIsNone(np.testing.assert_allclose(switched_s.vecs[switched_s.mask],
+                                                     flow_s.vecs[switched_s.mask],
+                                                     rtol=1e-3, atol=1e-3))
+        switched_t = flow_s.switch_ref()
+        self.assertIsNone(np.testing.assert_allclose(switched_t.vecs[switched_t.mask],
+                                                     flow_t.vecs[switched_t.mask],
+                                                     rtol=1e-3, atol=1e-3))
+
+        # Invalid mode passed
+        flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], 't')
+        with self.assertRaises(ValueError):
+            flow.switch_ref('test')
+        with self.assertRaises(ValueError):
+            flow.switch_ref(1)
+
     def test_visualise(self):
         # Correct values for the different modes
         # Horizontal flow towards the right is red
