@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Union
 import numpy as np
 from .utils import get_valid_ref, get_valid_padding, flow_from_matrix, matrix_from_transform
+from .flow_operations import apply_flow
 
 
 class Flow(object):
@@ -366,3 +367,50 @@ class Flow(object):
         padded_vecs = np.pad(self.vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)))
         padded_mask = np.pad(self.mask, (tuple(padding[:2]), tuple(padding[2:])))
         return Flow(padded_vecs, self.ref, padded_mask)
+
+    def apply(self, target: Union[np.ndarray, Flow], padding: list = None, cut: bool = None) -> Union[np.ndarray, Flow]:
+        """Applies the flow to the target, which can be a numpy array or a Flow object.
+
+        :param target: Numpy array or flow object the flow should be applied to
+        :param padding: If flow applied only covers part of the target; [top, bot, left, right]; default None
+        :param cut: If padding is given, whether the input is returned as cut to size of flow; default True
+        :return: An object of the same type as the input (numpy array, or flow)
+        """
+
+        if not isinstance(cut, bool) and cut is not None:
+            raise TypeError("Error applying flow: Cut needs to be a boolean or convert to one")
+        cut = False if cut is None else cut
+
+        # Determine whether the target is a flow object or not, if so, get actual array to warp
+        if isinstance(target, Flow):
+            return_flow = True
+            # So the flow vectors and mask are warped in one step
+            t = np.concatenate((target.vecs, target.mask[..., np.newaxis]), axis=-1)
+        else:
+            return_flow = False
+            if not isinstance(target, np.ndarray):
+                raise ValueError("Error applying flow: Target needs to be either a flow object, or a numpy ndarray")
+            t = target
+
+        # Determine flow to use for warping, and warp
+        if padding is None:
+            if not target.shape[:2] == self.shape[:2]:
+                raise ValueError("Error applying flow: Flow and target have to have the same shape")
+            warped_t = apply_flow(self.vecs, t, self.ref, self.mask)
+        else:
+            padding = get_valid_padding(padding, "Error applying flow: ")
+            if self.shape[0] + np.sum(padding[:2]) != target.shape[0] or \
+                    self.shape[1] + np.sum(padding[2:]) != target.shape[1]:
+                raise ValueError("Error applying flow: Padding values do not match flow and target size difference")
+            flow = self.pad(padding)
+            warped_t = apply_flow(flow.vecs, t, flow.ref, flow.mask)
+
+        # Cut if necessary
+        if padding is not None and cut:
+            warped_t = warped_t[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1]]
+
+        # Return as correct type
+        if return_flow:
+            return Flow(warped_t[..., :2], target.ref, np.round(warped_t[..., 2]).astype('bool'))
+        else:
+            return warped_t
