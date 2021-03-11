@@ -505,18 +505,15 @@ class Flow(object):
             show_mask_borders: bool = None,
             colour: tuple = None
     ) -> np.ndarray:
-        """Visualises the flow as arrowed lines
         """Visualises the flow as arrowed lines, in BGR mode
 
         :param grid_dist: Integer of the distance of the flow points to be used for the visualisation
-        :param img: Numpy array with the background image to use, defaults to black
         :param img: Numpy array with the background image to use (in BGR mode), defaults to black
         :param scaling: Float or int of the flow line scaling, defaults to scaling the 99th percentile of arrowed line
             lengths to be equal to twice the grid distance (empirical value)
         :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
         :param show_mask_borders: Boolean determining whether the flow mask border is visualised, defaults to False
         :param colour: Tuple of the flow arrow colour, defaults to hue based on flow direction as in visualise()
-        :return: Numpy array of the flow visualised as arrowed lines, of the same size as the flow
         :return: Numpy array of the flow visualised as arrowed lines, of the same size as the flow, in BGR
         """
 
