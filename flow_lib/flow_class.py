@@ -103,10 +103,10 @@ class Flow(object):
         return self.vecs.shape[:2]
 
     @classmethod
-    def zero(cls, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
+    def zero(cls, size: Union[list, tuple], ref: str = None, mask: np.ndarray = None) -> Flow:
         """Flow object constructor, zero everywhere
 
-        :param size: List [H, W] of flow field size
+        :param size: List or tuple [H, W] of flow field size
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
@@ -116,11 +116,11 @@ class Flow(object):
         return cls(np.zeros((size[0], size[1], 2)), ref, mask)
 
     @classmethod
-    def from_matrix(cls, matrix: np.ndarray, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
+    def from_matrix(cls, matrix: np.ndarray, size: Union[list, tuple], ref: str = None, mask: np.ndarray = None) -> Flow:
         """Flow object constructor, based on transformation matrix input
 
         :param matrix: Transformation matrix to be turned into a flow field, as Numpy array 3-3
-        :param size: List [H, W] of flow field size
+        :param size: List or tuple [H, W] of flow field size
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
@@ -141,14 +141,20 @@ class Flow(object):
             return cls(flow_vectors, ref, mask)
 
     @classmethod
-    def from_transforms(cls, transform_list: list, size: list, ref: str = None, mask: np.ndarray = None) -> Flow:
+    def from_transforms(
+            cls,
+            transform_list: list,
+            size: Union[list, tuple],
+            ref: str = None,
+            mask: np.ndarray = None
+    ) -> Flow:
         """Flow object constructor, zero everywhere.
 
         :param transform_list: List of transforms to be turned into a flow field. Options for each transform in list:
             ['translation', horizontal shift in px, vertical shift in px]
             ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
             ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
-        :param size: List [H, W] of flow field size
+        :param size: List or tuple [H, W] of flow field size
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
