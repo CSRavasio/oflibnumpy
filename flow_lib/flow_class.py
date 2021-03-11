@@ -496,6 +496,94 @@ class Flow(object):
         else:
             raise ValueError("Error visualising flow: Mode needs to be either 'bgr', 'rgb', or 'hsv'")
 
+    def visualise_arrows(
+            self,
+            grid_dist: int,
+            img: np.ndarray = None,
+            scaling: Union[float, int] = None,
+            show_mask: bool = None,
+            show_mask_borders: bool = None,
+            colour: tuple = None
+    ) -> np.ndarray:
+        """Visualises the flow as arrowed lines
+
+        :param grid_dist: Integer of the distance of the flow points to be used for the visualisation
+        :param img: Numpy array with the background image to use, defaults to black
+        :param scaling: Float or int of the flow line scaling, defaults to scaling the 99th percentile of arrowed line
+            lengths to be equal to twice the grid distance (empirical value)
+        :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
+        :param show_mask_borders: Boolean determining whether the flow mask border is visualised, defaults to False
+        :param colour: Tuple of the flow arrow colour, defaults to hue based on flow direction as in visualise()
+        :return: Numpy array of the flow visualised as arrowed lines, of the same size as the flow
+        """
+
+        # Validate arguments
+        if not isinstance(grid_dist, int):
+            raise TypeError("Error visualising flow arrows: Grid_dist needs to be an integer value")
+        if not grid_dist > 0:
+            raise ValueError("Error visualising flow arrows: Grid_dist needs to be an integer larger than zero")
+        if img is None:
+            img = np.zeros(self.shape[:2] + (3,), 'uint8')
+        if not isinstance(img, np.ndarray):
+            raise TypeError("Error visualising flow arrows: Img needs to be a numpy array")
+        if not img.ndim == 3 and img.shape[:2] == self.shape:
+            raise ValueError("Error visualising flow arrows: "
+                             "Img needs to have 3 channels and the same shape as the flow")
+        if scaling is not None:
+            if not isinstance(scaling, (float, int)):
+                raise TypeError("Error visualising flow arrows: Scaling needs to be a float or an integer")
+            if scaling <= 0:
+                raise ValueError("Error visualising flow arrows: Scaling needs to be larger than zero")
+        show_mask = False if show_mask is None else show_mask
+        show_mask_borders = False if show_mask_borders is None else show_mask_borders
+        if not isinstance(show_mask, bool):
+            raise TypeError("Error visualising flow: Show_mask needs to be boolean")
+        if not isinstance(show_mask_borders, bool):
+            raise TypeError("Error visualising flow: Show_mask_borders needs to be boolean")
+        if colour is not None:
+            if not isinstance(colour, tuple):
+                raise TypeError("Error visualising flow: Colour needs to be a tuple")
+            if len(colour) != 3:
+                raise ValueError("Error visualising flow arrows: Colour list or tuple needs to have length 3")
+
+        # Thresholding
+        f = self.vecs.copy()
+        f[(-self._threshold < f) & (f < self._threshold)] = 0
+
+        # Make points
+        x, y = np.mgrid[:f.shape[0] - 1:grid_dist, :f.shape[1] - 1:grid_dist]
+        i_pts = np.dstack((x, y))
+        i_pts_flat = np.reshape(i_pts, (-1, 2)).astype('i')
+        f_at_pts = f[i_pts_flat[..., 0], i_pts_flat[..., 1]]
+        flow_mags, ang = cv2.cartToPolar(f_at_pts[..., 0], f_at_pts[..., 1], angleInDegrees=True)
+        if scaling is None:
+            scaling = grid_dist / np.percentile(flow_mags, 99)
+        flow_mags *= scaling
+        f *= scaling
+        colours = None
+        tip_size = 3.5
+        if colour is None:
+            hsv = np.full((1, ang.shape[0], 3), 255, 'uint8')
+            hsv[0, :, 0] = np.round(ang[:, 0] / 2)
+            colours = np.squeeze(cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
+        for i_num, i_pt in enumerate(i_pts_flat):
+            if flow_mags[i_num] > 0.5:  # Only draw if the flow length rounds to at least one pixel
+                e_pt = np.round(i_pt + f[i_pt[0], i_pt[1]][::-1]).astype('i')
+                c = tuple(int(item) for item in colours[i_num]) if colour is None else colour
+                tip_length = tip_size / flow_mags[i_num]
+                cv2.arrowedLine(img, (i_pt[1], i_pt[0]), (e_pt[1], e_pt[0]), c,
+                                thickness=1, tipLength=tip_length, line_type=cv2.LINE_AA)
+            img[i_pt[0], i_pt[1]] = [0, 0, 255]
+
+        # Show mask and mask borders if required
+        if show_mask:
+            img[~self.mask] = np.round(0.5 * img[~self.mask]).astype('uint8')
+        if show_mask_borders:
+            mask_as_img = np.array(255 * self.mask, 'uint8')
+            contours, hierarchy = cv2.findContours(mask_as_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(img, contours, -1, (0, 0, 0), 1)
+        return img
+
     def show(self, wait: int = None, show_mask: bool = None, show_mask_borders: bool = None):
         """Shows the flow in a cv2 window
 
