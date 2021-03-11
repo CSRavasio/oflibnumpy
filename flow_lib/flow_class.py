@@ -507,7 +507,7 @@ class Flow(object):
     ) -> np.ndarray:
         """Visualises the flow as arrowed lines, in BGR mode
 
-        :param grid_dist: Integer of the distance of the flow points to be used for the visualisation
+        :param grid_dist: Integer of the distance of the flow points to be used for the visualisation, defaults to 20
         :param img: Numpy array with the background image to use (in BGR mode), defaults to black
         :param scaling: Float or int of the flow line scaling, defaults to scaling the 99th percentile of arrowed line
             lengths to be equal to twice the grid distance (empirical value)
@@ -518,6 +518,7 @@ class Flow(object):
         """
 
         # Validate arguments
+        grid_dist = 20 if grid_dist is None else grid_dist
         if not isinstance(grid_dist, int):
             raise TypeError("Error visualising flow arrows: Grid_dist needs to be an integer value")
         if not grid_dist > 0:
