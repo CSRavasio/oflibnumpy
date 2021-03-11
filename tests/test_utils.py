@@ -149,6 +149,16 @@ class TestFlowFromMatrix(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose(flow[80, 20], [0, 50]))
         self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
 
+    def test_invalid_input(self):
+        with self.assertRaises(TypeError):
+            flow_from_matrix(np.eye(3), 'test')
+        with self.assertRaises(ValueError):
+            flow_from_matrix(np.eye(3), [10, 10, 10])
+        with self.assertRaises(ValueError):
+            flow_from_matrix(np.eye(3), [-1, 10])
+        with self.assertRaises(ValueError):
+            flow_from_matrix(np.eye(3), [10., 10])
+
 
 if __name__ == '__main__':
     unittest.main()
