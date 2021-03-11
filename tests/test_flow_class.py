@@ -355,7 +355,7 @@ class TestFlow(unittest.TestCase):
             flow.mask[10:-20, 30:-40] = 0
             self.assertIsNone(np.testing.assert_equal(flow.mask, 0))
             self.assertIs(flow.ref, ref)
-        # padding not a list
+        # Non-valid padding values
         flow = Flow.zero(dims, ref, np.ones(dims, 'bool'))
         with self.assertRaises(TypeError):
             flow.pad(100)
@@ -363,6 +363,8 @@ class TestFlow(unittest.TestCase):
             flow.pad([10, 20, 30, 40, 50])
         with self.assertRaises(ValueError):
             flow.pad([10., 20, 30, 40])
+        with self.assertRaises(ValueError):
+            flow.pad([-10, 10, 10, 10])
 
 
 
