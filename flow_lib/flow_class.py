@@ -116,7 +116,13 @@ class Flow(object):
         return cls(np.zeros((size[0], size[1], 2)), ref, mask)
 
     @classmethod
-    def from_matrix(cls, matrix: np.ndarray, size: Union[list, tuple], ref: str = None, mask: np.ndarray = None) -> Flow:
+    def from_matrix(
+            cls,
+            matrix: np.ndarray,
+            size: Union[list, tuple],
+            ref: str = None,
+            mask: np.ndarray = None
+    ) -> Flow:
         """Flow object constructor, based on transformation matrix input
 
         :param matrix: Transformation matrix to be turned into a flow field, as Numpy array 3-3
@@ -462,7 +468,7 @@ class Flow(object):
             show_mask_borders: bool = None,
             range_max: float = None
     ) -> np.ndarray:
-        """Returns a flow visualisation as a numpy array containing an rgb / bgr / hsv image of the same size as the flow
+        """Returns a flow visualisation as a numpy array containing an rgb / bgr / hsv img of the same size as the flow
 
         :param mode: Output mode, options: 'rgb', 'bgr', 'hsv'
         :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
