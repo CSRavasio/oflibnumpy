@@ -489,6 +489,37 @@ class TestFlow(unittest.TestCase):
         with self.assertRaises(ValueError):
             flow.visualise('rgb', range_max=-1)
 
+    def test_visualise_arrows(self):
+        img = cv2.imread('lena.png')
+        mask = np.zeros(img.shape[:2])
+        mask[50:-50, 20:-20] = 1
+        # flow = Flow.from_transforms([['translation', 20, 0]], img.shape[:2], 't', mask)
+        flow = Flow.from_transforms([['rotation', 256, 256, 30]], img.shape[:2], 's', mask)
+        with self.assertRaises(TypeError):
+            flow.visualise_arrows(grid_dist='test')
+        with self.assertRaises(ValueError):
+            flow.visualise_arrows(grid_dist=-1)
+        with self.assertRaises(TypeError):
+            flow.visualise_arrows(10, img='test')
+        with self.assertRaises(ValueError):
+            flow.visualise_arrows(10, img=mask)
+        with self.assertRaises(ValueError):
+            flow.visualise_arrows(10, img=mask[10:])
+        with self.assertRaises(ValueError):
+            flow.visualise_arrows(10, img=img[..., :2])
+        with self.assertRaises(TypeError):
+            flow.visualise_arrows(10, img, scaling='test')
+        with self.assertRaises(ValueError):
+            flow.visualise_arrows(10, img, scaling=-1)
+        with self.assertRaises(TypeError):
+            flow.visualise_arrows(10, img, None, show_mask='test')
+        with self.assertRaises(TypeError):
+            flow.visualise_arrows(10, img, None, True, show_mask_borders='test')
+        with self.assertRaises(TypeError):
+            flow.visualise_arrows(10, img, None, True, True, colour='test')
+        with self.assertRaises(ValueError):
+            flow.visualise_arrows(10, img, None, True, True, colour=(0, 0))
+
     def test_show(self):
         flow = Flow.zero([200, 300])
         with self.assertRaises(TypeError):
