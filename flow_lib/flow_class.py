@@ -19,6 +19,7 @@ class Flow(object):
         self.vecs = flow_vectors
         self.ref = ref
         self.mask = mask
+        self._threshold = 1e-3  # Used for some visualisations
 
     @property
     def vecs(self) -> np.ndarray:
@@ -443,8 +444,7 @@ class Flow(object):
         f = self.vecs.copy()  # Necessary, as otherwise the flow outside this function can be affected (not immutable)
 
         # Threshold the flow: very small numbers can otherwise lead to issues when calculating mag / angle
-        min_thresh = 1e-3
-        f[(-min_thresh < f) & (f < min_thresh)] = 0
+        f[(-self._threshold < f) & (f < self._threshold)] = 0
 
         # Colourise the flow
         hsv = np.zeros((f.shape[0], f.shape[1], 3), 'f')
