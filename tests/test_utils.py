@@ -151,6 +151,10 @@ class TestFlowFromMatrix(unittest.TestCase):
 
     def test_invalid_input(self):
         with self.assertRaises(TypeError):
+            flow_from_matrix('test', [10, 10])
+        with self.assertRaises(ValueError):
+            flow_from_matrix(np.eye(4), [10, 10])
+        with self.assertRaises(TypeError):
             flow_from_matrix(np.eye(3), 'test')
         with self.assertRaises(ValueError):
             flow_from_matrix(np.eye(3), [10, 10, 10])
