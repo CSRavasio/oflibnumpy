@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Union
+import cv2
 import numpy as np
 from .utils import get_valid_ref, get_valid_padding, flow_from_matrix, matrix_from_transform
 from .flow_operations import apply_flow
@@ -414,3 +415,101 @@ class Flow(object):
             return Flow(warped_t[..., :2], target.ref, np.round(warped_t[..., 2]).astype('bool'))
         else:
             return warped_t
+
+    def visualise(
+            self,
+            mode: str,
+            show_mask: bool = None,
+            show_mask_borders: bool = None,
+            range_max: float = None
+    ) -> np.ndarray:
+        """Returns a flow visualisation as a numpy array containing an rgb / bgr / hsv image of the same size as the flow
+
+        :param mode: Output mode, options: 'rgb', 'bgr', 'hsv'
+        :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
+        :param show_mask_borders: Boolean determining whether the flow mask border is visualised, defaults to False
+        :param range_max: Maximum vector magnitude expected, corresponding to the HSV maximum Value of 255 when scaling
+            the flow magnitudes. Defaults to the 99th percentile of the current flow field
+        :return: Numpy array containing the flow visualisation as an rgb / bgr / hsv image of the same size as the flow
+        """
+
+        show_mask = False if show_mask is None else show_mask
+        show_mask_borders = False if show_mask_borders is None else show_mask_borders
+        if not isinstance(show_mask, bool):
+            raise TypeError("Error visualising flow: Show_mask needs to be boolean")
+        if not isinstance(show_mask_borders, bool):
+            raise TypeError("Error visualising flow: Show_mask_borders needs to be boolean")
+
+        f = self.vecs.copy()  # Necessary, as otherwise the flow outside this function can be affected (not immutable)
+
+        # Threshold the flow: very small numbers can otherwise lead to issues when calculating mag / angle
+        min_thresh = 1e-3
+        f[(-min_thresh < f) & (f < min_thresh)] = 0
+
+        # Colourise the flow
+        hsv = np.zeros((f.shape[0], f.shape[1], 3), 'f')
+        mag, ang = cv2.cartToPolar(f[..., 0], f[..., 1], angleInDegrees=True)
+        hsv[..., 0] = ang / 2
+        hsv[..., 2] = 255
+
+        # Add mask if required
+        if show_mask:
+            hsv[np.invert(self.mask), 2] = 180
+
+        # Scale flow
+        range_max = np.percentile(mag, 99) if range_max is None else range_max
+        if not isinstance(range_max, (float, int)):
+            raise TypeError("Error visualising flow: Range_max needs to be an integer or a float")
+        if range_max <= 0:
+            raise ValueError("Error visualising flow: Range_max needs to be larger than zero")
+        hsv[..., 1] = np.clip(mag * 255 / range_max, 0, 255)
+
+        # Add mask borders if required
+        if show_mask_borders:
+            contours, hierarchy = cv2.findContours((255 * self.mask).astype('uint8'),
+                                                   cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(hsv, contours, -1, (0, 0, 0), 1)
+
+        # Process and return the flow visualisation
+        if mode == 'hsv':
+            return np.round(hsv).astype('uint8')
+        elif mode == 'rgb' or mode == 'bgr':
+            h = hsv[..., 0] / 180
+            s = hsv[..., 1] / 255
+            v = hsv[..., 2] / 255
+            # Credit to stackoverflow.com/questions/24852345/hsv-to-rgb-color-conversion
+            i = np.int_(h * 6.)
+            f = h * 6. - i
+            i = np.ravel(i)
+            t = np.ravel(1. - f)
+            f = np.ravel(f)
+            i %= 6
+            c_list = (1 - np.ravel(s) * np.vstack([np.zeros_like(f), np.ones_like(f), f, t])) * np.ravel(v)
+            # 0:v 1:p 2:q 3:t
+            order = np.array([[0, 3, 1], [2, 0, 1], [1, 0, 3], [1, 2, 0], [3, 1, 0], [0, 1, 2]])
+            rgb = c_list[order[i], np.arange(np.prod(h.shape))[:, None]].reshape(*h.shape, 3)
+            rgb = np.round(rgb * 255).astype('uint8')
+            if mode == 'bgr':
+                return rgb[..., ::-1]
+            else:
+                return rgb
+        else:
+            raise ValueError("Error visualising flow: Mode needs to be either 'bgr', 'rgb', or 'hsv'")
+
+    def show(self, wait: int = None, show_mask: bool = None, show_mask_borders: bool = None):
+        """Shows the flow in a cv2 window
+
+        :param wait: Integer determining how long to show the flow for, in ms. Defaults to 0, which means show until
+            window closed or process terminated
+        :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
+        :param show_mask_borders: Boolean determining whether flow mask border is visualised, defaults to False
+        """
+
+        wait = 0 if wait is None else wait
+        if not isinstance(wait, int):
+            raise TypeError("Error showing flow: Wait needs to be an integer")
+        if wait < 0:
+            raise ValueError("Error showing flow: Wait needs to be an integer larger than zero")
+        img = self.visualise('bgr', show_mask, show_mask_borders)
+        cv2.imshow('Visualise and show flow', img)
+        cv2.waitKey(wait)
