@@ -526,7 +526,7 @@ class Flow(object):
             img = np.zeros(self.shape[:2] + (3,), 'uint8')
         if not isinstance(img, np.ndarray):
             raise TypeError("Error visualising flow arrows: Img needs to be a numpy array")
-        if not img.ndim == 3 and img.shape[:2] == self.shape:
+        if not img.ndim == 3 or img.shape[:2] != self.shape or img.shape[2] != 3:
             raise ValueError("Error visualising flow arrows: "
                              "Img needs to have 3 channels and the same shape as the flow")
         if scaling is not None:
