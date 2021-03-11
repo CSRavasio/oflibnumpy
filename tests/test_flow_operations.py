@@ -7,7 +7,7 @@ from flow_lib.flow_class import Flow
 from flow_lib.flow_operations import apply_flow
 
 
-class MyTestCase(unittest.TestCase):
+class TestFlowOperations(unittest.TestCase):
     def test_apply(self):
         img = cv2.imread('lena.png')
         for ref in ['t', 's']:
