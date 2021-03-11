@@ -39,17 +39,23 @@ def get_valid_padding(padding: list, error_string: str = None) -> list:
     return padding
 
 
-def flow_from_matrix(matrix: np.ndarray, dims: Union[list, np.ndarray]) -> np.ndarray:
+def flow_from_matrix(matrix: np.ndarray, dims: Union[list, tuple]) -> np.ndarray:
     """Flow calculated from a transformation matrix
 
     NOTE: This corresponds to a flow with reference 's': based on meshgrid in image 1, warped to image 2, flow vectors
       at each meshgrid point in image 1 corresponding to (warped end points in image 2 - start points in image 1)
 
     :param matrix: Transformation matrix, numpy array 3-3
-    :param dims: List or numpy array [H, W] containing required size of the flow field
+    :param dims: List or tuple [H, W] containing required size of the flow field
     :return: Flow field according to cv2 standards, ndarray H-W-2
     """
 
+    if not isinstance(dims, (list, tuple)):
+        raise TypeError("Error creating flow from matrix: Dims need to be a list or a tuple")
+    if len(dims) != 2:
+        raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of length 2")
+    if any((item <= 0 or not isinstance(item, int)) for item in dims):
+        raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of integers above zero")
     # Make default vector field and populate it with homogeneous coordinates
     h, w = dims
     default_vec_hom = np.zeros((h, w, 3), 'f')
