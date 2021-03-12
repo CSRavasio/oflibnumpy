@@ -156,16 +156,42 @@ class Flow(object):
     ) -> Flow:
         """Flow object constructor, zero everywhere.
 
-        :param transform_list: List of transforms to be turned into a flow field. Options for each transform in list:
-            ['translation', horizontal shift in px, vertical shift in px]
-            ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
-            ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
+        :param transform_list: List of transforms to be turned into a flow field, where each transform is expressed as
+            a list of [transform name, transform value 1, ... , transform value n]. Supported options:
+                ['translation', horizontal shift in px, vertical shift in px]
+                ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
+                ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
         :param size: List or tuple [H, W] of flow field size
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
         :return: Flow object
         """
+
+        if not isinstance(transform_list, list):
+            raise TypeError("Error creating flow from transforms: Transform_list needs to be a list")
+        if not all(isinstance(item, list) for item in transform_list):
+            raise TypeError("Error creating flow from transforms: Transform_list needs to be a list of lists")
+        if not all(len(item) > 1 for item in transform_list):
+            raise ValueError("Error creating flow from transforms: Invalid transforms passed")
+        for t in transform_list:
+            if t[0] == 'translation':
+                if not len(t) == 3:
+                    raise ValueError("Error creating flow from transforms: Not enough transform values passed for "
+                                     "'translation' - expected 2, got {}".format(len(t) - 1))
+            elif t[0] == 'rotation':
+                if not len(t) == 4:
+                    raise ValueError("Error creating flow from transforms: Not enough transform values passed for "
+                                     "'rotation' - expected 3, got {}".format(len(t) - 1))
+            elif t[0] == 'scaling':
+                if not len(t) == 4:
+                    raise ValueError("Error creating flow from transforms: Not enough transform values passed for "
+                                     "'scaling' - expected 3, got {}".format(len(t) - 1))
+            else:
+                raise ValueError("Error creating flow from transforms: Transform '{}' not recognised".format(t[0]))
+            if not all(isinstance(item, (float, int)) for item in t[1:]):
+                raise ValueError("Error creating flow from transforms: "
+                                 "Transform values for '{}' need to be integers or floats".format(t[0]))
 
         # Process for flow reference 's' is straightforward: get the transformation matrix for each given transform in
         #   the transform_list, and get the final transformation matrix by multiplying the transformation matrices for

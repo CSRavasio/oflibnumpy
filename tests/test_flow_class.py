@@ -107,6 +107,26 @@ class TestFlow(unittest.TestCase):
 
     def test_from_transforms(self):
         dims = [200, 300]
+        # Invalid transform values
+        transforms = 'test'
+        with self.assertRaises(TypeError):
+            Flow.from_transforms(transforms, dims)
+        transforms = ['test']
+        with self.assertRaises(TypeError):
+            Flow.from_transforms(transforms, dims)
+        transforms = [['translation', 20, 10], ['rotation']]
+        with self.assertRaises(ValueError):
+            Flow.from_transforms(transforms, dims)
+        transforms = [['translation', 20, 10], ['rotation', 1]]
+        with self.assertRaises(ValueError):
+            Flow.from_transforms(transforms, dims)
+        transforms = [['translation', 20, 10], ['rotation', 1, 'test', 10]]
+        with self.assertRaises(ValueError):
+            Flow.from_transforms(transforms, dims)
+        transforms = [['translation', 20, 10], ['test', 1, 1, 10]]
+        with self.assertRaises(ValueError):
+            Flow.from_transforms(transforms, dims)
+
         transforms = [['rotation', 10, 50, -30]]
         flow = Flow.from_transforms(transforms, dims)
         self.assertIsNone(np.testing.assert_array_almost_equal(flow.vecs[50, 10], [0, 0]))
