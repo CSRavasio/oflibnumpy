@@ -99,3 +99,41 @@ def matrix_from_transform(transform: str, values: list) -> np.ndarray:
         # NOTE: diff from usual signs in rot matrix [[+, -], [+, +]] results from 'y' axis pointing down instead of up
         matrix = translation_matrix_2 @ matrix @ translation_matrix_1
     return matrix
+
+
+def bilinear_interpolation(data, pts):
+    """Fast bilinear interpolation for 2D data
+
+    Copied and adjusted from: https://stackoverflow.com/a/12729229
+
+    :param data: Numpy array of data points to interpolate between, shape H-W-C
+    :param pts: Numpy array of points to interpolate at, shape N-2, where '2' is in format [ver, hor]
+    :return: Numpy array of interpolation results, shape N-C
+    """
+
+    ver, hor = pts[:, 0], pts[:, 1]
+    h, w = data.shape[:2]
+    if any(~((0 <= ver) & (ver <= h - 1)) | ~((0 <= hor) & (hor <= w - 1))):
+        raise IndexError("Some points are outside of the data area.")
+    ver0, hor0 = np.floor(ver).astype(int), np.floor(hor).astype(int)
+    ver1, hor1 = ver0 + 1, hor0 + 1
+
+    ver0_clipped, hor0_clipped = np.clip(ver0, 0, h - 1), np.clip(hor0, 0, w - 1)
+    ver1_clipped, hor1_clipped = np.clip(ver1, 0, h - 1), np.clip(hor1, 0, w - 1)
+
+    w_a = (ver1_clipped - ver) * (hor1_clipped - hor)
+    w_b = (ver1_clipped - ver) * (hor - hor0_clipped)
+    w_c = (ver - ver0_clipped) * (hor1_clipped - hor)
+    w_d = (ver - ver0_clipped) * (hor - hor0_clipped)
+
+    data_a = data[ver0_clipped, hor0_clipped]
+    data_b = data[ver1_clipped, hor0_clipped]
+    data_c = data[ver0_clipped, hor1_clipped]
+    data_d = data[ver1_clipped, hor1_clipped]
+
+    result = w_a[..., np.newaxis] * data_a + \
+        w_b[..., np.newaxis] * data_b + \
+        w_c[..., np.newaxis] * data_c + \
+        w_d[..., np.newaxis] * data_d
+
+    return result
