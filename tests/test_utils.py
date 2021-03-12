@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from flow_lib.utils import get_valid_ref, matrix_from_transform, flow_from_matrix
+from flow_lib.utils import get_valid_ref, get_valid_padding, matrix_from_transform, flow_from_matrix
 import math
 
 
@@ -15,7 +15,14 @@ class TestValidityChecks(unittest.TestCase):
             get_valid_ref('test')
 
     def test_get_valid_padding(self):
-
+        with self.assertRaises(TypeError):
+            get_valid_padding(100)
+        with self.assertRaises(ValueError):
+            get_valid_padding([10, 20, 30, 40, 50])
+        with self.assertRaises(ValueError):
+            get_valid_padding([10., 20, 30, 40])
+        with self.assertRaises(ValueError):
+            get_valid_padding([-10, 10, 10, 10])
 
 
 class TestMatrixFromTransform(unittest.TestCase):
