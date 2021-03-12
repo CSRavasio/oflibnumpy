@@ -1,7 +1,21 @@
 import unittest
 import numpy as np
-from flow_lib.utils import matrix_from_transform, flow_from_matrix
+from flow_lib.utils import get_valid_ref, matrix_from_transform, flow_from_matrix
 import math
+
+
+class TestValidityChecks(unittest.TestCase):
+    def test_get_valid_ref(self):
+        self.assertEqual(get_valid_ref(None), 't')
+        self.assertEqual(get_valid_ref('s'), 's')
+        self.assertEqual(get_valid_ref('t'), 't')
+        with self.assertRaises(TypeError):
+            get_valid_ref(0)
+        with self.assertRaises(ValueError):
+            get_valid_ref('test')
+
+    def test_get_valid_padding(self):
+
 
 
 class TestMatrixFromTransform(unittest.TestCase):
