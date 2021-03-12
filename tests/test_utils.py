@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from flow_lib.utils import get_valid_ref, get_valid_padding, matrix_from_transform, flow_from_matrix
+from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, matrix_from_transform, flow_from_matrix
 import math
 
 
@@ -23,6 +23,16 @@ class TestValidityChecks(unittest.TestCase):
             get_valid_padding([10., 20, 30, 40])
         with self.assertRaises(ValueError):
             get_valid_padding([-10, 10, 10, 10])
+
+    def test_validate_shape(self):
+        with self.assertRaises(TypeError):
+            validate_shape('test')
+        with self.assertRaises(ValueError):
+            validate_shape([10, 10, 10])
+        with self.assertRaises(ValueError):
+            validate_shape([-1, 10])
+        with self.assertRaises(ValueError):
+            validate_shape([10., 10])
 
 
 class TestMatrixFromTransform(unittest.TestCase):
@@ -169,16 +179,6 @@ class TestFlowFromMatrix(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose(flow[30, 70], [50, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[80, 20], [0, 50]))
         self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
-
-    def test_invalid_input(self):
-        with self.assertRaises(TypeError):
-            flow_from_matrix(np.eye(3), 'test')
-        with self.assertRaises(ValueError):
-            flow_from_matrix(np.eye(3), [10, 10, 10])
-        with self.assertRaises(ValueError):
-            flow_from_matrix(np.eye(3), [-1, 10])
-        with self.assertRaises(ValueError):
-            flow_from_matrix(np.eye(3), [10., 10])
 
 
 if __name__ == '__main__':
