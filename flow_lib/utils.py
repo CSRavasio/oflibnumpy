@@ -19,7 +19,7 @@ def get_valid_ref(ref: Any) -> str:
     return ref
 
 
-def get_valid_padding(padding: list, error_string: str = None) -> list:
+def get_valid_padding(padding: Any, error_string: str = None) -> list:
     """Checks padding input for validity
 
     :param padding: Padding to be checked, should be a list of length 4 of positive integers
