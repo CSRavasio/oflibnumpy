@@ -39,30 +39,30 @@ def get_valid_padding(padding: list, error_string: str = None) -> list:
     return padding
 
 
-def flow_from_matrix(matrix: np.ndarray, dims: Union[list, tuple]) -> np.ndarray:
+def flow_from_matrix(matrix: np.ndarray, shape: Union[list, tuple]) -> np.ndarray:
     """Flow calculated from a transformation matrix
 
     NOTE: This corresponds to a flow with reference 's': based on meshgrid in image 1, warped to image 2, flow vectors
       at each meshgrid point in image 1 corresponding to (warped end points in image 2 - start points in image 1)
 
     :param matrix: Transformation matrix, numpy array 3-3
-    :param dims: List or tuple [H, W] containing required size of the flow field
+    :param shape: List or tuple [H, W] containing required size of the flow field
     :return: Flow field according to cv2 standards, ndarray H-W-2
     """
 
     # Check if inputs valid
-    if not isinstance(dims, (list, tuple)):
+    if not isinstance(shape, (list, tuple)):
         raise TypeError("Error creating flow from matrix: Dims need to be a list or a tuple")
-    if len(dims) != 2:
+    if len(shape) != 2:
         raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of length 2")
-    if any((item <= 0 or not isinstance(item, int)) for item in dims):
+    if any((item <= 0 or not isinstance(item, int)) for item in shape):
         raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of integers above zero")
     if not isinstance(matrix, np.ndarray):
         raise TypeError("Error creating flow from matrix: Matrix needs to be a numpy array")
     if matrix.shape != (3, 3):
         raise ValueError("Error creating flow from matrix: Matrix needs to be a numpy array of shape (3, 3)")
     # Make default vector field and populate it with homogeneous coordinates
-    h, w = dims
+    h, w = shape
     default_vec_hom = np.zeros((h, w, 3), 'f')
     default_vec_hom[..., 0] += np.arange(w)
     default_vec_hom[..., 1] += np.arange(h)[:, np.newaxis]

@@ -92,62 +92,62 @@ class TestFlowFromMatrix(unittest.TestCase):
     # All numerical values in calculated manually and independently
     def test_identity(self):
         # No transformation, equals passing identy matrix, to 200 by 300 flow field
-        dims = [200, 300]
+        shape = [200, 300]
         matrix = np.eye(3)
-        flow = flow_from_matrix(matrix, dims)
+        flow = flow_from_matrix(matrix, shape)
         self.assertIsNone(np.testing.assert_equal(flow, 0))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
     def test_translation(self):
         # Translation of 10 horizontally, 20 vertically, to 200 by 300 flow field
-        dims = [200, 300]
+        shape = [200, 300]
         matrix = np.array([[1, 0, 10], [0, 1, 20], [0, 0, 1]])
-        flow = flow_from_matrix(matrix, dims)
+        flow = flow_from_matrix(matrix, shape)
         self.assertIsNone(np.testing.assert_equal(flow[..., 0], 10))
         self.assertIsNone(np.testing.assert_equal(flow[..., 1], 20))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
     def test_rotation(self):
         # Rotation of 30 degrees counter-clockwise, to 200 by 300 flow field
-        dims = [200, 300]
+        shape = [200, 300]
         matrix = np.array([[math.sqrt(3) / 2, .5, 0], [-.5, math.sqrt(3) / 2, 0], [0, 0, 1]])
-        flow = flow_from_matrix(matrix, dims)
+        flow = flow_from_matrix(matrix, shape)
         self.assertIsNone(np.testing.assert_equal(flow[0, 0], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[0, 299], [-40.0584042685, -149.5]))
         self.assertIsNone(np.testing.assert_allclose(flow[199, 0], [99.5, -26.6609446469]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
     def test_rotation_with_shift(self):
         # Rotation of 30 degrees clockwise around point [10, 50] (hor, ver), to 200 by 300 flow field
-        dims = [200, 300]
+        shape = [200, 300]
         matrix = np.array([[math.sqrt(3) / 2, -.5, 26.3397459622],
                            [.5, math.sqrt(3) / 2, 1.69872981078],
                            [0, 0, 1]])
-        flow = flow_from_matrix(matrix, dims)
+        flow = flow_from_matrix(matrix, shape)
         self.assertIsNone(np.testing.assert_array_almost_equal(flow[50, 10], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[50, 299], [-38.7186583063, 144.5]))
         self.assertIsNone(np.testing.assert_allclose(flow[199, 10], [-74.5, -19.9622148361]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
     def test_scaling(self):
         # Scaling factor 0.8, to 200 by 300 flow field
-        dims = [200, 300]
+        shape = [200, 300]
         matrix = np.array([[.8, 0, 0], [0, .8, 0], [0, 0, 1]])
-        flow = flow_from_matrix(matrix, dims)
+        flow = flow_from_matrix(matrix, shape)
         self.assertIsNone(np.testing.assert_equal(flow[0, 0], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[0, 100], [-20, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[100, 0], [0, -20]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
     def test_scaling_with_shift(self):
         # Scaling factor 2 around point [20, 30] (hor, ver), to 200 by 300 flow field
-        dims = [200, 300]
+        shape = [200, 300]
         matrix = np.array([[2, 0, -20], [0, 2, -30], [0, 0, 1]])
-        flow = flow_from_matrix(matrix, dims)
+        flow = flow_from_matrix(matrix, shape)
         self.assertIsNone(np.testing.assert_array_almost_equal(flow[30, 20], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[30, 70], [50, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[80, 20], [0, 50]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
     def test_invalid_input(self):
         with self.assertRaises(TypeError):

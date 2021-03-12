@@ -83,12 +83,12 @@ class TestFlow(unittest.TestCase):
             Flow(vectors, mask=mask)
 
     def test_zero(self):
-        dims = [200, 300]
-        zero_flow = Flow.zero(dims)
-        self.assertIsNone(np.testing.assert_equal(zero_flow.shape[:2], dims))
+        shape = [200, 300]
+        zero_flow = Flow.zero(shape)
+        self.assertIsNone(np.testing.assert_equal(zero_flow.shape[:2], shape))
         self.assertIsNone(np.testing.assert_equal(zero_flow.vecs, 0))
         self.assertIs(zero_flow.ref, 't')
-        zero_flow = Flow.zero(dims, 's')
+        zero_flow = Flow.zero(shape, 's')
         self.assertIs(zero_flow.ref, 's')
 
     def test_from_matrix(self):
@@ -98,49 +98,49 @@ class TestFlow(unittest.TestCase):
         matrix = np.array([[math.sqrt(3) / 2, -.5, 26.3397459622],
                            [.5, math.sqrt(3) / 2, 1.69872981078],
                            [0, 0, 1]])
-        dims = [200, 300]
-        flow = Flow.from_matrix(matrix, dims, 't')
+        shape = [200, 300]
+        flow = Flow.from_matrix(matrix, shape, 't')
         self.assertIsNone(np.testing.assert_array_almost_equal(flow.vecs[50, 10], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[50, 299], [38.7186583063, 144.5]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[199, 10], [-74.5, 19.9622148361]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
     def test_from_transforms(self):
-        dims = [200, 300]
+        shape = [200, 300]
         # Invalid transform values
         transforms = 'test'
         with self.assertRaises(TypeError):
-            Flow.from_transforms(transforms, dims)
+            Flow.from_transforms(transforms, shape)
         transforms = ['test']
         with self.assertRaises(TypeError):
-            Flow.from_transforms(transforms, dims)
+            Flow.from_transforms(transforms, shape)
         transforms = [['translation', 20, 10], ['rotation']]
         with self.assertRaises(ValueError):
-            Flow.from_transforms(transforms, dims)
+            Flow.from_transforms(transforms, shape)
         transforms = [['translation', 20, 10], ['rotation', 1]]
         with self.assertRaises(ValueError):
-            Flow.from_transforms(transforms, dims)
+            Flow.from_transforms(transforms, shape)
         transforms = [['translation', 20, 10], ['rotation', 1, 'test', 10]]
         with self.assertRaises(ValueError):
-            Flow.from_transforms(transforms, dims)
+            Flow.from_transforms(transforms, shape)
         transforms = [['translation', 20, 10], ['test', 1, 1, 10]]
         with self.assertRaises(ValueError):
-            Flow.from_transforms(transforms, dims)
+            Flow.from_transforms(transforms, shape)
 
         transforms = [['rotation', 10, 50, -30]]
-        flow = Flow.from_transforms(transforms, dims)
+        flow = Flow.from_transforms(transforms, shape)
         self.assertIsNone(np.testing.assert_array_almost_equal(flow.vecs[50, 10], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[50, 299], [38.7186583063, 144.5]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[199, 10], [-74.5, 19.9622148361]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
         self.assertEqual(flow.ref, 't')
 
         transforms = [['scaling', 20, 30, 2]]
-        flow = Flow.from_transforms(transforms, dims, 's')
+        flow = Flow.from_transforms(transforms, shape, 's')
         self.assertIsNone(np.testing.assert_array_almost_equal(flow.vecs[30, 20], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[30, 70], [50, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[80, 20], [0, 50]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
         self.assertEqual(flow.ref, 's')
 
         transforms = [
@@ -148,11 +148,11 @@ class TestFlow(unittest.TestCase):
             ['scaling', 0, 0, 2],
             ['translation', 20, 30]
         ]
-        flow = Flow.from_transforms(transforms, dims, 's')
+        flow = Flow.from_transforms(transforms, shape, 's')
         self.assertIsNone(np.testing.assert_array_almost_equal(flow.vecs[30, 20], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[30, 70], [50, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[80, 20], [0, 50]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
         self.assertEqual(flow.ref, 's')
 
         transforms = [
@@ -160,11 +160,11 @@ class TestFlow(unittest.TestCase):
             ['rotation', 0, 0, -30],
             ['translation', 10, 50]
         ]
-        flow = Flow.from_transforms(transforms, dims, 't')
+        flow = Flow.from_transforms(transforms, shape, 't')
         self.assertIsNone(np.testing.assert_array_almost_equal(flow.vecs[50, 10], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[50, 299], [38.7186583063, 144.5]))
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[199, 10], [-74.5, 19.9622148361]))
-        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], dims))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
         self.assertEqual(flow.ref, 't')
 
     def test_getitem(self):
@@ -367,18 +367,18 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose((-flow1).vecs, -vecs1))
 
     def test_pad(self):
-        dims = [100, 80]
+        shape = [100, 80]
         for ref in ['t', 's']:
-            flow = Flow.zero(dims, ref, np.ones(dims, 'bool'))
+            flow = Flow.zero(shape, ref, np.ones(shape, 'bool'))
             flow = flow.pad([10, 20, 30, 40])
-            self.assertIsNone(np.testing.assert_equal(flow.shape[:2], [dims[0] + 10 + 20, dims[1] + 30 + 40]))
+            self.assertIsNone(np.testing.assert_equal(flow.shape[:2], [shape[0] + 10 + 20, shape[1] + 30 + 40]))
             self.assertIsNone(np.testing.assert_equal(flow.vecs, 0))
             self.assertIsNone(np.testing.assert_equal(flow[10:-20, 30:-40].mask, 1))
             flow.mask[10:-20, 30:-40] = 0
             self.assertIsNone(np.testing.assert_equal(flow.mask, 0))
             self.assertIs(flow.ref, ref)
         # Non-valid padding values
-        flow = Flow.zero(dims, ref, np.ones(dims, 'bool'))
+        flow = Flow.zero(shape, ref, np.ones(shape, 'bool'))
         with self.assertRaises(TypeError):
             flow.pad(100)
         with self.assertRaises(ValueError):
@@ -405,9 +405,9 @@ class TestFlow(unittest.TestCase):
         ref = 't'
         flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], ref)
         warped_img_desired = apply_flow(flow.vecs, img, ref)
-        dims = [img.shape[0] - 90, img.shape[1] - 110]
+        shape = [img.shape[0] - 90, img.shape[1] - 110]
         padding = [50, 40, 30, 80]
-        cut_flow = Flow.from_transforms([['rotation', 0, 0, 30]], dims, ref)
+        cut_flow = Flow.from_transforms([['rotation', 0, 0, 30]], shape, ref)
         # ... not cutting (target numpy array)
         warped_img_actual = cut_flow.apply(img, padding=padding, cut=False)
         self.assertIsNone(np.testing.assert_equal(warped_img_actual[padding[0]:-padding[1], padding[2]:-padding[3]],

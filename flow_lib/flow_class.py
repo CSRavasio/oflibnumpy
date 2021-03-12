@@ -77,7 +77,7 @@ class Flow(object):
     def mask(self, input_mask: np.ndarray = None):
         """Sets flow mask, after checking validity
 
-        :param input_mask: bool numpy array of size H-W (self.shape), matching flow vectors with size H-W-2
+        :param input_mask: bool numpy array of shape H-W (self.shape), matching flow vectors with shape H-W-2
         """
 
         if input_mask is None:
@@ -103,30 +103,30 @@ class Flow(object):
         return self.vecs.shape[:2]
 
     @classmethod
-    def zero(cls, size: Union[list, tuple], ref: str = None, mask: np.ndarray = None) -> Flow:
+    def zero(cls, shape: Union[list, tuple], ref: str = None, mask: np.ndarray = None) -> Flow:
         """Flow object constructor, zero everywhere
 
-        :param size: List or tuple [H, W] of flow field size
+        :param shape: List or tuple [H, W] of flow field shape
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
         :return: Flow object
         """
 
-        return cls(np.zeros((size[0], size[1], 2)), ref, mask)
+        return cls(np.zeros((shape[0], shape[1], 2)), ref, mask)
 
     @classmethod
     def from_matrix(
             cls,
             matrix: np.ndarray,
-            size: Union[list, tuple],
+            shape: Union[list, tuple],
             ref: str = None,
             mask: np.ndarray = None
     ) -> Flow:
         """Flow object constructor, based on transformation matrix input
 
         :param matrix: Transformation matrix to be turned into a flow field, as Numpy array 3-3
-        :param size: List or tuple [H, W] of flow field size
+        :param shape: List or tuple [H, W] of flow field shape
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
@@ -137,20 +137,20 @@ class Flow(object):
         if ref == 's':
             # Coordinates correspond to the meshgrid of the original ('s'ource) image. They are transformed according
             # to the transformation matrix. The start points are subtracted from the end points to yield flow vectors.
-            flow_vectors = flow_from_matrix(matrix, size)
+            flow_vectors = flow_from_matrix(matrix, shape)
             return cls(flow_vectors, ref, mask)
         elif ref == 't':
             # Coordinates correspond to the meshgrid of the warped ('t'arget) image. They are inversely transformed
             # according to the transformation matrix. The end points, which correspond to the flow origin for the
             # meshgrid in the warped image, are subtracted from the start points to yield flow vectors.
-            flow_vectors = -flow_from_matrix(np.linalg.pinv(matrix), size)
+            flow_vectors = -flow_from_matrix(np.linalg.pinv(matrix), shape)
             return cls(flow_vectors, ref, mask)
 
     @classmethod
     def from_transforms(
             cls,
             transform_list: list,
-            size: Union[list, tuple],
+            shape: Union[list, tuple],
             ref: str = None,
             mask: np.ndarray = None
     ) -> Flow:
@@ -161,7 +161,7 @@ class Flow(object):
                 ['translation', horizontal shift in px, vertical shift in px]
                 ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
                 ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
-        :param size: List or tuple [H, W] of flow field size
+        :param shape: List or tuple [H, W] of flow field shape
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
@@ -227,7 +227,7 @@ class Flow(object):
         matrix = np.identity(3)
         for transform in reversed(transform_list):
             matrix = matrix @ matrix_from_transform(transform[0], transform[1:])
-        return cls.from_matrix(matrix, size, ref, mask)
+        return cls.from_matrix(matrix, shape, ref, mask)
 
     def __str__(self):
         info_string = "Flow object, reference {}, shape {}*{}; ".format(self.ref, *self.shape)
@@ -268,7 +268,7 @@ class Flow(object):
         if not isinstance(other, Flow):
             raise TypeError("Error adding to flow: Addend is not a flow object")
         if not self.shape == other.shape:
-            raise ValueError("Error adding to flow: Augend and addend are not the same size")
+            raise ValueError("Error adding to flow: Augend and addend are not the same shape")
         vecs = self.vecs + other.vecs
         mask = np.logical_and(self.mask, other.mask)
         return Flow(vecs, self.ref, mask)
@@ -289,7 +289,7 @@ class Flow(object):
         if not isinstance(other, Flow):
             raise TypeError("Error subtracting from flow: Subtrahend is not a flow object")
         if not self.shape == other.shape:
-            raise ValueError("Error subtracting from flow: Minuend and subtrahend are not the same size")
+            raise ValueError("Error subtracting from flow: Minuend and subtrahend are not the same shape")
         vecs = self.vecs - other.vecs
         mask = np.logical_and(self.mask, other.mask)
         return Flow(vecs, self.ref, mask)
@@ -413,7 +413,7 @@ class Flow(object):
 
         :param target: Numpy array or flow object the flow should be applied to
         :param padding: If flow applied only covers part of the target; [top, bot, left, right]; default None
-        :param cut: If padding is given, whether the input is returned as cut to size of flow; default True
+        :param cut: If padding is given, whether the input is returned as cut to shape of flow; default True
         :return: An object of the same type as the input (numpy array, or flow)
         """
 
@@ -441,7 +441,7 @@ class Flow(object):
             padding = get_valid_padding(padding, "Error applying flow: ")
             if self.shape[0] + np.sum(padding[:2]) != target.shape[0] or \
                     self.shape[1] + np.sum(padding[2:]) != target.shape[1]:
-                raise ValueError("Error applying flow: Padding values do not match flow and target size difference")
+                raise ValueError("Error applying flow: Padding values do not match flow and target shape difference")
             flow = self.pad(padding)
             warped_t = apply_flow(flow.vecs, t, flow.ref, flow.mask)
 
@@ -515,14 +515,14 @@ class Flow(object):
             show_mask_borders: bool = None,
             range_max: float = None
     ) -> np.ndarray:
-        """Returns a flow visualisation as a numpy array containing an rgb / bgr / hsv img of the same size as the flow
+        """Returns a flow visualisation as a numpy array containing an rgb / bgr / hsv img of the same shape as the flow
 
         :param mode: Output mode, options: 'rgb', 'bgr', 'hsv'
         :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
         :param show_mask_borders: Boolean determining whether the flow mask border is visualised, defaults to False
         :param range_max: Maximum vector magnitude expected, corresponding to the HSV maximum Value of 255 when scaling
             the flow magnitudes. Defaults to the 99th percentile of the current flow field
-        :return: Numpy array containing the flow visualisation as an rgb / bgr / hsv image of the same size as the flow
+        :return: Numpy array containing the flow visualisation as an rgb / bgr / hsv image of the same shape as the flow
         """
 
         show_mask = False if show_mask is None else show_mask
@@ -611,7 +611,7 @@ class Flow(object):
         :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
         :param show_mask_borders: Boolean determining whether the flow mask border is visualised, defaults to False
         :param colour: Tuple of the flow arrow colour, defaults to hue based on flow direction as in visualise()
-        :return: Numpy array of the flow visualised as arrowed lines, of the same size as the flow, in BGR
+        :return: Numpy array of the flow visualised as arrowed lines, of the same shape as the flow, in BGR
         """
 
         # Validate arguments
