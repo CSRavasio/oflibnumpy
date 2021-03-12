@@ -2,7 +2,9 @@ from __future__ import annotations
 from typing import Union
 import cv2
 import numpy as np
-from .utils import get_valid_ref, get_valid_padding, validate_shape, flow_from_matrix, matrix_from_transform
+from scipy.interpolate import griddata
+from .utils import get_valid_ref, get_valid_padding, validate_shape, flow_from_matrix, matrix_from_transform, \
+    bilinear_interpolation
 from .flow_operations import apply_flow
 
 
@@ -520,6 +522,86 @@ class Flow(object):
                 return Flow(-self.vecs, 's', self.mask)
             elif ref == 't':
                 return self.invert('s').switch_ref()
+
+    def track(
+            self,
+            pts: np.ndarray,
+            int_out: bool = None,
+            get_tracked: bool = None,
+            s_exact_mode: bool = None
+    ) -> np.ndarray:
+        """Warps input points according to the flow field, can be returned as integers if required
+
+        :param pts: Numpy array of points shape N-2, 1st coordinate vertical (height), 2nd coordinate horizontal (width)
+        :param int_out: Boolean determining whether output points are returned as rounded integers, defaults to False
+        :param get_tracked: Boolean determining whether a numpy array containing tracked points is returned. Array will
+            be True for points inside the flow area, False if outside. Points ending up outside the flow area means
+            the points have been 'lost' and can no longer be tracked.
+        :param s_exact_mode: Boolean determining whether interpolation will be done bilinearly if the flow has reference
+            's', using bilinear_interpolation. Unless a very large number of points is tracked, this is around 2 orders
+            of magnitude faster than using s_exact_mode = True, which will use scipy.interpolate.griddata.
+            Defaults to False
+        :return: Numpy array of warped ('tracked') points
+        """
+
+        # Validate inputs
+        if not isinstance(pts, np.ndarray):
+            raise TypeError("Error tracking points: Pts needs to be a numpy array")
+        if pts.ndim != 2:
+            raise ValueError("Error tracking points: Pts needs to have shape N-2")
+        if pts.shape[1] != 2:
+            raise ValueError("Error tracking points: Pts needs to have shape N-2")
+        int_out = False if int_out is None else int_out
+        get_tracked = False if get_tracked is None else get_tracked
+        s_exact_mode = False if s_exact_mode is None else s_exact_mode
+        if not isinstance(int_out, bool):
+            raise TypeError("Error tracking points: Int_out needs to be a boolean")
+        if not isinstance(get_tracked, bool):
+            raise TypeError("Error tracking points: Get_tracked needs to be a boolean")
+        if not isinstance(s_exact_mode, bool):
+            raise TypeError("Error tracking points: S_exact_mode needs to be a boolean")
+
+        pts = pts.astype('f')
+        warped_pts, nan_vals = None, None
+        if np.all(self.vecs == 0):
+            warped_pts = pts
+        else:
+            if self.ref == 's':
+                if np.issubdtype(pts.dtype, np.integer):
+                    flow_vecs = self.vecs[pts[:, 0], pts[:, 1], ::-1]
+                elif np.issubdtype(pts.dtype, float):
+                    # Using bilinear_interpolation here is not as accurate as using griddata(), but up to two orders of
+                    # magnitude faster. Usually, points being tracked will have to be rounded at some point anyway,
+                    # which means errors e.g. in the order of e-2 (much below 1 pixel) will not have large consequences
+                    if s_exact_mode:
+                        x, y = np.mgrid[:self.shape[0], :self.shape[1]]
+                        grid = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
+                        flow_flat = np.reshape(self.vecs[..., ::-1], (-1, 2))
+                        flow_vecs = griddata(grid, flow_flat, (pts[:, 0], pts[:, 1]), method='linear')
+                    else:
+                        flow_vecs = bilinear_interpolation(self.vecs[..., ::-1], pts)
+                else:
+                    raise TypeError("Error tracking points: Pts numpy array needs to have a float or int dtype")
+                warped_pts = pts + flow_vecs
+            if self.ref == 't':
+                x, y = np.mgrid[:self.shape[0], :self.shape[1]]
+                grid = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
+                flow_flat = np.reshape(self.vecs[..., ::-1], (-1, 2))
+                origin_points = grid - flow_flat
+                flow_vecs = griddata(origin_points, flow_flat, (pts[:, 0], pts[:, 1]), method='linear')
+                warped_pts = pts + flow_vecs
+            nan_vals = np.isnan(warped_pts)
+            nan_vals = nan_vals[:, 0] | nan_vals[:, 1]
+            warped_pts[nan_vals] = 0
+        if int_out:
+            warped_pts = np.round(warped_pts).astype('i')
+        if get_tracked:
+            tracked_pts = (warped_pts[..., 0] >= 0) & (warped_pts[..., 0] <= self.shape[0] - 1) &\
+                          (warped_pts[..., 1] >= 0) & (warped_pts[..., 1] <= self.shape[1] - 1) & \
+                          ~nan_vals
+            return warped_pts, tracked_pts
+        else:
+            return warped_pts
 
     def visualise(
             self,
