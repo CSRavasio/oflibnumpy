@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
-from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, matrix_from_transform, flow_from_matrix
+from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, matrix_from_transform, flow_from_matrix, \
+    bilinear_interpolation
 import math
 
 
@@ -179,6 +180,36 @@ class TestFlowFromMatrix(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose(flow[30, 70], [50, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[80, 20], [0, 50]))
         self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
+
+
+class TestBilinearInterpolation(unittest.TestCase):
+    def test_int_on_shift(self):
+        flow = flow_from_matrix(matrix_from_transform('translation', [10, 20]), (512, 512))
+        pts = np.array([[200, 300], [1, 2]])
+        desired_result = np.array([[20, 10], [20, 10]])
+        actual_result = bilinear_interpolation(flow[..., ::-1], pts)
+        self.assertIsNone(np.testing.assert_equal(actual_result, desired_result))
+
+    def test_float_on_rot(self):
+        flow = flow_from_matrix(matrix_from_transform('rotation', [0, 0, 30]), (512, 512))
+        pts = np.array([[20.5, 10.5], [8.3, 7.2], [120.4, 160.2]])
+        desired_pts = [
+            [12.5035207776, 19.343266740],
+            [3.58801085141, 10.385382907],
+            [24.1694586156, 198.93726969]
+        ]
+        desired_result = np.array(desired_pts) - pts
+        actual_result = bilinear_interpolation(flow[..., ::-1], pts)
+        self.assertIsNone(np.testing.assert_allclose(actual_result, desired_result,
+                                                     atol=1e-1, rtol=1e-2))
+        # High tolerance needed as exact result is compared to an interpolated one
+
+    def test_invalid_input(self):
+        flow = flow_from_matrix(matrix_from_transform('rotation', [0, 0, 30]), (512, 512))
+        with self.assertRaises(IndexError):
+            bilinear_interpolation(flow, np.array([[-1, 0], [10, 10]]))
+        with self.assertRaises(IndexError):
+            bilinear_interpolation(flow, np.array([[0, 0], [511.01, 10]]))
 
 
 if __name__ == '__main__':
