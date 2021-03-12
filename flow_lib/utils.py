@@ -1,8 +1,8 @@
 import numpy as np
-from typing import Union
+from typing import Union, Any
 
 
-def get_valid_ref(ref: str = None) -> str:
+def get_valid_ref(ref: Any) -> str:
     """Checks flow reference input for validity
 
     :param ref: Flow reference to be checked
