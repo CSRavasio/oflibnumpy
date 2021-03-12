@@ -39,6 +39,15 @@ def get_valid_padding(padding: Any, error_string: str = None) -> list:
     return padding
 
 
+def validate_shape(shape: Any) -> Union[tuple, list]:
+    if not isinstance(shape, (list, tuple)):
+        raise TypeError("Error creating flow from matrix: Dims need to be a list or a tuple")
+    if len(shape) != 2:
+        raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of length 2")
+    if any((item <= 0 or not isinstance(item, int)) for item in shape):
+        raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of integers above zero")
+
+
 def flow_from_matrix(matrix: np.ndarray, shape: Union[list, tuple]) -> np.ndarray:
     """Flow calculated from a transformation matrix
 
@@ -50,13 +59,6 @@ def flow_from_matrix(matrix: np.ndarray, shape: Union[list, tuple]) -> np.ndarra
     :return: Flow field according to cv2 standards, ndarray H-W-2
     """
 
-    # Check if inputs valid
-    if not isinstance(shape, (list, tuple)):
-        raise TypeError("Error creating flow from matrix: Dims need to be a list or a tuple")
-    if len(shape) != 2:
-        raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of length 2")
-    if any((item <= 0 or not isinstance(item, int)) for item in shape):
-        raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of integers above zero")
     # Make default vector field and populate it with homogeneous coordinates
     h, w = shape
     default_vec_hom = np.zeros((h, w, 3), 'f')
