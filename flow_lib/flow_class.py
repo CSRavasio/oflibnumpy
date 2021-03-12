@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Union
 import cv2
 import numpy as np
-from .utils import get_valid_ref, get_valid_padding, flow_from_matrix, matrix_from_transform
+from .utils import get_valid_ref, get_valid_padding, validate_shape, flow_from_matrix, matrix_from_transform
 from .flow_operations import apply_flow
 
 
@@ -113,6 +113,8 @@ class Flow(object):
         :return: Flow object
         """
 
+        # Check shape validity
+        validate_shape(shape)
         return cls(np.zeros((shape[0], shape[1], 2)), ref, mask)
 
     @classmethod
@@ -133,7 +135,9 @@ class Flow(object):
         :return: Flow object
         """
 
-        # Check input validity
+        # Check shape validity
+        validate_shape(shape)
+        # Check matrix validity
         if not isinstance(matrix, np.ndarray):
             raise TypeError("Error creating flow from matrix: Matrix needs to be a numpy array")
         if matrix.shape != (3, 3):
@@ -174,6 +178,9 @@ class Flow(object):
         :return: Flow object
         """
 
+        # Check shape validity
+        validate_shape(shape)
+        # Check transform_list validity
         if not isinstance(transform_list, list):
             raise TypeError("Error creating flow from transforms: Transform_list needs to be a list")
         if not all(isinstance(item, list) for item in transform_list):
