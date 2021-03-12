@@ -105,6 +105,12 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[199, 10], [-74.5, 19.9622148361]))
         self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
 
+        # Invalid input
+        with self.assertRaises(TypeError):
+            Flow.from_matrix('test', [10, 10])
+        with self.assertRaises(ValueError):
+            Flow.from_matrix(np.eye(4), [10, 10])
+
     def test_from_transforms(self):
         shape = [200, 300]
         # Invalid transform values

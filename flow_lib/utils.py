@@ -57,10 +57,6 @@ def flow_from_matrix(matrix: np.ndarray, shape: Union[list, tuple]) -> np.ndarra
         raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of length 2")
     if any((item <= 0 or not isinstance(item, int)) for item in shape):
         raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of integers above zero")
-    if not isinstance(matrix, np.ndarray):
-        raise TypeError("Error creating flow from matrix: Matrix needs to be a numpy array")
-    if matrix.shape != (3, 3):
-        raise ValueError("Error creating flow from matrix: Matrix needs to be a numpy array of shape (3, 3)")
     # Make default vector field and populate it with homogeneous coordinates
     h, w = shape
     default_vec_hom = np.zeros((h, w, 3), 'f')

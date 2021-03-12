@@ -133,6 +133,12 @@ class Flow(object):
         :return: Flow object
         """
 
+        # Check input validity
+        if not isinstance(matrix, np.ndarray):
+            raise TypeError("Error creating flow from matrix: Matrix needs to be a numpy array")
+        if matrix.shape != (3, 3):
+            raise ValueError("Error creating flow from matrix: Matrix needs to be a numpy array of shape (3, 3)")
+
         ref = get_valid_ref(ref)
         if ref == 's':
             # Coordinates correspond to the meshgrid of the original ('s'ource) image. They are transformed according
