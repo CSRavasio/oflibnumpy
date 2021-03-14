@@ -4,6 +4,7 @@ import cv2
 import math
 from flow_lib.flow_class import Flow
 from flow_lib.flow_operations import apply_flow
+from flow_lib.utils import matrix_from_transforms
 
 
 class TestFlow(unittest.TestCase):
@@ -561,6 +562,133 @@ class TestFlow(unittest.TestCase):
             f_s.track(pts, True, get_tracked='test')
         with self.assertRaises(TypeError):
             f_s.track(pts, True, True, s_exact_mode='test')
+
+    def test_matrix(self):
+        # Partial affine transform, test reconstruction with all methods
+        transforms = [
+            ['translation', 20, 10],
+            ['rotation', 200, 200, 30],
+            ['scaling', 100, 100, 1.1]
+        ]
+        matrix = matrix_from_transforms(transforms)
+        flow_s = Flow.from_matrix(matrix, (1000, 2000), 's')
+        flow_t = Flow.from_matrix(matrix, (1000, 2000), 't')
+        actual_matrix_s = flow_s.matrix(dof=4, method='ransac')
+        actual_matrix_t = flow_t.matrix(dof=4, method='ransac')
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_s, matrix))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_t, matrix))
+        actual_matrix_s = flow_s.matrix(dof=4, method='lmeds')
+        actual_matrix_t = flow_t.matrix(dof=4, method='lmeds')
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_s, matrix))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_t, matrix))
+        actual_matrix_s = flow_s.matrix(dof=6, method='ransac')
+        actual_matrix_t = flow_t.matrix(dof=6, method='ransac')
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_s, matrix))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_t, matrix))
+        actual_matrix_s = flow_s.matrix(dof=6, method='lmeds')
+        actual_matrix_t = flow_t.matrix(dof=6, method='lmeds')
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_s, matrix))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_t, matrix))
+        actual_matrix_s = flow_s.matrix(dof=8, method='lms')
+        actual_matrix_t = flow_t.matrix(dof=8, method='lms')
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_s, matrix, rtol=1e-8, atol=1e-8))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_t, matrix, rtol=1e-8, atol=1e-8))
+        actual_matrix_s = flow_s.matrix(dof=8, method='ransac')
+        actual_matrix_t = flow_t.matrix(dof=8, method='ransac')
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_s, matrix, rtol=1e-8, atol=1e-8))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_t, matrix, rtol=1e-8, atol=1e-8))
+        actual_matrix_s = flow_s.matrix(dof=8, method='lmeds')
+        actual_matrix_t = flow_t.matrix(dof=8, method='lmeds')
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_s, matrix, rtol=1e-8, atol=1e-8))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_t, matrix, rtol=1e-8, atol=1e-8))
+
+        # Random matrix, check to see how often an approximate 'reconstruction' fails, target is <5% of cases
+        failed = 0
+        for i in range(1000):
+            matrix = (np.random.rand(3, 3) - .5) * 20
+            matrix /= matrix[2, 2]
+            flow_s = Flow.from_matrix(matrix, (50, 100), 's')
+            try:
+                np.testing.assert_allclose(flow_s.matrix(8, 'lms'), matrix, atol=1e-2, rtol=1e-2)
+                np.testing.assert_allclose(flow_s.matrix(8, 'ransac'), matrix, atol=1e-2, rtol=1e-2)
+                np.testing.assert_allclose(flow_s.matrix(8, 'lmeds'), matrix, atol=1e-2, rtol=1e-2)
+            except AssertionError:
+                failed += 1
+        self.assertTrue(failed <= 50)
+
+        # Partial affine transform reconstruction in the presence of noise
+        transforms = [
+            ['translation', 20, 10],
+            ['rotation', 200, 200, 30],
+            ['scaling', 100, 100, 1.1]
+        ]
+        matrix = matrix_from_transforms(transforms)
+        flow_s = Flow.from_matrix(matrix, (1000, 2000), 's')
+        flow_noise = (np.random.rand(1000, 2000, 2) - .5) * 5
+        actual_matrix_4_ransac = (flow_s + flow_noise).matrix(4, 'ransac')
+        actual_matrix_4_lmeds = (flow_s + flow_noise).matrix(4, 'lmeds')
+        actual_matrix_6_ransac = (flow_s + flow_noise).matrix(6, 'ransac')
+        actual_matrix_6_lmeds = (flow_s + flow_noise).matrix(6, 'lmeds')
+        actual_matrix_8_lms = (flow_s + flow_noise).matrix(8, 'lms')
+        actual_matrix_8_ransac = (flow_s + flow_noise).matrix(8, 'ransac')
+        actual_matrix_8_lmeds = (flow_s + flow_noise).matrix(8, 'lmeds')
+        rtol = .05
+        atol = .05
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_4_ransac, matrix, rtol=rtol, atol=atol))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_4_lmeds, matrix, rtol=rtol, atol=atol))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_6_ransac, matrix, rtol=rtol, atol=atol))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_6_lmeds, matrix, rtol=rtol, atol=atol))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_8_lms, matrix, rtol=rtol, atol=atol))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_8_ransac, matrix, rtol=rtol, atol=atol))
+        self.assertIsNone(np.testing.assert_allclose(actual_matrix_8_lmeds, matrix, rtol=rtol, atol=atol))
+
+        # Masked vs non-masked matrix fitting
+        transforms = [
+            ['translation', 20, 10],
+            ['rotation', 200, 200, 30],
+            ['scaling', 100, 100, 1.1]
+        ]
+        matrix = matrix_from_transforms(transforms)
+        mask = np.zeros((1000, 2000), 'bool')
+        mask[:500, :500] = 1  # upper left corner will contain the real values
+        flow = Flow.from_matrix(matrix, (1000, 2000), 's', mask)
+        random_vecs = (np.random.rand(1000, 2000, 2) - 0.5) * 200
+        random_vecs[:500, :500] = flow.vecs[:500, :500]
+        flow.vecs = random_vecs
+        # Make sure this fails with the 'lmeds' method:
+        with self.assertRaises(AssertionError):
+            np.testing.assert_allclose(flow.matrix(4, 'lmeds', False), matrix)
+        # Test that it does NOT fail when the invalid flow elements are masked out
+        self.assertIsNone(np.testing.assert_allclose(flow.matrix(4, 'lmeds', True), matrix))
+
+        # Fallback of 'lms' to 'ransac' when dof == 4 or dof == 6
+        transforms = [
+            ['translation', 20, 10],
+            ['rotation', 200, 200, 30],
+            ['scaling', 100, 100, 1.1]
+        ]
+        matrix = matrix_from_transforms(transforms)
+        flow_s = Flow.from_matrix(matrix, (1000, 2000), 's')
+        actual_matrix_s_lms = flow_s.matrix(dof=4, method='lms')
+        actual_matrix_s_ransac = flow_s.matrix(dof=4, method='ransac')
+        self.assertIsNone(np.testing.assert_equal(actual_matrix_s_lms, actual_matrix_s_ransac))
+
+        # Invalid inputs
+        transforms = [
+            ['translation', 20, 10],
+            ['rotation', 200, 200, 30],
+            ['scaling', 100, 100, 1.1]
+        ]
+        matrix = matrix_from_transforms(transforms)
+        flow_s = Flow.from_matrix(matrix, (1000, 2000), 's')
+        with self.assertRaises(ValueError):
+            flow_s.matrix(dof='test')
+        with self.assertRaises(ValueError):
+            flow_s.matrix(dof=5)
+        with self.assertRaises(ValueError):
+            flow_s.matrix(dof=4, method='test')
+        with self.assertRaises(TypeError):
+            flow_s.matrix(dof=4, method='lms', masked='test')
 
     def test_visualise(self):
         # Correct values for the different modes
