@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, matrix_from_transform, flow_from_matrix, \
-    bilinear_interpolation
+from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, \
+    matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation
 import math
 
 
@@ -34,6 +34,19 @@ class TestValidityChecks(unittest.TestCase):
             validate_shape([-1, 10])
         with self.assertRaises(ValueError):
             validate_shape([10., 10])
+
+
+class TestMatrixFromTransforms(unittest.TestCase):
+    # All numerical values in desired_matrix calculated manually
+    def test_combined_transforms(self):
+        transforms = [
+            ['translation', -100, -100],
+            ['rotation', 0, 0, 30],
+            ['translation', 100, 100]
+        ]
+        actual_matrix = matrix_from_transforms(transforms)
+        desired_matrix = matrix_from_transform('rotation', [100, 100, 30])
+        self.assertIsNone(np.testing.assert_equal(actual_matrix, desired_matrix))
 
 
 class TestMatrixFromTransform(unittest.TestCase):
