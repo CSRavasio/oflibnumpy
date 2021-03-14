@@ -14,9 +14,8 @@ import unittest
 import numpy as np
 import cv2
 import math
+from flow_lib.utils import matrix_from_transforms, apply_flow
 from flow_lib.flow_class import Flow
-from flow_lib.flow_operations import apply_flow
-from flow_lib.utils import matrix_from_transforms
 
 
 class TestFlow(unittest.TestCase):

@@ -11,10 +11,14 @@
 # This file is part of flowlib
 
 import unittest
-import numpy as np
-from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, \
-    matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation
 import math
+import cv2
+import numpy as np
+from scipy.ndimage import rotate, shift
+from skimage.metrics import structural_similarity
+from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, \
+    matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow
+from flow_lib.flow_class import Flow
 
 
 class TestValidityChecks(unittest.TestCase):
@@ -235,6 +239,27 @@ class TestBilinearInterpolation(unittest.TestCase):
             bilinear_interpolation(flow, np.array([[-1, 0], [10, 10]]))
         with self.assertRaises(IndexError):
             bilinear_interpolation(flow, np.array([[0, 0], [511.01, 10]]))
+
+
+class TestApplyFlow(unittest.TestCase):
+    def test_rotation(self):
+        img = cv2.imread('lena.png')
+        for ref in ['t', 's']:
+            flow = Flow.from_transforms([['rotation', 255.5, 255.5, -30]], img.shape[:2], ref).vecs
+            control_img = rotate(img, -30, reshape=False)
+            warped_img = apply_flow(flow, img, ref)
+            # Values will not be exactly the same due to rounding etc., so use SSIM instead
+            ssim = structural_similarity(control_img, warped_img, multichannel=True)
+            print(ssim)
+            self.assertTrue(ssim > 0.98)
+
+    def test_translation(self):
+        img = cv2.imread('lena.png')
+        for ref in ['t', 's']:
+            flow = Flow.from_transforms([['translation', 10, 20]], img.shape[:2], ref).vecs
+            control_img = shift(img, [20, 10, 0])
+            warped_img = apply_flow(flow, img, ref)
+            self.assertIsNone(np.testing.assert_equal(warped_img, control_img))
 
 
 if __name__ == '__main__':

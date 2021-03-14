@@ -17,8 +17,7 @@ import cv2
 import numpy as np
 from scipy.interpolate import griddata
 from .utils import get_valid_ref, get_valid_padding, validate_shape, \
-    flow_from_matrix, matrix_from_transforms, bilinear_interpolation
-from .flow_operations import apply_flow
+    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow
 
 
 class Flow(object):
