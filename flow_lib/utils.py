@@ -79,8 +79,9 @@ def matrix_from_transform(transform: str, values: list) -> np.ndarray:
         For 'translation':  [<horizontal shift in px>, <vertical shift in px>]
         For 'rotation':     [<horizontal centre in px>, <vertical centre in px>, <angle in degrees, counter-clockwise>]
         For 'scaling':      [<horizontal centre in px>, <vertical centre in px>, <scaling fraction>]
-    :return: Transformation matrix, ndarray [3 * 3]
+    :return: Transformation matrix as numpy array of shape 3-3
     """
+
     value = np.array(values)
     matrix = np.identity(3)
     if transform == 'translation':  # translate: value is a list of [horizontal movement, vertical movement]
