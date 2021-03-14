@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import Union
+import warnings
 import cv2
 import numpy as np
 from scipy.interpolate import griddata
 from .utils import get_valid_ref, get_valid_padding, validate_shape, \
-    flow_from_matrix, matrix_from_transforms, matrix_from_transform, bilinear_interpolation
+    flow_from_matrix, matrix_from_transforms, bilinear_interpolation
 from .flow_operations import apply_flow
 
 
@@ -621,6 +622,74 @@ class Flow(object):
             return warped_pts, tracked_pts
         else:
             return warped_pts
+
+    def matrix(self, dof: int = None, method: str = None, masked: bool = None) -> np.ndarray:
+        """Fits a transformation matrix to the flow field using OpenCV functions
+
+        :param dof: Int describing the degrees of freedom in the transformation matrix fitted, defaults to 8. Options:
+            4: Partial affine transform: rotation, translation, scaling
+            6: Affine transform: rotation, translation, scaling, shearing
+            8: Projective transform, estimates a homography
+        :param method: Method used to fit the transformations matrix by OpenCV, defaults to 'ransac'. Options:
+            'lms': Least mean squares
+            'ransac': RANSAC-based robust method
+            'lmeds': Least-Median robust method
+        :param masked: Boolean determining whether the flow mask is used to ignore flow locations where the mask is
+            False. Defaults to True
+        :return: Numpy array of shape 3-3 of the transformation matrix
+        """
+
+        # Input validation
+        dof = 8 if dof is None else dof
+        if dof not in [4, 6, 8]:
+            raise ValueError("Error fitting transformation matrix to flow: Dof needs to be 4, 6 or 8")
+        method = 'ransac' if method is None else method
+        if method not in ['lms', 'ransac', 'lmeds']:
+            raise ValueError("Error fitting transformation matrix to flow: "
+                             "Method needs to be 'lms', 'ransac', or 'lmeds'")
+        masked = True if masked is None else masked
+        if not isinstance(masked, bool):
+            raise TypeError("Error fitting transformation matrix to flow: Masked needs to be boolean")
+
+        # Get the two point arrays
+        if self.ref == 't':
+            dst_pts = np.stack(np.mgrid[:self.shape[0], :self.shape[1]], axis=-1)[..., ::-1]
+            src_pts = dst_pts - self.vecs
+        else:  # ref is 's'
+            src_pts = np.stack(np.mgrid[:self.shape[0], :self.shape[1]], axis=-1)[..., ::-1]
+            dst_pts = src_pts + self.vecs
+        src_pts = src_pts.reshape(-1, 2)
+        dst_pts = dst_pts.reshape(-1, 2)
+
+        # Mask if required
+        if masked:
+            src_pts = src_pts[self.mask.ravel()]
+            dst_pts = dst_pts[self.mask.ravel()]
+
+        if dof in [4, 6] and method == 'lms':
+            method = 'ransac'
+            warnings.warn("Method 'lms' (least mean squares) not supported for fitting a transformation matrix with 4 "
+                          "or 6 degrees of freedom to the flow - defaulting to 'ransac'")
+
+        dof_lookup = {
+            4: cv2.estimateAffinePartial2D,
+            6: cv2.estimateAffine2D,
+            8: cv2.findHomography
+        }
+
+        method_lookup = {
+            'lms': 0,
+            'ransac': cv2.RANSAC,
+            'lmeds': cv2.LMEDS
+        }
+
+        # Fit matrix
+        if dof in [4, 6]:
+            matrix = np.eye(3)
+            matrix[:2] = dof_lookup[dof](src_pts, dst_pts, method=method_lookup[method])[0]
+        else:
+            matrix = dof_lookup[dof](src_pts, dst_pts, method=method_lookup[method])[0]
+        return matrix
 
     def visualise(
             self,
