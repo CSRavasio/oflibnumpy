@@ -40,6 +40,12 @@ class TestFlow(unittest.TestCase):
         with self.assertRaises(ValueError):
             Flow(vectors)
 
+        # Incorrect flow values
+        vectors = np.random.rand(200, 200, 2)
+        vectors[10, 10] = np.NaN
+        with self.assertRaises(ValueError):
+            Flow(vectors)
+
         # Incorrect flow shape
         vectors = np.random.rand(200, 200, 3)
         with self.assertRaises(ValueError):

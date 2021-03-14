@@ -57,6 +57,8 @@ class Flow(object):
             raise ValueError("Error setting flow vectors: Input not 3-dimensional")
         if not input_vecs.shape[2] == 2:
             raise ValueError("Error setting flow vectors: Input does not have 2 channels")
+        if not np.isfinite(input_vecs).all():
+            raise ValueError("Error setting flow vectors: Input contains NaN, Inf or -Inf values")
         f = input_vecs.astype('float32')
         self._vecs = f
 
