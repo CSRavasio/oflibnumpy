@@ -199,12 +199,15 @@ class TestFlow(unittest.TestCase):
         flow3 = Flow(vecs3)
 
         # Addition
+        self.assertIsNone(np.testing.assert_allclose((flow1 + vecs2).vecs, vecs1 + vecs2, rtol=1e-6, atol=1e-6))
         self.assertIsNone(np.testing.assert_allclose((flow1 + flow2).vecs, vecs1 + vecs2, rtol=1e-6, atol=1e-6))
         self.assertIsNone(np.testing.assert_equal(np.sum((flow1 + flow2).mask), (60 - 40) * 200))
         with self.assertRaises(TypeError):
-            flow1 + vecs1
+            flow1 + 'test'
         with self.assertRaises(ValueError):
             flow1 + flow3
+        with self.assertRaises(ValueError):
+            flow1 + vecs3
 
     def test_sub(self):
         mask1 = np.ones((100, 200), 'bool')
@@ -220,11 +223,14 @@ class TestFlow(unittest.TestCase):
 
         # Subtraction
         self.assertIsNone(np.testing.assert_allclose((flow1 - flow2).vecs, vecs1 - vecs2, rtol=1e-6, atol=1e-6))
+        self.assertIsNone(np.testing.assert_allclose((flow1 - vecs2).vecs, vecs1 - vecs2, rtol=1e-6, atol=1e-6))
         self.assertIsNone(np.testing.assert_equal(np.sum((flow1 - flow2).mask), (60 - 40) * 200))
         with self.assertRaises(TypeError):
-            flow1 - vecs1
+            flow1 - 'test'
         with self.assertRaises(ValueError):
             flow1 - flow3
+        with self.assertRaises(ValueError):
+            flow1 - vecs3
 
     def test_mul(self):
         vecs1 = np.random.rand(100, 200, 2)

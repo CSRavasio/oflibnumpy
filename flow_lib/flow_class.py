@@ -266,28 +266,38 @@ class Flow(object):
 
         return Flow(self.vecs, self.ref, self.mask)
 
-    def __add__(self, other: Flow) -> Flow:
-        """Adds flow objects
+    def __add__(self, other: Union[np.ndarray, Flow]) -> Flow:
+        """Adds a flow object or a numpy array to a flow object
 
         Note: this is NOT equal to applying the two flows sequentially. For that, use combine_flows(flow1, flow2, None).
         The function also does not check whether the two flow objects have the same reference.
 
         DO NOT USE if you're not certain about what you're aiming to achieve.
 
-        :param other: Flow object corresponding to the addend
+        :param other: Flow object or numpy array corresponding to the addend. Adding a flow object will adjust the mask
+            of the resulting flow object to correspond to the logical union of the augend / addend masks
         :return: Flow object corresponding to the sum
         """
 
-        if not isinstance(other, Flow):
-            raise TypeError("Error adding to flow: Addend is not a flow object")
-        if not self.shape == other.shape:
-            raise ValueError("Error adding to flow: Augend and addend are not the same shape")
-        vecs = self.vecs + other.vecs
-        mask = np.logical_and(self.mask, other.mask)
-        return Flow(vecs, self.ref, mask)
+        if not isinstance(other, (np.ndarray, Flow)):
+            raise TypeError("Error adding to flow: Addend is not a flow object or a numpy array")
+        if isinstance(other, Flow):
+            if self.shape != other.shape:
+                raise ValueError("Error adding to flow: Augend and addend flow objects are not the same shape")
+            else:
+                vecs = self.vecs + other.vecs
+                mask = np.logical_and(self.mask, other.mask)
+                return Flow(vecs, self.ref, mask)
+        if isinstance(other, np.ndarray):
+            if self.shape != other.shape[:2] or other.ndim != 3 or other.shape[2] != 2:
+                raise ValueError("Error adding to flow: Addend numpy array needs to have the same shape as the flow "
+                                 "object, 3 dimensions overall, and a channel length of 2")
+            else:
+                vecs = self.vecs + other
+                return Flow(vecs, self.ref, self.mask)
 
-    def __sub__(self, other: Flow) -> Flow:
-        """Subtracts flow objects.
+    def __sub__(self, other: Union[np.ndarray, Flow]) -> Flow:
+        """Subtracts a flow objects or a numpy array from a flow object
 
         Note: this is NOT equal to subtracting the effects of applying flow fields to an image. For that, used
         combine_flows(flow1, None, flow2) or combine_flows(None, flow1, flow2). The function also does not check whether
@@ -295,17 +305,28 @@ class Flow(object):
 
         DO NOT USE if you're not certain about what you're aiming to achieve.
 
-        :param other: Flow object corresponding to the subtrahend
+        :param other: Flow object or numpy array corresponding to the subtrahend. Subtracting a flow object will adjust
+            the mask of the resulting flow object to correspond to the logical union of the minuend / subtrahend masks
         :return: Flow object corresponding to the difference
         """
 
-        if not isinstance(other, Flow):
-            raise TypeError("Error subtracting from flow: Subtrahend is not a flow object")
-        if not self.shape == other.shape:
-            raise ValueError("Error subtracting from flow: Minuend and subtrahend are not the same shape")
-        vecs = self.vecs - other.vecs
-        mask = np.logical_and(self.mask, other.mask)
-        return Flow(vecs, self.ref, mask)
+        if not isinstance(other, (np.ndarray, Flow)):
+            raise TypeError("Error subtracting from flow: Subtrahend is not a flow object or a numpy array")
+        if isinstance(other, Flow):
+            if self.shape != other.shape:
+                raise ValueError("Error subtracting from flow: "
+                                 "Minuend and subtrahend flow objects are not the same shape")
+            else:
+                vecs = self.vecs - other.vecs
+                mask = np.logical_and(self.mask, other.mask)
+                return Flow(vecs, self.ref, mask)
+        if isinstance(other, np.ndarray):
+            if self.shape != other.shape[:2] or other.ndim != 3 or other.shape[2] != 2:
+                raise ValueError("Error subtracting from flow: Subtrahend numpy array needs to have the same shape as "
+                                 "the flow object, 3 dimensions overall, and a channel length of 2")
+            else:
+                vecs = self.vecs - other
+                return Flow(vecs, self.ref, self.mask)
 
     def __mul__(self, other: Union[float, int, bool, list, np.ndarray]) -> Flow:
         """Multiplies a flow object
