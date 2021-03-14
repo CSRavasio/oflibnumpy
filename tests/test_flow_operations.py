@@ -16,6 +16,7 @@ from flow_lib.flow_operations import visualise_definition
 
 
 class TestFlowOperations(unittest.TestCase):
+    pass
 
 
 if __name__ == '__main__':
