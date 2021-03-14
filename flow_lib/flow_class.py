@@ -3,8 +3,8 @@ from typing import Union
 import cv2
 import numpy as np
 from scipy.interpolate import griddata
-from .utils import get_valid_ref, get_valid_padding, validate_shape, flow_from_matrix, matrix_from_transform, \
-    bilinear_interpolation
+from .utils import get_valid_ref, get_valid_padding, validate_shape, \
+    flow_from_matrix, matrix_from_transforms, matrix_from_transform, bilinear_interpolation
 from .flow_operations import apply_flow
 
 
@@ -239,9 +239,7 @@ class Flow(object):
 
         # Here implemented: method 1, via calling from_matrix where the inverse of the matrix is used if reference 't'
         ref = get_valid_ref(ref)
-        matrix = np.identity(3)
-        for transform in reversed(transform_list):
-            matrix = matrix @ matrix_from_transform(transform[0], transform[1:])
+        matrix = matrix_from_transforms(transform_list)
         return cls.from_matrix(matrix, shape, ref, mask)
 
     def __str__(self):

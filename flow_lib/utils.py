@@ -71,6 +71,23 @@ def flow_from_matrix(matrix: np.ndarray, shape: Union[list, tuple]) -> np.ndarra
     return np.array(transformed_vec - default_vec_hom[..., 0:2], 'float32')
 
 
+def matrix_from_transforms(transform_list: list) -> np.ndarray:
+    """Calculates a transformation matrix from a given list of transforms
+
+    :param transform_list: List of transforms to be turned into a flow field, where each transform is expressed as
+        a list of [transform name, transform value 1, ... , transform value n]. Supported options:
+            ['translation', horizontal shift in px, vertical shift in px]
+            ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
+            ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
+    :return: Transformation matrix as numpy array of shape 3-3
+    """
+
+    matrix = np.identity(3)
+    for transform in reversed(transform_list):
+        matrix = matrix @ matrix_from_transform(transform[0], transform[1:])
+    return matrix
+
+
 def matrix_from_transform(transform: str, values: list) -> np.ndarray:
     """Calculates a transformation matrix from given transform types and values
 
