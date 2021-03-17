@@ -408,6 +408,21 @@ class TestFlow(unittest.TestCase):
             self.assertIsNone(np.testing.assert_equal(flow.mask, 0))
             self.assertIs(flow.ref, ref)
 
+        # 'Edge' padding
+        flow = Flow.from_transforms([['rotation', 30, 50, 30]], shape, ref)
+        padded_flow = flow.pad([10, 10, 20, 20], mode='edge')
+        self.assertIsNone(np.testing.assert_equal(padded_flow.vecs[0, 20:-20], flow.vecs[0]))
+        self.assertIsNone(np.testing.assert_equal(padded_flow.vecs[10:-10, 0], flow.vecs[:, 0]))
+
+        # 'Symmetric' padding
+        padded_flow = flow.pad([10, 10, 20, 20], mode='symmetric')
+        self.assertIsNone(np.testing.assert_equal(padded_flow.vecs[0, 20:-20], flow.vecs[9]))
+        self.assertIsNone(np.testing.assert_equal(padded_flow.vecs[10:-10, 0], flow.vecs[:, 19]))
+
+        # Invalid padding mode
+        with self.assertRaises(ValueError):
+            flow.pad([10, 10, 20, 20], mode='test')
+
     def test_apply(self):
         img = cv2.imread('lena.png')
         # Check flow.apply results in the same as using apply_flow directly
