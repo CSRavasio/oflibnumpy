@@ -171,18 +171,14 @@ def bilinear_interpolation(data, pts):
     return result
 
 
-def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.ndarray = None) -> np.ndarray:
+def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None) -> np.ndarray:
     """Warps target according to flow of given reference
 
     :param flow: Numpy array H-W-2 containing the flow vectors in cv2 convention (1st channel hor, 2nd channel ver)
     :param target: Numpy array H-W or H-W-C containing the content to be warped
     :param ref: Reference of the flow, 't' or 's'. Defaults to 't'
-    :param mask: Numpy array H-W of type 'bool'
     :return: Numpy array of the same shape as the target, with the content warped by the flow
     """
-
-    # TODO: implement / use masks
-    # TODO: implement checks for input types and shapes
 
     ref = get_valid_ref(ref)
     field = flow.astype('float32')
