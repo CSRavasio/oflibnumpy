@@ -453,7 +453,7 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(warped_img_actual, warped_img_desired[padding[0]:-padding[1],
                                                                                         padding[2]:-padding[3]]))
         # ... not cutting (target flow object)
-        target_flow = Flow(img[..., :2])
+        target_flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], ref)
         warped_flow_desired = apply_flow(flow.vecs, target_flow.vecs, ref)
         warped_flow_actual = cut_flow.apply(target_flow, padding=padding, cut=False)
         self.assertIsNone(np.testing.assert_equal(warped_flow_actual.vecs[padding[0]:-padding[1],
@@ -466,18 +466,20 @@ class TestFlow(unittest.TestCase):
                                                                                                padding[2]:-padding[3]]))
 
         # Non-valid padding values
-        with self.assertRaises(TypeError):
-            cut_flow.apply(target_flow, padding=100, cut=True)
-        with self.assertRaises(ValueError):
-            cut_flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=True)
-        with self.assertRaises(ValueError):
-            cut_flow.apply(target_flow, padding=[10., 20, 30, 40], cut=True)
-        with self.assertRaises(ValueError):
-            cut_flow.apply(target_flow, padding=[-10, 10, 10, 10], cut=True)
-        with self.assertRaises(TypeError):
-            cut_flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=2)
-        with self.assertRaises(TypeError):
-            cut_flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut='true')
+        for ref in ['t', 's']:
+            flow = Flow.from_transforms([['rotation', 0, 0, 30]], shape, ref)
+            with self.assertRaises(TypeError):
+                flow.apply(target_flow, padding=100, cut=True)
+            with self.assertRaises(ValueError):
+                flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=True)
+            with self.assertRaises(ValueError):
+                flow.apply(target_flow, padding=[10., 20, 30, 40], cut=True)
+            with self.assertRaises(ValueError):
+                flow.apply(target_flow, padding=[-10, 10, 10, 10], cut=True)
+            with self.assertRaises(TypeError):
+                flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=2)
+            with self.assertRaises(TypeError):
+                flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut='true')
 
     def test_switch_ref(self):
         img = cv2.imread('lena.png')
