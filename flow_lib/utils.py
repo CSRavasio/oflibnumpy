@@ -210,3 +210,20 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.n
             result = np.round(result)
         result = result.astype(target.dtype)
         return result
+
+
+def show_masked_image(img: np.ndarray, mask: np.ndarray):
+    """Mimics flow.show(), for an input image and a mask
+
+    :param img: Numpy array, BGR input image
+    :param mask: Numpy array, boolean mask showing the valid area
+    """
+
+    hsv = cv2.cvtColor(np.round(img).astype('uint8'), cv2.COLOR_BGR2HSV)
+    hsv[np.invert(mask), 2] = 180
+    contours, hierarchy = cv2.findContours((255 * mask).astype('uint8'),
+                                           cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(hsv, contours, -1, (0, 0, 0), 1)
+    bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    cv2.imshow("Image masked by valid area", bgr)
+    cv2.waitKey()
