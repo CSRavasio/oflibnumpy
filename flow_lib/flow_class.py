@@ -444,15 +444,21 @@ class Flow(object):
 
         return self * -1
 
-    def pad(self, padding: list = None) -> Flow:
+    def pad(self, padding: list = None, mode: str = None) -> Flow:
         """Pads the flow with the given padding, inserting 0 values
 
         :param padding: [top, bot, left, right] list of padding values
+        :param mode: Numpy padding mode for the flow vectors, defaults to 'constant'. Options:
+            'constant', 'edge', 'symmetric' (see numpy.pad documentation). 'Constant' value is 0.
         :return: Padded flow
         """
 
+        mode = 'constant' if mode is None else mode
+        if mode not in ['constant', 'edge', 'symmetric']:
+            raise ValueError("Error padding flow: Mode should be one of "
+                             "'constant', 'edge', 'symmetric', 'empty', but instead got '{}'".format(mode))
         padding = get_valid_padding(padding, "Error padding flow: ")
-        padded_vecs = np.pad(self.vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)))
+        padded_vecs = np.pad(self.vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)), mode=mode)
         padded_mask = np.pad(self.mask, (tuple(padding[:2]), tuple(padding[2:])))
         return Flow(padded_vecs, self.ref, padded_mask)
 
