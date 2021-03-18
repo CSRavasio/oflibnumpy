@@ -833,6 +833,36 @@ class TestFlow(unittest.TestCase):
         with self.assertRaises(ValueError):
             flow.show_arrows(-1)
 
+    def test_target_area(self):
+        transforms = [['rotation', 0, 0, 45]]
+        shape = (7, 7)
+        mask = np.ones(shape, 'bool')
+        mask[4:, :3] = False
+        f_s = Flow.from_transforms(transforms, shape, 's', mask)
+        mask = np.ones(shape, 'bool')
+        mask[:3, 4:] = False
+        f_t = Flow.from_transforms(transforms, shape, 't', mask)
+        desired_area_s = np.array([
+            [1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 0, 0, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0]
+        ]).astype('bool')
+        desired_area_t = np.array([
+            [1, 1, 1, 1, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0, 0],
+            [0, 0, 1, 1, 0, 0, 0],
+            [0, 0, 0, 1, 1, 1, 1],
+            [0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0]
+        ]).astype('bool')
+        self.assertIsNone(np.testing.assert_equal(f_s.target_area(), desired_area_s))
+        self.assertIsNone(np.testing.assert_equal(f_t.target_area(), desired_area_t))
+
 
 if __name__ == '__main__':
     unittest.main()
