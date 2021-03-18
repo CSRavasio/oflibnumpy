@@ -838,11 +838,31 @@ class TestFlow(unittest.TestCase):
         shape = (7, 7)
         mask = np.ones(shape, 'bool')
         mask[4:, :3] = False
-        f_s = Flow.from_transforms(transforms, shape, 's', mask)
+        f_s_masked = Flow.from_transforms(transforms, shape, 's', mask)
         mask = np.ones(shape, 'bool')
         mask[:3, 4:] = False
-        f_t = Flow.from_transforms(transforms, shape, 't', mask)
+        f_t_masked = Flow.from_transforms(transforms, shape, 't', mask)
+        f_s = Flow.from_transforms(transforms, shape, 's')
+        f_t = Flow.from_transforms(transforms, shape, 't')
         desired_area_s = np.array([
+            [1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 1, 1, 1, 1],
+            [0, 0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0]
+        ]).astype('bool')
+        desired_area_t = np.array([
+            [1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 1, 1, 1, 1],
+            [0, 0, 0, 1, 1, 1, 1],
+            [0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0]
+        ]).astype('bool')
+        desired_area_s_masked = np.array([
             [1, 1, 1, 1, 1, 1, 1],
             [0, 1, 1, 1, 1, 1, 1],
             [0, 0, 1, 0, 0, 0, 1],
@@ -851,7 +871,7 @@ class TestFlow(unittest.TestCase):
             [0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0]
         ]).astype('bool')
-        desired_area_t = np.array([
+        desired_area_t_masked = np.array([
             [1, 1, 1, 1, 0, 0, 0],
             [0, 1, 1, 1, 0, 0, 0],
             [0, 0, 1, 1, 0, 0, 0],
@@ -862,6 +882,60 @@ class TestFlow(unittest.TestCase):
         ]).astype('bool')
         self.assertIsNone(np.testing.assert_equal(f_s.target_area(), desired_area_s))
         self.assertIsNone(np.testing.assert_equal(f_t.target_area(), desired_area_t))
+        self.assertIsNone(np.testing.assert_equal(f_s_masked.target_area(), desired_area_s_masked))
+        self.assertIsNone(np.testing.assert_equal(f_t_masked.target_area(), desired_area_t_masked))
+
+    def test_source_area(self):
+        transforms = [['rotation', 0, 0, 45]]
+        shape = (7, 7)
+        mask = np.ones(shape, 'bool')
+        mask[4:, :3] = False
+        f_s_masked = Flow.from_transforms(transforms, shape, 's', mask)
+        mask = np.ones(shape, 'bool')
+        mask[:3, 4:] = False
+        f_t_masked = Flow.from_transforms(transforms, shape, 't', mask)
+        f_s = Flow.from_transforms(transforms, shape, 's')
+        f_t = Flow.from_transforms(transforms, shape, 't')
+        desired_area_s = np.array([
+            [1, 0, 0, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0, 0, 0],
+            [1, 1, 1, 1, 1, 0, 0],
+            [1, 1, 1, 1, 1, 0, 0],
+            [1, 1, 1, 1, 0, 0, 0]
+        ]).astype('bool')
+        desired_area_t = np.array([
+            [1, 0, 0, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0, 0, 0],
+            [1, 1, 1, 1, 1, 0, 0],
+            [1, 1, 1, 1, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0]
+        ]).astype('bool')
+        desired_area_s_masked = np.array([
+            [1, 0, 0, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0, 0, 0],
+            [0, 0, 0, 1, 1, 0, 0],
+            [0, 0, 0, 1, 1, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0]
+        ]).astype('bool')
+        desired_area_t_masked = np.array([
+            [1, 0, 0, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0]
+        ]).astype('bool')
+        self.assertIsNone(np.testing.assert_equal(f_s.source_area(), desired_area_s))
+        self.assertIsNone(np.testing.assert_equal(f_t.source_area(), desired_area_t))
+        self.assertIsNone(np.testing.assert_equal(f_s_masked.source_area(), desired_area_s_masked))
+        self.assertIsNone(np.testing.assert_equal(f_t_masked.source_area(), desired_area_t_masked))
 
 
 if __name__ == '__main__':
