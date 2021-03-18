@@ -992,20 +992,30 @@ class Flow(object):
     def target_area(self) -> np.ndarray:
         """Finds the valid area in the target image
 
+        Given source image, flow, and target image created by warping the source with the flow, the valid area is a
+        boolean mask that is True wherever the value in the target stems from warping a value from the source, and
+        False where no valid information is known. Pixels that are False in this valid area will often be black (or
+        'empty') in the warped target image, but not necessarily, due to warping artefacts etc. Even when they are all
+        empty, the valid area allows a distinction between pixels that are black due to no actual information being
+        available at this position, and pixels that are black due to black pixel values having been warped to that
+        location by the flow.
+
         :return: Valid area in the target image
         """
 
         if self.ref == 's':
             # Flow mask in 's' flow refers to valid flow vecs in the source image. Warping this mask to the target image
             # gives a boolean mask of which positions in the target image are valid, i.e. have been filled by values
-            # warped there from the source by flow vectors that were themselves valid
+            # warped there from the source by flow vectors that were themselves valid:
+            # area = F{source & mask}, where: source & mask = mask, because: source = True everywhere
             area = apply_flow(self.vecs, self.mask.astype('f'), self.ref)
             area = np.round(area).astype('bool')
         else:  # ref is 't'
             # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, warping a test array that
             # is true everywhere, ANDed with the flow mask, will yield a boolean mask of valid positions in the target
             # image, i.e. positions that have been filled by values warped there from the source by flow vectors that
-            # were themselves valid
+            # were themselves valid:
+            # area = F{source} & mask, where: source = True everywhere
             area = apply_flow(self.vecs, np.ones(self.shape), self.ref)
             area = np.round(area).astype('bool')
             area &= self.mask
