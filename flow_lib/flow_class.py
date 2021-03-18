@@ -619,24 +619,24 @@ class Flow(object):
                 return self.invert('s').switch_ref()
 
     def track(
-            self,
-            pts: np.ndarray,
-            int_out: bool = None,
-            get_tracked: bool = None,
-            s_exact_mode: bool = None
+        self,
+        pts: np.ndarray,
+        int_out: bool = None,
+        get_valid_status: bool = None,
+        s_exact_mode: bool = None
     ) -> np.ndarray:
         """Warps input points according to the flow field, can be returned as integers if required
 
         :param pts: Numpy array of points shape N-2, 1st coordinate vertical (height), 2nd coordinate horizontal (width)
         :param int_out: Boolean determining whether output points are returned as rounded integers, defaults to False
-        :param get_tracked: Boolean determining whether a numpy array containing tracked points is returned. Array will
-            be True for points inside the flow area, False if outside. Points ending up outside the flow area means
-            the points have been 'lost' and can no longer be tracked.
+        :param get_valid_status: Boolean determining whether an array of shape N-2 containing the status of each point
+            is returned. This will corresponds to self.source_area() as applied to the point positions, and will show
+            True for the points that are tracked by valid flow vectors, and end up inside the target image area.
         :param s_exact_mode: Boolean determining whether interpolation will be done bilinearly if the flow has reference
             's', using bilinear_interpolation. Unless a very large number of points is tracked, this is around 2 orders
             of magnitude faster than using s_exact_mode = True, which will use scipy.interpolate.griddata.
             Defaults to False
-        :return: Numpy array of warped ('tracked') points
+        :return: Numpy array of warped ('tracked') points, and optionally a numpy array of the point tracking status
         """
 
         # Validate inputs
@@ -647,11 +647,11 @@ class Flow(object):
         if pts.shape[1] != 2:
             raise ValueError("Error tracking points: Pts needs to have shape N-2")
         int_out = False if int_out is None else int_out
-        get_tracked = False if get_tracked is None else get_tracked
+        get_valid_status = False if get_valid_status is None else get_valid_status
         s_exact_mode = False if s_exact_mode is None else s_exact_mode
         if not isinstance(int_out, bool):
             raise TypeError("Error tracking points: Int_out needs to be a boolean")
-        if not isinstance(get_tracked, bool):
+        if not isinstance(get_valid_status, bool):
             raise TypeError("Error tracking points: Get_tracked needs to be a boolean")
         if not isinstance(s_exact_mode, bool):
             raise TypeError("Error tracking points: S_exact_mode needs to be a boolean")
@@ -690,11 +690,11 @@ class Flow(object):
             warped_pts[nan_vals] = 0
         if int_out:
             warped_pts = np.round(warped_pts).astype('i')
-        if get_tracked:
-            tracked_pts = (warped_pts[..., 0] >= 0) & (warped_pts[..., 0] <= self.shape[0] - 1) &\
-                          (warped_pts[..., 1] >= 0) & (warped_pts[..., 1] <= self.shape[1] - 1) & \
-                          ~nan_vals
-            return warped_pts, tracked_pts
+
+        if get_valid_status:
+            status_array = self.source_area()[np.round(pts[..., 0]).astype('i'),
+                                              np.round(pts[..., 1]).astype('i')]
+            return warped_pts, status_array
         else:
             return warped_pts
 
