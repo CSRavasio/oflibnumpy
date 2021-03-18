@@ -1020,3 +1020,38 @@ class Flow(object):
             area = np.round(area).astype('bool')
             area &= self.mask
         return area
+
+    def source_area(self) -> np.ndarray:
+        """Finds the area in the source image that will end up being valid in the target image after warping
+
+        Given source image, flow, and target image created by warping the source with the flow, the 'source area' is a
+        boolean mask that is True wherever the value in the source will end up somewhere in the valid target area, and
+        False where the value in the source will either be warped outside of the target image, or not be warped at all
+        due to a lack of valid flow vectors connecting to this position.
+
+        :return: Area in the source image valid in target image after warping
+        """
+
+        if self.ref == 's':
+            # Flow mask in 's' flow refers to valid flow vecs in the source image. Therefore, to find the area in the
+            # source image that will end up being valid in the target image after warping (equal to self.target_area()),
+            # warping a test array that is True everywhere from target to source with the inverse of the flow, ANDed
+            # with the flow mask, will yield a boolean mask of valid positions in the source image:
+            # area = F.inv{target} & mask, where target = True everywhere
+            area = apply_flow(-self.vecs, np.ones(self.shape), 't')
+            # Note: this is equal to: area = self.invert('t').apply(np.ones(self.shape)), but more efficient as there
+            # is no unnecessary warping of the mask
+            area = np.round(area).astype('bool')
+            area &= self.mask
+        else:  # ref is 't'
+            # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, to find the area in the
+            # source image that will end up being valid in the target image after warping (equal to self.target_area()),
+            # warping the flow mask from target to source with the inverse of the flow will yield a boolean mask of
+            # valid positions in the source image:
+            # area = F.inv{target & mask}, where target & mask = mask, because target = True everywhere
+            area = apply_flow(-self.vecs, self.mask.astype('f'), 's')
+            # Note: this is equal to: area = self.invert('s').apply(self.mask.astype('f')), but more efficient as there
+            # is no unnecessary warping of the mask
+            area = np.round(area).astype('bool')
+        # Note: alternative way of seeing this: self.source_area() = self.invert(<other ref>).target_area()
+        return area
