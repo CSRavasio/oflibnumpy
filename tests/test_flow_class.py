@@ -576,12 +576,35 @@ class TestFlow(unittest.TestCase):
         pts_tracked_t = f_t.track(pts, int_out=True)
         self.assertIsNone(np.testing.assert_equal(pts_tracked_t, np.round(desired_pts)))
         self.assertEqual(pts_tracked_t.dtype, np.int)
-        pts_tracked_t, tracked = f_t.track(pts, get_tracked=True)
+        pts_tracked_t, tracked = f_t.track(pts, get_valid_status=True)
         self.assertIsNone(np.testing.assert_equal(tracked, True))
         self.assertEqual(pts_tracked_t.dtype, np.float)
-        pts = np.array([[0, 50], [8.3, 7.2], [120.4, 160.2]])
-        pts_tracked_t, tracked = f_t.track(pts, get_tracked=True)
-        self.assertIsNone(np.testing.assert_equal(tracked, [False, True, True]))
+
+        # Test valid status for 't' flow
+        f_t.mask[:, 200:] = False
+        pts = np.array([
+            [0, 50],            # Moved out of bounds by a valid flow vector
+            [0, 500],           # Moved out of bounds by an invalid flow vector
+            [8.3, 7.2],         # Moved normally by valid flow vector
+            [120.4, 160.2],     # Moved normally by valid flow vector
+            [300, 200]          # Moved normally by invalid flow vector
+        ])
+        desired_valid_status = [False, False, True, True, False]
+        _, tracked = f_t.track(pts, get_valid_status=True)
+        self.assertIsNone(np.testing.assert_equal(tracked, desired_valid_status))
+
+        # Test valid status for 's' flow
+        f_s.mask[:, 200:] = False
+        pts = np.array([
+            [0, 50],            # Moved out of bounds by a valid flow vector
+            [0, 500],           # Moved out of bounds by an invalid flow vector
+            [8.3, 7.2],         # Moved normally by valid flow vector
+            [120.4, 160.2],     # Moved normally by valid flow vector
+            [300, 200]          # Moved normally by invalid flow vector
+        ])
+        desired_valid_status = [False, False, True, True, False]
+        _, tracked = f_s.track(pts, get_valid_status=True)
+        self.assertIsNone(np.testing.assert_equal(tracked, desired_valid_status))
 
         # Invalid inputs
         with self.assertRaises(TypeError):
@@ -593,7 +616,7 @@ class TestFlow(unittest.TestCase):
         with self.assertRaises(TypeError):
             f_s.track(pts, int_out='test')
         with self.assertRaises(TypeError):
-            f_s.track(pts, True, get_tracked='test')
+            f_s.track(pts, True, get_valid_status='test')
         with self.assertRaises(TypeError):
             f_s.track(pts, True, True, s_exact_mode='test')
 
