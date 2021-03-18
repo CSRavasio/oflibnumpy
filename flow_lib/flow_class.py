@@ -135,11 +135,11 @@ class Flow(object):
 
     @classmethod
     def from_matrix(
-            cls,
-            matrix: np.ndarray,
-            shape: Union[list, tuple],
-            ref: str = None,
-            mask: np.ndarray = None
+        cls,
+        matrix: np.ndarray,
+        shape: Union[list, tuple],
+        ref: str = None,
+        mask: np.ndarray = None
     ) -> Flow:
         """Flow object constructor, based on transformation matrix input
 
@@ -174,11 +174,11 @@ class Flow(object):
 
     @classmethod
     def from_transforms(
-            cls,
-            transform_list: list,
-            shape: Union[list, tuple],
-            ref: str = None,
-            mask: np.ndarray = None
+        cls,
+        transform_list: list,
+        shape: Union[list, tuple],
+        ref: str = None,
+        mask: np.ndarray = None
     ) -> Flow:
         """Flow object constructor, zero everywhere.
 
@@ -463,11 +463,12 @@ class Flow(object):
         return Flow(padded_vecs, self.ref, padded_mask)
 
     def apply(
-            self,
-            target: Union[np.ndarray, Flow],
-            return_valid_area: bool = None,
-            padding: list = None,
-            cut: bool = None) -> Union[np.ndarray, Flow]:
+        self,
+        target: Union[np.ndarray, Flow],
+        return_valid_area: bool = None,
+        padding: list = None,
+        cut: bool = None
+    ) -> Union[np.ndarray, Flow]:
         """Applies the flow to the target, which can be a numpy array or a Flow object.
 
         :param target: Numpy array of shape H-W-C or flow object the flow should be applied to
@@ -766,11 +767,11 @@ class Flow(object):
         return matrix
 
     def visualise(
-            self,
-            mode: str,
-            show_mask: bool = None,
-            show_mask_borders: bool = None,
-            range_max: float = None
+        self,
+        mode: str,
+        show_mask: bool = None,
+        show_mask_borders: bool = None,
+        range_max: float = None
     ) -> np.ndarray:
         """Returns a flow visualisation as a numpy array containing an rgb / bgr / hsv img of the same shape as the flow
 
@@ -851,13 +852,13 @@ class Flow(object):
             raise ValueError("Error visualising flow: Mode needs to be either 'bgr', 'rgb', or 'hsv'")
 
     def visualise_arrows(
-            self,
-            grid_dist: int,
-            img: np.ndarray = None,
-            scaling: Union[float, int] = None,
-            show_mask: bool = None,
-            show_mask_borders: bool = None,
-            colour: tuple = None
+        self,
+        grid_dist: int,
+        img: np.ndarray = None,
+        scaling: Union[float, int] = None,
+        show_mask: bool = None,
+        show_mask_borders: bool = None,
+        colour: tuple = None
     ) -> np.ndarray:
         """Visualises the flow as arrowed lines, in BGR mode
 
@@ -958,14 +959,14 @@ class Flow(object):
         cv2.waitKey(wait)
 
     def show_arrows(
-            self,
-            wait: int = None,
-            grid_dist: int = None,
-            img: np.ndarray = None,
-            scaling: Union[float, int] = None,
-            show_mask: bool = None,
-            show_mask_borders: bool = None,
-            colour: tuple = None
+        self,
+        wait: int = None,
+        grid_dist: int = None,
+        img: np.ndarray = None,
+        scaling: Union[float, int] = None,
+        show_mask: bool = None,
+        show_mask_borders: bool = None,
+        colour: tuple = None
     ):
         """Shows the flow in a cv2 window, visualised with arrows
 
