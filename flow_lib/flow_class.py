@@ -988,3 +988,25 @@ class Flow(object):
         img = self.visualise_arrows(grid_dist, img, scaling, show_mask, show_mask_borders, colour)
         cv2.imshow('Visualise and show flow', img)
         cv2.waitKey(wait)
+
+    def target_area(self) -> np.ndarray:
+        """Finds the valid area in the target image
+
+        :return: Valid area in the target image
+        """
+
+        if self.ref == 's':
+            # Flow mask in 's' flow refers to valid flow vecs in the source image. Warping this mask to the target image
+            # gives a boolean mask of which positions in the target image are valid, i.e. have been filled by values
+            # warped there from the source by flow vectors that were themselves valid
+            area = apply_flow(self.vecs, self.mask.astype('f'), self.ref)
+            area = np.round(area).astype('bool')
+        else:  # ref is 't'
+            # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, warping a test array that
+            # is true everywhere, ANDed with the flow mask, will yield a boolean mask of valid positions in the target
+            # image, i.e. positions that have been filled by values warped there from the source by flow vectors that
+            # were themselves valid
+            area = apply_flow(self.vecs, np.ones(self.shape), self.ref)
+            area = np.round(area).astype('bool')
+            area &= self.mask
+        return area
