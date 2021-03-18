@@ -568,10 +568,10 @@ class Flow(object):
         """Switches the reference coordinates from 's'ource to 't'arget, or vice versa
 
         :param mode: 'valid' or 'invalid':
-            'Invalid' means just the flow reference attribute is switched without any flow values being changed. This
+            'invalid' means just the flow reference attribute is switched without any flow values being changed. This
                 is functionally equivalent to simply using flow.ref = 't' for a flow of ref 's', and the flow vectors
                 aren't changed.
-            'Valid' means actually switching the flow field to the other coordinate reference, with flow vectors being
+            'valid' means actually switching the flow field to the other coordinate reference, with flow vectors being
                 recalculated to correspond to this other reference.
         :return: Flow with switched coordinate reference.
         """
