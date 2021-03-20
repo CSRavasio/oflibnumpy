@@ -17,7 +17,8 @@ import numpy as np
 from scipy.ndimage import rotate, shift
 from skimage.metrics import structural_similarity
 from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, \
-    matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow
+    matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
+    points_inside_area
 from flow_lib.flow_class import Flow
 
 
@@ -260,6 +261,23 @@ class TestApplyFlow(unittest.TestCase):
             control_img = shift(img, [20, 10, 0])
             warped_img = apply_flow(flow, img, ref)
             self.assertIsNone(np.testing.assert_equal(warped_img, control_img))
+
+
+class TestPointsInsideArea(unittest.TestCase):
+    def test_points(self):
+        shape = [10, 20]
+        pts = np.array([
+            [-1, -1],
+            [-1, 0],
+            [0, -1],
+            [0, 0],
+            [9, 20],
+            [9, 19],
+            [10, 19],
+            [10, 20]
+        ])
+        desired_array = [False, False, False, True, False, True, False, False]
+        self.assertIsNone(np.testing.assert_equal(points_inside_area(pts, shape), desired_array))
 
 
 if __name__ == '__main__':
