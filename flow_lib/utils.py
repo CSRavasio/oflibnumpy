@@ -223,3 +223,18 @@ def show_masked_image(img: np.ndarray, mask: np.ndarray):
     bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
     cv2.imshow("Image masked by valid area", bgr)
     cv2.waitKey()
+
+
+def points_inside_area(pts: np.ndarray, shape: Union[tuple, list]) -> np.ndarray:
+    """Returns an array which is True for all points within image area defined by shape
+
+    :param pts: Numpy array of points of shape N-2
+    :param shape: Tuple or list of the image size
+    :return: Boolean array True for all points within image area defined by shape
+    """
+
+    if np.issubdtype(pts.dtype, np.float):
+        pts = np.round(pts).astype('i')
+    status_array = (pts[..., 0] >= 0) & (pts[..., 0] <= shape[0] - 1) & \
+                   (pts[..., 1] >= 0) & (pts[..., 1] <= shape[1] - 1)
+    return status_array
