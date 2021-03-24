@@ -960,6 +960,26 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(f_s_masked.source_area(), desired_area_s_masked))
         self.assertIsNone(np.testing.assert_equal(f_t_masked.source_area(), desired_area_t_masked))
 
+    def test_get_padding(self):
+        transforms = [['rotation', 0, 0, 45]]
+        shape = (7, 7)
+        mask = np.ones(shape, 'bool')
+        mask[:, 4:] = False
+        f_s_masked = Flow.from_transforms(transforms, shape, 's', mask)
+        mask = np.ones(shape, 'bool')
+        mask[4:] = False
+        f_t_masked = Flow.from_transforms(transforms, shape, 't', mask)
+        f_s = Flow.from_transforms(transforms, shape, 's')
+        f_t = Flow.from_transforms(transforms, shape, 't')
+        f_s_desired = [5, 0, 0, 3]
+        f_t_desired = [0, 3, 5, 0]
+        f_s_masked_desired = [3, 0, 0, 1]
+        f_t_masked_desired = [0, 1, 3, 0]
+        self.assertIsNone(np.testing.assert_equal(f_s.get_padding(), f_s_desired))
+        self.assertIsNone(np.testing.assert_equal(f_t.get_padding(), f_t_desired))
+        self.assertIsNone(np.testing.assert_equal(f_s_masked.get_padding(), f_s_masked_desired))
+        self.assertIsNone(np.testing.assert_equal(f_t_masked.get_padding(), f_t_masked_desired))
+
 
 if __name__ == '__main__':
     unittest.main()
