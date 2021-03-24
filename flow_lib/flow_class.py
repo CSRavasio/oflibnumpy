@@ -445,7 +445,8 @@ class Flow(object):
         return self * -1
 
     def pad(self, padding: list = None, mode: str = None) -> Flow:
-        """Pads the flow with the given padding, inserting 0 values
+        """Pads the flow with the given padding. Sets padded mask values to False, and inserts 0 flow values if padding
+        mode is 'constant'
 
         :param padding: [top, bot, left, right] list of padding values
         :param mode: Numpy padding mode for the flow vectors, defaults to 'constant'. Options:
