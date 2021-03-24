@@ -631,7 +631,7 @@ class Flow(object):
         :param pts: Numpy array of points shape N-2, 1st coordinate vertical (height), 2nd coordinate horizontal (width)
         :param int_out: Boolean determining whether output points are returned as rounded integers, defaults to False
         :param get_valid_status: Boolean determining whether an array of shape N-2 containing the status of each point
-            is returned. This will corresponds to self.source_area() as applied to the point positions, and will show
+            is returned. This will corresponds to self.valid_source() as applied to the point positions, and will show
             True for the points that are tracked by valid flow vectors, and end up inside the target image area.
         :param s_exact_mode: Boolean determining whether interpolation will be done bilinearly if the flow has reference
             's', using bilinear_interpolation. Unless a very large number of points is tracked, this is around 2 orders
@@ -693,8 +693,8 @@ class Flow(object):
             warped_pts = np.round(warped_pts).astype('i')
 
         if get_valid_status:
-            status_array = self.source_area()[np.round(pts[..., 0]).astype('i'),
-                                              np.round(pts[..., 1]).astype('i')]
+            status_array = self.valid_source()[np.round(pts[..., 0]).astype('i'),
+                                               np.round(pts[..., 1]).astype('i')]
             return warped_pts, status_array
         else:
             return warped_pts
@@ -991,7 +991,7 @@ class Flow(object):
         cv2.imshow('Visualise and show flow', img)
         cv2.waitKey(wait)
 
-    def target_area(self) -> np.ndarray:
+    def valid_target(self) -> np.ndarray:
         """Finds the valid area in the target image
 
         Given source image, flow, and target image created by warping the source with the flow, the valid area is a
@@ -1023,7 +1023,7 @@ class Flow(object):
             area &= self.mask
         return area
 
-    def source_area(self) -> np.ndarray:
+    def valid_source(self) -> np.ndarray:
         """Finds the area in the source image that will end up being valid in the target image after warping
 
         Given source image, flow, and target image created by warping the source with the flow, the 'source area' is a
@@ -1036,7 +1036,7 @@ class Flow(object):
 
         if self.ref == 's':
             # Flow mask in 's' flow refers to valid flow vecs in the source image. Therefore, to find the area in the
-            # source image that will end up being valid in the target image after warping (equal to self.target_area()),
+            # source image that will end up being valid in the target image after warping, equal to self.valid_target(),
             # warping a test array that is True everywhere from target to source with the inverse of the flow, ANDed
             # with the flow mask, will yield a boolean mask of valid positions in the source image:
             # area = F.inv{target} & mask, where target = True everywhere
@@ -1047,7 +1047,7 @@ class Flow(object):
             area &= self.mask
         else:  # ref is 't'
             # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, to find the area in the
-            # source image that will end up being valid in the target image after warping (equal to self.target_area()),
+            # source image that will end up being valid in the target image after warping, equal to self.valid_target(),
             # warping the flow mask from target to source with the inverse of the flow will yield a boolean mask of
             # valid positions in the source image:
             # area = F.inv{target & mask}, where target & mask = mask, because target = True everywhere
@@ -1055,7 +1055,7 @@ class Flow(object):
             # Note: this is equal to: area = self.invert('s').apply(self.mask.astype('f')), but more efficient as there
             # is no unnecessary warping of the mask
             area = np.round(area).astype('bool')
-        # Note: alternative way of seeing this: self.source_area() = self.invert(<other ref>).target_area()
+        # Note: alternative way of seeing this: self.valid_source() = self.invert(<other ref>).valid_target()
         return area
 
     def get_padding(self) -> list:
