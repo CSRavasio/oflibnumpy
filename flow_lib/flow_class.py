@@ -1057,3 +1057,34 @@ class Flow(object):
             area = np.round(area).astype('bool')
         # Note: alternative way of seeing this: self.source_area() = self.invert(<other ref>).target_area()
         return area
+
+    def get_padding(self) -> list:
+        """Determine necessary padding from the flow field.
+
+        When the flow reference is 't', this corresponds to the padding needed for an input image, so that the output
+        when warped with the flow field contains no undefined areas inside defined flow areas.
+
+        When the flow reference is 's', this corresponds to the padding needed for the flow so that applying it to an
+        input image will result in no input image information being lost in the warped output, i.e each input image
+        pixel will come to lie inside the padded area.
+
+        :return: Padding as a list [top, bottom, left, right]
+        """
+
+        v = np.copy(self.vecs)
+        v[(-self._threshold < v) & (v < self._threshold)] = 0
+        # Threshold to avoid very small flow values (possible artefacts) triggering a need for padding
+        if self.ref == 's':
+            v *= -1
+        x, y = np.mgrid[:self.shape[0], :self.shape[1]]
+        v[..., 0] -= y
+        v[..., 1] -= x
+        v *= -1
+        padding = [
+            np.maximum(-np.min(v[self.mask, 1]), 0),
+            np.maximum(np.max(v[self.mask, 1]) - (self.shape[0] - 1), 0),
+            np.maximum(-np.min(v[self.mask, 0]), 0),
+            np.maximum(np.max(v[self.mask, 0]) - (self.shape[1] - 1), 0)
+        ]
+        padding = [int(np.ceil(p)) for p in padding]
+        return padding
