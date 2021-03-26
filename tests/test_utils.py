@@ -18,7 +18,7 @@ from scipy.ndimage import rotate, shift
 from skimage.metrics import structural_similarity
 from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
-    points_inside_area
+    points_inside_area, threshold_vectors
 from flow_lib.flow_class import Flow
 
 
@@ -277,6 +277,21 @@ class TestPointsInsideArea(unittest.TestCase):
         ])
         desired_array = [False, False, False, True, False, True, False, False]
         self.assertIsNone(np.testing.assert_equal(points_inside_area(pts, shape), desired_array))
+
+
+class TestThresholdVectors(unittest.TestCase):
+    def test_threshold(self):
+        vecs = np.zeros((10, 1, 2))
+        vecs[0, 0, 0] = 1e-5
+        vecs[1, 0, 0] = 1e-4
+        vecs[2, 0, 0] = 1e-3
+        vecs[3, 0, 0] = 1
+        thresholded = threshold_vectors(vecs, threshold=1e-3)
+        self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 0, 1e-3, 1]))
+        thresholded = threshold_vectors(vecs, threshold=1e-4)
+        self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 1e-4, 1e-3, 1]))
+        thresholded = threshold_vectors(vecs, threshold=1e-5)
+        self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [1e-5, 1e-4, 1e-3, 1]))
 
 
 if __name__ == '__main__':
