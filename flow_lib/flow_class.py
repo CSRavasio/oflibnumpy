@@ -16,8 +16,8 @@ import warnings
 import cv2
 import numpy as np
 from scipy.interpolate import griddata
-from .utils import get_valid_ref, get_valid_padding, validate_shape, \
-    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow, DEFAULT_THRESHOLD
+from .utils import DEFAULT_THRESHOLD, get_valid_ref, get_valid_padding, validate_shape, \
+    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow, threshold_vectors
 
 
 class Flow(object):
@@ -1120,14 +1120,21 @@ class Flow(object):
         padding = [int(np.ceil(p)) for p in padding]
         return padding
 
-    def is_zero(self, thresholded: bool = True) -> bool:
-        """Checks whether all flow vectors (where mask is True) are zero. Uses a threshold (Flow._threshold) if required
+    def is_zero(self, thresholded: bool = None) -> bool:
+        """Checks whether all flow vectors (where mask is True) are zero, thresholding if necessary.
+
+        Flow vector magnitude threshold used is DEFAULT_THRESHOLD, defined at top of the utils file
 
         :param thresholded: Boolean determining whether the flow is thresholded, defaults to True
         :return: True if flow is zero, False if not
         """
-        mags = np.linalg.norm(self.vecs, axis=-1)
+
+        thresholded = True if thresholded is None else thresholded
+        if not isinstance(thresholded, bool):
+            raise TypeError("Error checking whether flow is zero: Thresholded needs to be a boolean")
+
         if thresholded:
-            return np.all(mags <= self._threshold)
+            vecs = threshold_vectors(self.vecs)
         else:
-            return np.all(mags == 0)
+            vecs = self.vecs
+        return np.all(vecs == 0)
