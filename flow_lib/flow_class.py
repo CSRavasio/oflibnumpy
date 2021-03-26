@@ -1102,8 +1102,7 @@ class Flow(object):
         :return: Padding as a list [top, bottom, left, right]
         """
 
-        v = np.copy(self.vecs)
-        v[(-self._threshold < v) & (v < self._threshold)] = 0
+        v = threshold_vectors(self.vecs)
         # Threshold to avoid very small flow values (possible artefacts) triggering a need for padding
         if self.ref == 's':
             v *= -1
