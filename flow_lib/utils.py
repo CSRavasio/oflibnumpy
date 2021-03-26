@@ -241,3 +241,18 @@ def points_inside_area(pts: np.ndarray, shape: Union[tuple, list]) -> np.ndarray
     status_array = (pts[..., 0] >= 0) & (pts[..., 0] <= shape[0] - 1) & \
                    (pts[..., 1] >= 0) & (pts[..., 1] <= shape[1] - 1)
     return status_array
+
+
+def threshold_vectors(vecs: np.ndarray, threshold: Union[float, int] = None) -> np.ndarray:
+    """Sets all flow vectors with a magnitude below threshold to zero
+
+    :param vecs: Input flow numpy array, shape H-W-2
+    :param threshold: Threshold value as float or int, defaults to DEFAULT_THRESHOLD (top of file)
+    :return: Flow array with vector magnitudes below the threshold set to 0
+    """
+
+    threshold = DEFAULT_THRESHOLD if threshold is None else threshold
+    mags = np.linalg.norm(vecs, axis=-1)
+    f = vecs.copy()
+    f[mags < threshold] = 0
+    return f
