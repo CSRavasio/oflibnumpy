@@ -17,7 +17,7 @@ import cv2
 import numpy as np
 from scipy.interpolate import griddata
 from .utils import get_valid_ref, get_valid_padding, validate_shape, \
-    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow
+    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow, DEFAULT_THRESHOLD
 
 
 class Flow(object):
@@ -33,7 +33,7 @@ class Flow(object):
         self.vecs = flow_vectors
         self.ref = ref
         self.mask = mask
-        self._threshold = 1e-3  # Used for some visualisations
+        self._threshold = DEFAULT_THRESHOLD  # Used for some visualisations
 
     @property
     def vecs(self) -> np.ndarray:

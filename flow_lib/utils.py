@@ -16,6 +16,9 @@ from typing import Union, Any
 from scipy.interpolate import griddata
 
 
+DEFAULT_THRESHOLD = 1e-3
+
+
 def get_valid_ref(ref: Any) -> str:
     """Checks flow reference input for validity
 
