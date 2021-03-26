@@ -251,7 +251,6 @@ class TestApplyFlow(unittest.TestCase):
             warped_img = apply_flow(flow, img, ref)
             # Values will not be exactly the same due to rounding etc., so use SSIM instead
             ssim = structural_similarity(control_img, warped_img, multichannel=True)
-            print(ssim)
             self.assertTrue(ssim > 0.98)
 
     def test_translation(self):
