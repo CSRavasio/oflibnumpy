@@ -611,7 +611,7 @@ class Flow(object):
 
         mode = 'valid' if mode is None else mode
         if mode == 'valid':
-            if np.all(self.vecs == 0):  # In case the flow is 0, no further calculations are necessary
+            if self.is_zero(thresholded=False):  # In case the flow is 0, no further calculations are necessary
                 return self.switch_ref(mode='invalid')
             else:
                 if self.ref == 's':
@@ -690,7 +690,7 @@ class Flow(object):
 
         pts = pts.astype('f')
         warped_pts, nan_vals = None, None
-        if np.all(self.vecs == 0):
+        if self.is_zero(thresholded=True):
             warped_pts = pts
         else:
             if self.ref == 's':
