@@ -1119,3 +1119,15 @@ class Flow(object):
         ]
         padding = [int(np.ceil(p)) for p in padding]
         return padding
+
+    def is_zero(self, thresholded: bool = True) -> bool:
+        """Checks whether all flow vectors (where mask is True) are zero. Uses a threshold (Flow._threshold) if required
+
+        :param thresholded: Boolean determining whether the flow is thresholded, defaults to True
+        :return: True if flow is zero, False if not
+        """
+        mags = np.linalg.norm(self.vecs, axis=-1)
+        if thresholded:
+            return np.all(mags <= self._threshold)
+        else:
+            return np.all(mags == 0)
