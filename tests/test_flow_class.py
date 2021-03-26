@@ -1048,11 +1048,11 @@ class TestFlow(unittest.TestCase):
         self.assertEqual(flow.is_zero(thresholded=False), True)
 
         threshold = flow._threshold
-        flow.vecs[:3, :, 0] = threshold
+        flow.vecs[:3, :, 0] = 1e-4
         self.assertEqual(flow.is_zero(thresholded=True), True)
         self.assertEqual(flow.is_zero(thresholded=False), False)
 
-        flow.vecs[:3, :, 1] = -threshold
+        flow.vecs[:3, :, 1] = -1e-3
         self.assertEqual(flow.is_zero(thresholded=True), False)
         self.assertEqual(flow.is_zero(thresholded=False), False)
 
@@ -1060,6 +1060,9 @@ class TestFlow(unittest.TestCase):
         flow = Flow.from_transforms(transforms, shape)
         self.assertEqual(flow.is_zero(thresholded=True), False)
         self.assertEqual(flow.is_zero(thresholded=False), False)
+
+        with self.assertRaises(TypeError):
+            flow.is_zero('test')
 
 
 if __name__ == '__main__':
