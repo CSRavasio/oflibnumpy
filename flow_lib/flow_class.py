@@ -16,7 +16,7 @@ import warnings
 import cv2
 import numpy as np
 from scipy.interpolate import griddata
-from .utils import DEFAULT_THRESHOLD, get_valid_ref, get_valid_padding, validate_shape, \
+from .utils import get_valid_ref, get_valid_padding, validate_shape, \
     flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow, threshold_vectors
 
 
@@ -33,7 +33,6 @@ class Flow(object):
         self.vecs = flow_vectors
         self.ref = ref
         self.mask = mask
-        self._threshold = DEFAULT_THRESHOLD  # Used for some visualisations
 
     @property
     def vecs(self) -> np.ndarray:
@@ -822,10 +821,8 @@ class Flow(object):
         if not isinstance(show_mask_borders, bool):
             raise TypeError("Error visualising flow: Show_mask_borders needs to be boolean")
 
-        f = self.vecs.copy()  # Necessary, as otherwise the flow outside this function can be affected (not immutable)
-
+        f = threshold_vectors(self.vecs)
         # Threshold the flow: very small numbers can otherwise lead to issues when calculating mag / angle
-        f[(-self._threshold < f) & (f < self._threshold)] = 0
 
         # Colourise the flow
         hsv = np.zeros((f.shape[0], f.shape[1], 3), 'f')
@@ -935,8 +932,7 @@ class Flow(object):
                 raise ValueError("Error visualising flow arrows: Colour list or tuple needs to have length 3")
 
         # Thresholding
-        f = self.vecs.copy()
-        f[(-self._threshold < f) & (f < self._threshold)] = 0
+        f = threshold_vectors(self.vecs)
 
         # Make points
         x, y = np.mgrid[:f.shape[0] - 1:grid_dist, :f.shape[1] - 1:grid_dist]
