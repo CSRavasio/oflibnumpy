@@ -1041,6 +1041,10 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(f_s_masked.get_padding(), f_s_masked_desired))
         self.assertIsNone(np.testing.assert_equal(f_t_masked.get_padding(), f_t_masked_desired))
 
+        f = Flow.zero(shape)
+        f.vecs[..., 0] = np.random.rand(*shape) * 1e-4
+        self.assertIsNone(np.testing.assert_equal(f.get_padding(), [0, 0, 0, 0]))
+
     def test_is_zero(self):
         shape = (10, 10)
         flow = Flow.zero(shape)
