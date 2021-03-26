@@ -1041,6 +1041,26 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(f_s_masked.get_padding(), f_s_masked_desired))
         self.assertIsNone(np.testing.assert_equal(f_t_masked.get_padding(), f_t_masked_desired))
 
+    def test_is_zero(self):
+        shape = (10, 10)
+        flow = Flow.zero(shape)
+        self.assertEqual(flow.is_zero(thresholded=True), True)
+        self.assertEqual(flow.is_zero(thresholded=False), True)
+
+        threshold = flow._threshold
+        flow.vecs[:3, :, 0] = threshold
+        self.assertEqual(flow.is_zero(thresholded=True), True)
+        self.assertEqual(flow.is_zero(thresholded=False), False)
+
+        flow.vecs[:3, :, 1] = -threshold
+        self.assertEqual(flow.is_zero(thresholded=True), False)
+        self.assertEqual(flow.is_zero(thresholded=False), False)
+
+        transforms = [['rotation', 0, 0, 45]]
+        flow = Flow.from_transforms(transforms, shape)
+        self.assertEqual(flow.is_zero(thresholded=True), False)
+        self.assertEqual(flow.is_zero(thresholded=False), False)
+
 
 if __name__ == '__main__':
     unittest.main()
