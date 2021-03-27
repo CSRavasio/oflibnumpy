@@ -1051,7 +1051,6 @@ class TestFlow(unittest.TestCase):
         self.assertEqual(flow.is_zero(thresholded=True), True)
         self.assertEqual(flow.is_zero(thresholded=False), True)
 
-        threshold = flow._threshold
         flow.vecs[:3, :, 0] = 1e-4
         self.assertEqual(flow.is_zero(thresholded=True), True)
         self.assertEqual(flow.is_zero(thresholded=False), False)
