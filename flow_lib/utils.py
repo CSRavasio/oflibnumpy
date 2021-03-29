@@ -8,7 +8,7 @@
 #       Imaging Sciences (BMEIS) at King's College London (KCL)
 #   Prof Lyndon Da Cruz, consultant ophthalmic surgeon, Moorfields Eye Hospital, London UK
 #
-# This file is part of flowlib
+# This file is part of opticalflowlib
 
 import cv2
 import numpy as np
