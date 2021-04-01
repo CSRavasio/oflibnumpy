@@ -16,10 +16,10 @@ import cv2
 import numpy as np
 from scipy.ndimage import rotate, shift
 from skimage.metrics import structural_similarity
-from flow_lib.utils import get_valid_ref, get_valid_padding, validate_shape, \
+from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
     points_inside_area, threshold_vectors
-from flow_lib.flow_class import Flow
+from oflibnumpy.flow_class import Flow
 
 
 class TestValidityChecks(unittest.TestCase):

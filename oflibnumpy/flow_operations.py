@@ -8,7 +8,7 @@
 #       Imaging Sciences (BMEIS) at King's College London (KCL)
 #   Prof Lyndon Da Cruz, consultant ophthalmic surgeon, Moorfields Eye Hospital, London UK
 #
-# This file is part of opticalflowlib
+# This file is part of oflibnumpy
 
 import cv2
 import numpy as np
@@ -56,3 +56,4 @@ def visualise_definition(mode: str, shape: Union[list, tuple] = None, insert_tex
         cv2.putText(img, '[+, -]', (400, 155), font, 1, font_colour)
         cv2.putText(img, '[+, +]', (400, 470), font, 1, font_colour)
     return np.round(img).astype('uint8')
+

@@ -12,7 +12,7 @@
 
 import unittest
 import cv2
-from flow_lib.flow_operations import visualise_definition
+from oflibnumpy.flow_operations import visualise_definition
 
 
 class TestFlowOperations(unittest.TestCase):
