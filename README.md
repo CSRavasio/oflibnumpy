@@ -1,2 +1,2 @@
-# flow_lib
-Optical flow library
+# oflib-numpy
+Optical flow library, based on NumPy arrays
