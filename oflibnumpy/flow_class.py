@@ -26,7 +26,7 @@ class Flow(object):
 
         :param flow_vectors: Numpy array H-W-2 containing the flow vector in OpenCV convention: [..., 0] are horizontal,
             [..., 1] are vertical vector components (rather than the numpy vertical first, horizontal second convention)
-        :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
+        :param ref: Flow reference, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
             True everywhere.
         """
