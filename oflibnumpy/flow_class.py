@@ -270,7 +270,7 @@ class Flow(object):
         :return: New flow cut as a corresponding numpy array would be cut
         """
 
-        return Flow(self.vecs.__getitem__(item), self.ref, self.mask.__getitem__(item))
+        return Flow(self._vecs.__getitem__(item), self._ref, self._mask.__getitem__(item))
 
     def __copy__(self) -> Flow:
         """Returns a copy of the flow object
