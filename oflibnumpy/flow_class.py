@@ -829,7 +829,7 @@ class Flow(object):
         # Colourise the flow
         hsv = np.zeros((f.shape[0], f.shape[1], 3), 'f')
         mag, ang = cv2.cartToPolar(f[..., 0], f[..., 1], angleInDegrees=True)
-        hsv[..., 0] = ang / 2
+        hsv[..., 0] = np.mod(ang, 360) / 2
         hsv[..., 2] = 255
 
         # Add mask if required
@@ -950,7 +950,7 @@ class Flow(object):
         tip_size = 3.5
         if colour is None:
             hsv = np.full((1, ang.shape[0], 3), 255, 'uint8')
-            hsv[0, :, 0] = np.round(ang[:, 0] / 2)
+            hsv[0, :, 0] = np.round(np.mod(ang[:, 0], 360) / 2)
             colours = np.squeeze(cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
         for i_num, i_pt in enumerate(i_pts_flat):
             if flow_mags[i_num] > 0.5:  # Only draw if the flow length rounds to at least one pixel
