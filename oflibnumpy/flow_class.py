@@ -179,7 +179,7 @@ class Flow(object):
         ref: str = None,
         mask: np.ndarray = None
     ) -> Flow:
-        """Flow object constructor, zero everywhere.
+        """Flow object constructor, based on list of transforms
 
         :param transform_list: List of transforms to be turned into a flow field, where each transform is expressed as
             a list of [transform name, transform value 1, ... , transform value n]. Supported options:
