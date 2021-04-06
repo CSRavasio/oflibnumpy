@@ -264,7 +264,8 @@ class Flow(object):
     def __getitem__(self, item: Union[int, list, slice]) -> Flow:
         """Mimics __getitem__ of a numpy array, returning a flow object cut accordingly
 
-        Will throw an error if mask.__getitem__(item) or vecs.__getitem__(item) throw an error
+        Will throw an error if mask.__getitem__(item) or vecs.__getitem__(item) throw an error. Also throws an error if
+        sliced vecs (or masks) don't fulfil the conditions to construct a flow object (e.g. have shape H-W-2 for vecs)
 
         :param item: Slice used to select a part of the flow
         :return: New flow cut as a corresponding numpy array would be cut
