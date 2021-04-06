@@ -299,8 +299,8 @@ class TestFlow(unittest.TestCase):
             flow1 * np.random.rand(200, 200, 2, 1)
 
     def test_div(self):
-        vecs1 = np.random.rand(100, 200, 2)
-        vecs2 = np.random.rand(100, 200, 2)
+        vecs1 = np.random.rand(100, 200, 2) + .5
+        vecs2 = -np.random.rand(100, 200, 2) - .5
         flow1 = Flow(vecs1)
 
         # Divison
@@ -308,22 +308,26 @@ class TestFlow(unittest.TestCase):
         floats = (np.random.rand(100) - .5) * 20
         # ... using ints and floats
         for i, f in zip(ints, floats):
-            self.assertIsNone(np.testing.assert_allclose((flow1 / i).vecs, vecs1 / i, rtol=1e-6, atol=1e-6))
-            self.assertIsNone(np.testing.assert_allclose((flow1 / f).vecs, vecs1 / f, rtol=1e-6, atol=1e-6))
+            if i < -1e-5 or i > 1e-5:
+                self.assertIsNone(np.testing.assert_allclose((flow1 / i).vecs, vecs1 / i, rtol=1e-6, atol=1e-6))
+            if f < -1e-5 or f > 1e-5:
+                self.assertIsNone(np.testing.assert_allclose((flow1 / f).vecs, vecs1 / f, rtol=1e-6, atol=1e-6))
         # ... using a list of length 2
         int_list = np.random.randint(-10, 10, (100, 2))
         for li in int_list:
-            v = vecs1.astype('f')
-            v[..., 0] /= li[0]
-            v[..., 1] /= li[1]
-            self.assertIsNone(np.testing.assert_allclose((flow1 / list(li)).vecs, v, rtol=1e-6, atol=1e-6))
+            if li[0] != 0 and li[1] != 0:
+                v = vecs1.astype('f')
+                v[..., 0] /= li[0]
+                v[..., 1] /= li[1]
+                self.assertIsNone(np.testing.assert_allclose((flow1 / list(li)).vecs, v, rtol=1e-6, atol=1e-6))
         # ... using a numpy array of size 2
         int_list = np.random.randint(-10, 10, (100, 2))
         for li in int_list:
-            v = vecs1.astype('f')
-            v[..., 0] /= li[0]
-            v[..., 1] /= li[1]
-            self.assertIsNone(np.testing.assert_allclose((flow1 / li).vecs, v, rtol=1e-6, atol=1e-6))
+            if li[0] != 0 and li[1] != 0:
+                v = vecs1.astype('f')
+                v[..., 0] /= li[0]
+                v[..., 1] /= li[1]
+                self.assertIsNone(np.testing.assert_allclose((flow1 / li).vecs, v, rtol=1e-6, atol=1e-6))
         # ... using a numpy array of the same shape as the flow
         self.assertIsNone(np.testing.assert_allclose((flow1 / vecs2[..., 0]).vecs, vecs1 / vecs2[..., :1],
                                                      rtol=1e-6, atol=1e-6))
