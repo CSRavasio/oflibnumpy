@@ -256,6 +256,7 @@ class Flow(object):
         return cls.from_matrix(matrix, shape, ref, mask)
 
     def __str__(self):
+        """Enhanced string representation of the flow object"""
         info_string = "Flow object, reference {}, shape {}*{}; ".format(self.ref, *self.shape)
         info_string += self.__repr__()
         return info_string
