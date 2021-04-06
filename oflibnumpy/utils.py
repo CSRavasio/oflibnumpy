@@ -10,6 +10,7 @@
 #
 # This file is part of oflibnumpy
 
+import math
 import cv2
 import numpy as np
 from typing import Union, Any
@@ -116,21 +117,20 @@ def matrix_from_transform(transform: str, values: list) -> np.ndarray:
     :return: Transformation matrix as numpy array of shape 3-3
     """
 
-    value = np.array(values)
     matrix = np.identity(3)
     if transform == 'translation':  # translate: value is a list of [horizontal movement, vertical movement]
-        matrix[0:2, 2] = value[0], value[1]
+        matrix[0:2, 2] = values[0], values[1]
     if transform == 'scaling':  # zoom: value is a list of [horizontal coord, vertical coord, scaling]
-        translation_matrix_1 = matrix_from_transform('translation', -value[:2])
-        translation_matrix_2 = matrix_from_transform('translation', value[:2])
-        matrix[0, 0] = value[2]
-        matrix[1, 1] = value[2]
+        translation_matrix_1 = matrix_from_transform('translation', [-values[0], -values[1]])
+        translation_matrix_2 = matrix_from_transform('translation', values[:2])
+        matrix[0, 0] = values[2]
+        matrix[1, 1] = values[2]
         matrix = translation_matrix_2 @ matrix @ translation_matrix_1
     if transform == 'rotation':  # rotate: value is a list of [horizontal coord, vertical coord, rotation in degrees]
-        rot = np.radians(value[2])
-        translation_matrix_1 = matrix_from_transform('translation', -value[:2])
-        translation_matrix_2 = matrix_from_transform('translation', value[:2])
-        matrix[0:2, 0:2] = [[np.cos(rot), np.sin(rot)], [-np.sin(rot), np.cos(rot)]]
+        rot = math.radians(values[2])
+        translation_matrix_1 = matrix_from_transform('translation', [-values[0], -values[1]])
+        translation_matrix_2 = matrix_from_transform('translation', values[:2])
+        matrix[0:2, 0:2] = [[math.cos(rot), math.sin(rot)], [-math.sin(rot), math.cos(rot)]]
         # NOTE: diff from usual signs in rot matrix [[+, -], [+, +]] results from 'y' axis pointing down instead of up
         matrix = translation_matrix_2 @ matrix @ translation_matrix_1
     return matrix
