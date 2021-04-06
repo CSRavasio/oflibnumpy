@@ -197,11 +197,12 @@ class TestFlow(unittest.TestCase):
         indices = np.random.randint(0, 150, size=(20, 2))
         for i in indices:
             # Cutting a number of elements
-            self.assertIsNone(np.testing.assert_allclose(flow.vecs[i], vectors[i]))
+            self.assertIsNone(np.testing.assert_allclose(flow[i].vecs, vectors[i]))
             # Cutting a specific item
-            self.assertIsNone(np.testing.assert_allclose(flow.vecs[i[0], i[1]], vectors[i[0], i[1]]))
+            self.assertIsNone(np.testing.assert_allclose(flow[i[0]:i[0] + 1, i[1]:i[1] + 1].vecs,
+                                                         vectors[i[0]:i[0] + 1, i[1]:i[1] + 1]))
             # Cutting an area
-            self.assertIsNone(np.testing.assert_allclose(flow.vecs[i[0]:i[0] + 40, i[1]:i[1] + 40],
+            self.assertIsNone(np.testing.assert_allclose(flow[i[0]:i[0] + 40, i[1]:i[1] + 40].vecs,
                                                          vectors[i[0]:i[0] + 40, i[1]:i[1] + 40]))
 
     def test_add(self):
