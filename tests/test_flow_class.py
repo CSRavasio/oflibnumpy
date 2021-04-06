@@ -833,7 +833,7 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(flow.visualise('hsv')[..., 1], 255))
         self.assertIsNone(np.testing.assert_equal(flow.visualise('hsv')[..., 2], 255))
 
-        # Flow outwards at the andle of 240 degrees (counter-clockwise) is green
+        # Flow outwards at the andle of 240 degrees (counter-clockwise) is blue
         flow = Flow.from_transforms([['translation', -1, -math.sqrt(3)]], [200, 300])
         desired_img = np.tile(np.array([255, 0, 0]).reshape((1, 1, 3)), (200, 300, 1))
         self.assertIsNone(np.testing.assert_equal(flow.visualise('bgr'), desired_img))
