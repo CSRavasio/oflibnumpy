@@ -279,7 +279,7 @@ class Flow(object):
         :return: Copy of the flow object
         """
 
-        return Flow(self.vecs, self.ref, self.mask)
+        return Flow(self._vecs, self._ref, self._mask)
 
     def __add__(self, other: Union[np.ndarray, Flow]) -> Flow:
         """Adds a flow object or a numpy array to a flow object
