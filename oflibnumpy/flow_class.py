@@ -489,7 +489,7 @@ class Flow(object):
         mode = 'constant' if mode is None else mode
         if mode not in ['constant', 'edge', 'symmetric']:
             raise ValueError("Error padding flow: Mode should be one of "
-                             "'constant', 'edge', 'symmetric', 'empty', but instead got '{}'".format(mode))
+                             "'constant', 'edge', 'symmetric', but instead got '{}'".format(mode))
         padding = get_valid_padding(padding, "Error padding flow: ")
         padded_vecs = np.pad(self._vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)), mode=mode)
         padded_mask = np.pad(self._mask, (tuple(padding[:2]), tuple(padding[2:])))
