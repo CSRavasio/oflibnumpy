@@ -335,19 +335,19 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose((flow1 / vecs2).vecs, vecs1 / vecs2, rtol=1e-6, atol=1e-6))
         # ... using a list of the wrong length
         with self.assertRaises(ValueError):
-            flow1 / [0, 1, 2]
+            flow1 / [1, 2, 3]
         # ... using a numpy array of the wrong size
         with self.assertRaises(ValueError):
-            flow1 / np.array([0, 1, 2])
+            flow1 / np.array([1, 2, 3])
         # ... using a numpy array of the wrong shape
         with self.assertRaises(ValueError):
-            flow1 / np.random.rand(200, 200)
+            flow1 / np.ones((200, 200))
         # ... using a numpy array of the wrong shape
         with self.assertRaises(ValueError):
-            flow1 / np.random.rand(200, 200, 2)
+            flow1 / np.ones((200, 200, 2))
         # ... using a numpy array of the wrong shape
         with self.assertRaises(ValueError):
-            flow1 / np.random.rand(200, 200, 2, 1)
+            flow1 / np.ones((200, 200, 2, 1))
 
     def test_pow(self):
         vecs1 = np.random.rand(100, 200, 2)
