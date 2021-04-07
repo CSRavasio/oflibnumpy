@@ -115,7 +115,7 @@ class Flow(object):
         :return: Shape (resolution) of the flow field as a tuple
         """
 
-        return self.vecs.shape[:2]
+        return self._vecs.shape[:2]
 
     @classmethod
     def zero(cls, shape: Union[list, tuple], ref: str = None, mask: np.ndarray = None) -> Flow:
@@ -257,7 +257,7 @@ class Flow(object):
 
     def __str__(self):
         """Enhanced string representation of the flow object"""
-        info_string = "Flow object, reference {}, shape {}*{}; ".format(self.ref, *self.shape)
+        info_string = "Flow object, reference {}, shape {}*{}; ".format(self._ref, *self.shape)
         info_string += self.__repr__()
         return info_string
 
@@ -300,16 +300,16 @@ class Flow(object):
             if self.shape != other.shape:
                 raise ValueError("Error adding to flow: Augend and addend flow objects are not the same shape")
             else:
-                vecs = self.vecs + other.vecs
-                mask = np.logical_and(self.mask, other.mask)
-                return Flow(vecs, self.ref, mask)
+                vecs = self._vecs + other._vecs
+                mask = np.logical_and(self._mask, other._mask)
+                return Flow(vecs, self._ref, mask)
         if isinstance(other, np.ndarray):
             if self.shape != other.shape[:2] or other.ndim != 3 or other.shape[2] != 2:
                 raise ValueError("Error adding to flow: Addend numpy array needs to have the same shape as the flow "
                                  "object, 3 dimensions overall, and a channel length of 2")
             else:
-                vecs = self.vecs + other
-                return Flow(vecs, self.ref, self.mask)
+                vecs = self._vecs + other
+                return Flow(vecs, self._ref, self._mask)
 
     def __sub__(self, other: Union[np.ndarray, Flow]) -> Flow:
         """Subtracts a flow objects or a numpy array from a flow object
@@ -332,16 +332,16 @@ class Flow(object):
                 raise ValueError("Error subtracting from flow: "
                                  "Minuend and subtrahend flow objects are not the same shape")
             else:
-                vecs = self.vecs - other.vecs
-                mask = np.logical_and(self.mask, other.mask)
-                return Flow(vecs, self.ref, mask)
+                vecs = self._vecs - other._vecs
+                mask = np.logical_and(self._mask, other._mask)
+                return Flow(vecs, self._ref, mask)
         if isinstance(other, np.ndarray):
             if self.shape != other.shape[:2] or other.ndim != 3 or other.shape[2] != 2:
                 raise ValueError("Error subtracting from flow: Subtrahend numpy array needs to have the same shape as "
                                  "the flow object, 3 dimensions overall, and a channel length of 2")
             else:
-                vecs = self.vecs - other
-                return Flow(vecs, self.ref, self.mask)
+                vecs = self._vecs - other
+                return Flow(vecs, self._ref, self._mask)
 
     def __mul__(self, other: Union[float, int, bool, list, np.ndarray]) -> Flow:
         """Multiplies a flow object
@@ -352,12 +352,12 @@ class Flow(object):
         """
 
         try:  # other is int, float, or can be converted to it
-            return Flow(self.vecs * float(other), self.ref, self.mask)
+            return Flow(self._vecs * float(other), self._ref, self._mask)
         except TypeError:
             if isinstance(other, list):
                 if len(other) != 2:
                     raise ValueError("Error multiplying flow: Multiplier list not length 2")
-                return Flow(self.vecs * np.array(other)[np.newaxis, np.newaxis, :], self.ref, self.mask)
+                return Flow(self._vecs * np.array(other)[np.newaxis, np.newaxis, :], self._ref, self._mask)
             elif isinstance(other, np.ndarray):
                 if other.ndim == 1 and other.size == 2:
                     other = other[np.newaxis, np.newaxis, :]
@@ -368,7 +368,7 @@ class Flow(object):
                 else:
                     raise ValueError("Error multiplying flow: Multiplier array is not one of the following: size 2, "
                                      "shape of the flow object, shape of the flow vectors")
-                return Flow(self.vecs * other, self.ref, self.mask)
+                return Flow(self._vecs * other, self._ref, self._mask)
             else:
                 raise TypeError("Error multiplying flow: Multiplier cannot be converted to float, "
                                 "or isn't a list or numpy array")
@@ -382,12 +382,12 @@ class Flow(object):
         """
 
         try:  # other is int, float, or can be converted to it
-            return Flow(self.vecs / float(other), self.ref, self.mask)
+            return Flow(self._vecs / float(other), self._ref, self._mask)
         except TypeError:
             if isinstance(other, list):
                 if len(other) != 2:
                     raise ValueError("Error dividing flow: Divisor list not length 2")
-                return Flow(self.vecs / np.array(other)[np.newaxis, np.newaxis, :], self.ref, self.mask)
+                return Flow(self._vecs / np.array(other)[np.newaxis, np.newaxis, :], self._ref, self._mask)
             elif isinstance(other, np.ndarray):
                 if other.ndim == 1 and other.size == 2:
                     other = other[np.newaxis, np.newaxis, :]
@@ -398,7 +398,7 @@ class Flow(object):
                 else:
                     raise ValueError("Error dividing flow: Divisor array is not one of the following: size 2, "
                                      "shape of the flow object, shape of the flow vectors")
-                return Flow(self.vecs / other, self.ref, self.mask)
+                return Flow(self._vecs / other, self._ref, self._mask)
             else:
                 raise TypeError("Error dividing flow: Divisor cannot be converted to float, "
                                 "or isn't a list or numpy array")
@@ -412,12 +412,12 @@ class Flow(object):
         """
 
         try:  # other is int, float, or can be converted to it
-            return Flow(self.vecs ** float(other), self.ref, self.mask)
+            return Flow(self._vecs ** float(other), self._ref, self._mask)
         except TypeError:
             if isinstance(other, list):
                 if len(other) != 2:
                     raise ValueError("Error exponentiating flow: Exponent list not length 2")
-                return Flow(self.vecs ** np.array(other)[np.newaxis, np.newaxis, :], self.ref, self.mask)
+                return Flow(self._vecs ** np.array(other)[np.newaxis, np.newaxis, :], self._ref, self._mask)
             elif isinstance(other, np.ndarray):
                 if other.ndim == 1 and other.size == 2:
                     other = other[np.newaxis, np.newaxis, :]
@@ -428,7 +428,7 @@ class Flow(object):
                 else:
                     raise ValueError("Error exponentiating flow: Exponent array is not one of the following: size 2, "
                                      "shape of the flow object, shape of the flow vectors")
-                return Flow(self.vecs ** other, self.ref, self.mask)
+                return Flow(self._vecs ** other, self._ref, self._mask)
             else:
                 raise TypeError("Error exponentiating flow: Exponent cannot be converted to float, "
                                 "or isn't a list or numpy array")
@@ -467,14 +467,14 @@ class Flow(object):
             raise ValueError("Error resizing flow: Scale values must be larger than 0")
 
         # Resize vectors and mask
-        to_resize = np.concatenate((self.vecs, self.mask.astype('f')[..., np.newaxis]), axis=-1)
+        to_resize = np.concatenate((self._vecs, self._mask.astype('f')[..., np.newaxis]), axis=-1)
         resized = cv2.resize(to_resize, None, fx=scale[1], fy=scale[0])
 
         # Adjust values
         resized[..., 0] *= scale[1]
         resized[..., 1] *= scale[0]
 
-        return Flow(resized[..., :2], self.ref, np.round(resized[..., 2]))
+        return Flow(resized[..., :2], self._ref, np.round(resized[..., 2]))
 
     def pad(self, padding: list = None, mode: str = None) -> Flow:
         """Pads the flow with the given padding. Sets padded mask values to False, and inserts 0 flow values if padding
@@ -491,9 +491,9 @@ class Flow(object):
             raise ValueError("Error padding flow: Mode should be one of "
                              "'constant', 'edge', 'symmetric', 'empty', but instead got '{}'".format(mode))
         padding = get_valid_padding(padding, "Error padding flow: ")
-        padded_vecs = np.pad(self.vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)), mode=mode)
-        padded_mask = np.pad(self.mask, (tuple(padding[:2]), tuple(padding[2:])))
-        return Flow(padded_vecs, self.ref, padded_mask)
+        padded_vecs = np.pad(self._vecs, (tuple(padding[:2]), tuple(padding[2:]), (0, 0)), mode=mode)
+        padded_mask = np.pad(self._mask, (tuple(padding[:2]), tuple(padding[2:])))
+        return Flow(padded_vecs, self._ref, padded_mask)
 
     def apply(
         self,
@@ -530,8 +530,8 @@ class Flow(object):
         # Type check, prepare arrays
         if isinstance(target, Flow):
             return_flow = True
-            t = target.vecs
-            mask = target.mask[..., np.newaxis]
+            t = target._vecs
+            mask = target._mask[..., np.newaxis]
         else:
             return_flow = False
             if not isinstance(target, np.ndarray):
@@ -542,25 +542,25 @@ class Flow(object):
         # Concatenate the flow vectors with the mask if required, so they are warped in one step
         if return_flow or return_valid_area:
             # if self.ref == 't': Just warp the mask, which self.vecs are valid taken into account after warping
-            if self.ref == 's':
+            if self._ref == 's':
                 # Warp the target mask after ANDing with flow mask to take into account which self.vecs are valid
                 if mask.shape[:2] != self.shape:
                     # If padding in use, mask can be smaller than self.mask
                     tmp = mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1], 0].copy()
                     mask[...] = False
                     mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1], 0] = \
-                        tmp & self.mask
+                        tmp & self._mask
                 else:
-                    mask = (mask & self.mask)
+                    mask = (mask & self._mask)
             t = np.concatenate((t, mask), axis=-1)
 
         # Determine flow to use for warping, and warp
         if padding is None:
             if not target.shape[:2] == self.shape[:2]:
                 raise ValueError("Error applying flow: Flow and target have to have the same shape")
-            warped_t = apply_flow(self.vecs, t, self.ref)
+            warped_t = apply_flow(self._vecs, t, self._ref)
         else:
-            mode = 'constant' if self.ref == 't' else 'edge'
+            mode = 'constant' if self._ref == 't' else 'edge'
             # Note: this mode is very important: irrelevant for flow with reference 't' as this by definition covers
             # the area of the target image, so 'constant' (defaulting to filling everything with 0) is fine. However,
             # for flows with reference 's', if locations in the source image with some flow vector border padded
@@ -568,7 +568,7 @@ class Flow(object):
             # being warped, and the mask being warped. By padding with the 'edge' mode, large gradients in flow vector
             # values at the edge of the original flow area are avoided, as are interpolation artefacts.
             flow = self.pad(padding, mode=mode)
-            warped_t = apply_flow(flow.vecs, t, flow.ref)
+            warped_t = apply_flow(flow._vecs, t, flow._ref)
 
         # Cut if necessary
         if padding is not None and cut:
@@ -578,20 +578,20 @@ class Flow(object):
         if return_flow or return_valid_area:
             mask = np.round(warped_t[..., -1]).astype('bool')
             # if self.ref == 's': Valid self.vecs already taken into account by ANDing with self.mask before warping
-            if self.ref == 't':
+            if self._ref == 't':
                 # Still need to take into account which self.vecs are actually valid by ANDing with self.mask
-                if mask.shape != self.mask.shape:
+                if mask.shape != self._mask.shape:
                     # If padding is in use, but warped_t has not been cut: AND with self.mask inside the flow area, and
                     # set everything else to False as not warped by the flow
                     t = mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1]].copy()
                     mask[...] = False
-                    mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1]] = t & self.mask
+                    mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1]] = t & self._mask
                 else:
-                    mask = mask & self.mask
+                    mask = mask & self._mask
 
         # Return as correct type
         if return_flow:
-            return Flow(warped_t[..., :2], target.ref, mask)
+            return Flow(warped_t[..., :2], target._ref, mask)
         else:
             if return_valid_area:
                 return warped_t[..., :-1], mask
@@ -615,18 +615,18 @@ class Flow(object):
             if self.is_zero(thresholded=False):  # In case the flow is 0, no further calculations are necessary
                 return self.switch_ref(mode='invalid')
             else:
-                if self.ref == 's':
+                if self._ref == 's':
                     switched_ref_flow = self.apply(self)  # apply_to is done s-based; see window pic 08/04/19
-                    switched_ref_flow.ref = 't'
+                    switched_ref_flow._ref = 't'
                     return switched_ref_flow
-                elif self.ref == 't':
+                elif self._ref == 't':
                     flow_copy_s = self.switch_ref(mode='invalid')  # so apply_to is ref-s; see window pic 08/04/19
                     return (-flow_copy_s).apply(flow_copy_s)
         elif mode == 'invalid':
-            if self.ref == 's':
-                return Flow(self.vecs, 't', self.mask)
-            elif self.ref == 't':
-                return Flow(self.vecs, 's', self.mask)
+            if self._ref == 's':
+                return Flow(self._vecs, 't', self._mask)
+            elif self._ref == 't':
+                return Flow(self._vecs, 's', self._mask)
         else:
             raise ValueError("Error switching flow reference: Mode not recognised, should be 'valid' or 'invalid'")
 
@@ -639,15 +639,15 @@ class Flow(object):
         :return: Inverse flow field
         """
 
-        ref = self.ref if ref is None else get_valid_ref(ref)
-        if self.ref == 's':
+        ref = self._ref if ref is None else get_valid_ref(ref)
+        if self._ref == 's':
             if ref == 's':
                 return self.apply(-self)
             elif ref == 't':
-                return Flow(-self.vecs, 't', self.mask)
-        elif self.ref == 't':
+                return Flow(-self._vecs, 't', self._mask)
+        elif self._ref == 't':
             if ref == 's':
-                return Flow(-self.vecs, 's', self.mask)
+                return Flow(-self._vecs, 's', self._mask)
             elif ref == 't':
                 return self.invert('s').switch_ref()
 
@@ -694,9 +694,9 @@ class Flow(object):
         if self.is_zero(thresholded=True):
             warped_pts = pts
         else:
-            if self.ref == 's':
+            if self._ref == 's':
                 if np.issubdtype(pts.dtype, np.integer):
-                    flow_vecs = self.vecs[pts[:, 0], pts[:, 1], ::-1]
+                    flow_vecs = self._vecs[pts[:, 0], pts[:, 1], ::-1]
                 elif np.issubdtype(pts.dtype, float):
                     # Using bilinear_interpolation here is not as accurate as using griddata(), but up to two orders of
                     # magnitude faster. Usually, points being tracked will have to be rounded at some point anyway,
@@ -704,17 +704,17 @@ class Flow(object):
                     if s_exact_mode:
                         x, y = np.mgrid[:self.shape[0], :self.shape[1]]
                         grid = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
-                        flow_flat = np.reshape(self.vecs[..., ::-1], (-1, 2))
+                        flow_flat = np.reshape(self._vecs[..., ::-1], (-1, 2))
                         flow_vecs = griddata(grid, flow_flat, (pts[:, 0], pts[:, 1]), method='linear')
                     else:
-                        flow_vecs = bilinear_interpolation(self.vecs[..., ::-1], pts)
+                        flow_vecs = bilinear_interpolation(self._vecs[..., ::-1], pts)
                 else:
                     raise TypeError("Error tracking points: Pts numpy array needs to have a float or int dtype")
                 warped_pts = pts + flow_vecs
-            if self.ref == 't':
+            if self._ref == 't':
                 x, y = np.mgrid[:self.shape[0], :self.shape[1]]
                 grid = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
-                flow_flat = np.reshape(self.vecs[..., ::-1], (-1, 2))
+                flow_flat = np.reshape(self._vecs[..., ::-1], (-1, 2))
                 origin_points = grid - flow_flat
                 flow_vecs = griddata(origin_points, flow_flat, (pts[:, 0], pts[:, 1]), method='linear')
                 warped_pts = pts + flow_vecs
@@ -760,19 +760,19 @@ class Flow(object):
             raise TypeError("Error fitting transformation matrix to flow: Masked needs to be boolean")
 
         # Get the two point arrays
-        if self.ref == 't':
+        if self._ref == 't':
             dst_pts = np.stack(np.mgrid[:self.shape[0], :self.shape[1]], axis=-1)[..., ::-1]
-            src_pts = dst_pts - self.vecs
+            src_pts = dst_pts - self._vecs
         else:  # ref is 's'
             src_pts = np.stack(np.mgrid[:self.shape[0], :self.shape[1]], axis=-1)[..., ::-1]
-            dst_pts = src_pts + self.vecs
+            dst_pts = src_pts + self._vecs
         src_pts = src_pts.reshape(-1, 2)
         dst_pts = dst_pts.reshape(-1, 2)
 
         # Mask if required
         if masked:
-            src_pts = src_pts[self.mask.ravel()]
-            dst_pts = dst_pts[self.mask.ravel()]
+            src_pts = src_pts[self._mask.ravel()]
+            dst_pts = dst_pts[self._mask.ravel()]
 
         if dof in [4, 6] and method == 'lms':
             method = 'ransac'
@@ -823,7 +823,7 @@ class Flow(object):
         if not isinstance(show_mask_borders, bool):
             raise TypeError("Error visualising flow: Show_mask_borders needs to be boolean")
 
-        f = threshold_vectors(self.vecs)
+        f = threshold_vectors(self._vecs)
         # Threshold the flow: very small numbers can otherwise lead to issues when calculating mag / angle
 
         # Colourise the flow
@@ -834,7 +834,7 @@ class Flow(object):
 
         # Add mask if required
         if show_mask:
-            hsv[np.invert(self.mask), 2] = 180
+            hsv[np.invert(self._mask), 2] = 180
 
         # Scale flow
         if range_max is None:
@@ -852,7 +852,7 @@ class Flow(object):
 
         # Add mask borders if required
         if show_mask_borders:
-            contours, hierarchy = cv2.findContours((255 * self.mask).astype('uint8'),
+            contours, hierarchy = cv2.findContours((255 * self._mask).astype('uint8'),
                                                    cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             cv2.drawContours(hsv, contours, -1, (0, 0, 0), 1)
 
@@ -934,7 +934,7 @@ class Flow(object):
                 raise ValueError("Error visualising flow arrows: Colour list or tuple needs to have length 3")
 
         # Thresholding
-        f = threshold_vectors(self.vecs)
+        f = threshold_vectors(self._vecs)
 
         # Make points
         x, y = np.mgrid[:f.shape[0] - 1:grid_dist, :f.shape[1] - 1:grid_dist]
@@ -963,9 +963,9 @@ class Flow(object):
 
         # Show mask and mask borders if required
         if show_mask:
-            img[~self.mask] = np.round(0.5 * img[~self.mask]).astype('uint8')
+            img[~self._mask] = np.round(0.5 * img[~self._mask]).astype('uint8')
         if show_mask_borders:
-            mask_as_img = np.array(255 * self.mask, 'uint8')
+            mask_as_img = np.array(255 * self._mask, 'uint8')
             contours, hierarchy = cv2.findContours(mask_as_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             cv2.drawContours(img, contours, -1, (0, 0, 0), 1)
         return img
@@ -1034,12 +1034,12 @@ class Flow(object):
         :return: Valid area in the target image
         """
 
-        if self.ref == 's':
+        if self._ref == 's':
             # Flow mask in 's' flow refers to valid flow vecs in the source image. Warping this mask to the target image
             # gives a boolean mask of which positions in the target image are valid, i.e. have been filled by values
             # warped there from the source by flow vectors that were themselves valid:
             # area = F{source & mask}, where: source & mask = mask, because: source = True everywhere
-            area = apply_flow(self.vecs, self.mask.astype('f'), self.ref)
+            area = apply_flow(self._vecs, self._mask.astype('f'), self._ref)
             area = np.round(area).astype('bool')
         else:  # ref is 't'
             # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, warping a test array that
@@ -1047,9 +1047,9 @@ class Flow(object):
             # image, i.e. positions that have been filled by values warped there from the source by flow vectors that
             # were themselves valid:
             # area = F{source} & mask, where: source = True everywhere
-            area = apply_flow(self.vecs, np.ones(self.shape), self.ref)
+            area = apply_flow(self._vecs, np.ones(self.shape), self._ref)
             area = np.round(area).astype('bool')
-            area &= self.mask
+            area &= self._mask
         return area
 
     def valid_source(self) -> np.ndarray:
@@ -1063,24 +1063,24 @@ class Flow(object):
         :return: Area in the source image valid in target image after warping
         """
 
-        if self.ref == 's':
+        if self._ref == 's':
             # Flow mask in 's' flow refers to valid flow vecs in the source image. Therefore, to find the area in the
             # source image that will end up being valid in the target image after warping, equal to self.valid_target(),
             # warping a test array that is True everywhere from target to source with the inverse of the flow, ANDed
             # with the flow mask, will yield a boolean mask of valid positions in the source image:
             # area = F.inv{target} & mask, where target = True everywhere
-            area = apply_flow(-self.vecs, np.ones(self.shape), 't')
+            area = apply_flow(-self._vecs, np.ones(self.shape), 't')
             # Note: this is equal to: area = self.invert('t').apply(np.ones(self.shape)), but more efficient as there
             # is no unnecessary warping of the mask
             area = np.round(area).astype('bool')
-            area &= self.mask
+            area &= self._mask
         else:  # ref is 't'
             # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, to find the area in the
             # source image that will end up being valid in the target image after warping, equal to self.valid_target(),
             # warping the flow mask from target to source with the inverse of the flow will yield a boolean mask of
             # valid positions in the source image:
             # area = F.inv{target & mask}, where target & mask = mask, because target = True everywhere
-            area = apply_flow(-self.vecs, self.mask.astype('f'), 's')
+            area = apply_flow(-self._vecs, self._mask.astype('f'), 's')
             # Note: this is equal to: area = self.invert('s').apply(self.mask.astype('f')), but more efficient as there
             # is no unnecessary warping of the mask
             area = np.round(area).astype('bool')
@@ -1100,19 +1100,19 @@ class Flow(object):
         :return: Padding as a list [top, bottom, left, right]
         """
 
-        v = threshold_vectors(self.vecs)
+        v = threshold_vectors(self._vecs)
         # Threshold to avoid very small flow values (possible artefacts) triggering a need for padding
-        if self.ref == 's':
+        if self._ref == 's':
             v *= -1
         x, y = np.mgrid[:self.shape[0], :self.shape[1]]
         v[..., 0] -= y
         v[..., 1] -= x
         v *= -1
         padding = [
-            np.maximum(-np.min(v[self.mask, 1]), 0),
-            np.maximum(np.max(v[self.mask, 1]) - (self.shape[0] - 1), 0),
-            np.maximum(-np.min(v[self.mask, 0]), 0),
-            np.maximum(np.max(v[self.mask, 0]) - (self.shape[1] - 1), 0)
+            np.maximum(-np.min(v[self._mask, 1]), 0),
+            np.maximum(np.max(v[self._mask, 1]) - (self.shape[0] - 1), 0),
+            np.maximum(-np.min(v[self._mask, 0]), 0),
+            np.maximum(np.max(v[self._mask, 0]) - (self.shape[1] - 1), 0)
         ]
         padding = [int(np.ceil(p)) for p in padding]
         return padding
@@ -1131,7 +1131,7 @@ class Flow(object):
             raise TypeError("Error checking whether flow is zero: Thresholded needs to be a boolean")
 
         if thresholded:
-            vecs = threshold_vectors(self.vecs)
+            vecs = threshold_vectors(self._vecs)
         else:
-            vecs = self.vecs
+            vecs = self._vecs
         return np.all(vecs == 0)
