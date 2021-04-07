@@ -354,7 +354,7 @@ class TestFlow(unittest.TestCase):
         vecs2 = np.random.rand(100, 200, 2)
         flow1 = Flow(vecs1)
 
-        # Divison
+        # Exponentiation
         ints = np.random.randint(-2, 2, 100)
         floats = (np.random.rand(100) - .5) * 4
         # ... using ints and floats
