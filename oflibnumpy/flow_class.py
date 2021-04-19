@@ -689,8 +689,6 @@ class Flow(object):
         if not isinstance(s_exact_mode, bool):
             raise TypeError("Error tracking points: S_exact_mode needs to be a boolean")
 
-        pts = pts.astype('f')
-        warped_pts, nan_vals = None, None
         if self.is_zero(thresholded=True):
             warped_pts = pts
         else:
@@ -711,7 +709,7 @@ class Flow(object):
                 else:
                     raise TypeError("Error tracking points: Pts numpy array needs to have a float or int dtype")
                 warped_pts = pts + flow_vecs
-            if self._ref == 't':
+            else:  # self._ref == 't'
                 x, y = np.mgrid[:self.shape[0], :self.shape[1]]
                 grid = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
                 flow_flat = np.reshape(self._vecs[..., ::-1], (-1, 2))

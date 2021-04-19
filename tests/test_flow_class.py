@@ -633,9 +633,9 @@ class TestFlow(unittest.TestCase):
         pts_tracked_s = f_s.track(pts)
         self.assertIsNone(np.testing.assert_allclose(pts_tracked_s, desired_pts,
                                                      atol=1e-1, rtol=1e-2))
+        # High tolerance needed as exact result is compared to an interpolated one
         pts_tracked_s = f_s.track(pts, s_exact_mode=True)
         self.assertIsNone(np.testing.assert_allclose(pts_tracked_s, desired_pts))
-        # High tolerance needed as exact result is compared to an interpolated one
         pts_tracked_t = f_t.track(pts)
         self.assertIsNone(np.testing.assert_allclose(pts_tracked_t, desired_pts,
                                                      atol=1e-6, rtol=1e-6))
@@ -645,6 +645,13 @@ class TestFlow(unittest.TestCase):
         pts_tracked_t, tracked = f_t.track(pts, get_valid_status=True)
         self.assertIsNone(np.testing.assert_equal(tracked, True))
         self.assertEqual(pts_tracked_t.dtype, np.float)
+
+        # Test tracking for 's' flow and int pts (checked via debugger)
+        f = Flow.from_transforms([['translation', 10, 20]], (512, 512), 's')
+        pts = np.array([[20, 10], [8, 7]])
+        desired_pts = [[40, 20], [28, 17]]
+        pts_tracked_s = f.track(pts)
+        self.assertIsNone(np.testing.assert_equal(pts_tracked_s, desired_pts))
 
         # Test valid status for 't' flow
         f_t.mask[:, 200:] = False
