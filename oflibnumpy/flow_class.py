@@ -1107,10 +1107,10 @@ class Flow(object):
         v[..., 1] -= x
         v *= -1
         padding = [
-            np.maximum(-np.min(v[self._mask, 1]), 0),
-            np.maximum(np.max(v[self._mask, 1]) - (self.shape[0] - 1), 0),
-            np.maximum(-np.min(v[self._mask, 0]), 0),
-            np.maximum(np.max(v[self._mask, 0]) - (self.shape[1] - 1), 0)
+            max(-np.min(v[self._mask, 1]), 0),
+            max(np.max(v[self._mask, 1]) - (self.shape[0] - 1), 0),
+            max(-np.min(v[self._mask, 0]), 0),
+            max(np.max(v[self._mask, 0]) - (self.shape[1] - 1), 0)
         ]
         padding = [int(np.ceil(p)) for p in padding]
         return padding
