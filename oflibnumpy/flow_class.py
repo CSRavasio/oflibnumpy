@@ -535,28 +535,28 @@ class Flow(object):
         if isinstance(target, Flow):
             return_flow = True
             t = target._vecs
-            mask = target._mask[..., np.newaxis]
+            mask = target._mask
         else:
             return_flow = False
             if not isinstance(target, np.ndarray):
                 raise ValueError("Error applying flow: Target needs to be either a flow object, or a numpy ndarray")
             t = target
-            mask = np.ones(t.shape[:2] + (1,), 'b')
+            mask = np.ones(t.shape[:2], 'b')
 
         # Concatenate the flow vectors with the mask if required, so they are warped in one step
         if return_flow or return_valid_area:
             # if self.ref == 't': Just warp the mask, which self.vecs are valid taken into account after warping
             if self._ref == 's':
                 # Warp the target mask after ANDing with flow mask to take into account which self.vecs are valid
-                if mask.shape[:2] != self.shape:
+                if mask.shape != self.shape:
                     # If padding in use, mask can be smaller than self.mask
-                    tmp = mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1], 0].copy()
+                    tmp = mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1]].copy()
                     mask[...] = False
-                    mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1], 0] = \
+                    mask[padding[0]:padding[0] + self.shape[0], padding[2]:padding[2] + self.shape[1]] = \
                         tmp & self._mask
                 else:
-                    mask = (mask & self._mask)
-            t = np.concatenate((t, mask), axis=-1)
+                    mask = mask & self._mask
+            t = np.concatenate((t, mask[..., np.newaxis]), axis=-1)
 
         # Determine flow to use for warping, and warp
         if padding is None:
