@@ -21,6 +21,10 @@ from .utils import get_valid_ref, get_valid_padding, validate_shape, \
 
 
 class Flow(object):
+    _vecs: np.ndarray
+    _mask: np.ndarray
+    _ref: str
+
     def __init__(self, flow_vectors: np.ndarray, ref: str = None, mask: np.ndarray = None):
         """Flow object constructor
 
