@@ -580,7 +580,8 @@ class Flow(object):
 
         # Extract and finalise mask if required
         if return_flow or return_valid_area:
-            mask = np.round(warped_t[..., -1]).astype('bool')
+            mask = warped_t[..., -1] == 1
+
             # if self.ref == 's': Valid self.vecs already taken into account by ANDing with self.mask before warping
             if self._ref == 't':
                 # Still need to take into account which self.vecs are actually valid by ANDing with self.mask
@@ -1042,7 +1043,7 @@ class Flow(object):
             # warped there from the source by flow vectors that were themselves valid:
             # area = F{source & mask}, where: source & mask = mask, because: source = True everywhere
             area = apply_flow(self._vecs, self._mask.astype('f'), self._ref)
-            area = np.round(area).astype('bool')
+            area = area == 1  # Matching behaviour of mask setting in .apply()
         else:  # ref is 't'
             # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, warping a test array that
             # is true everywhere, ANDed with the flow mask, will yield a boolean mask of valid positions in the target
@@ -1050,7 +1051,7 @@ class Flow(object):
             # were themselves valid:
             # area = F{source} & mask, where: source = True everywhere
             area = apply_flow(self._vecs, np.ones(self.shape), self._ref)
-            area = np.round(area).astype('bool')
+            area = area == 1  # Matching behaviour of mask setting in .apply()
             area &= self._mask
         return area
 
@@ -1074,7 +1075,7 @@ class Flow(object):
             area = apply_flow(-self._vecs, np.ones(self.shape), 't')
             # Note: this is equal to: area = self.invert('t').apply(np.ones(self.shape)), but more efficient as there
             # is no unnecessary warping of the mask
-            area = np.round(area).astype('bool')
+            area = area == 1  # Matching behaviour of mask setting in .apply()
             area &= self._mask
         else:  # ref is 't'
             # Flow mask in 't' flow refers to valid flow vecs in the target image. Therefore, to find the area in the
@@ -1085,7 +1086,7 @@ class Flow(object):
             area = apply_flow(-self._vecs, self._mask.astype('f'), 's')
             # Note: this is equal to: area = self.invert('s').apply(self.mask.astype('f')), but more efficient as there
             # is no unnecessary warping of the mask
-            area = np.round(area).astype('bool')
+            area = area == 1  # Matching behaviour of mask setting in .apply()
         # Note: alternative way of seeing this: self.valid_source() = self.invert(<other ref>).valid_target()
         return area
 
