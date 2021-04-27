@@ -187,9 +187,10 @@ class Flow(object):
 
         :param transform_list: List of transforms to be turned into a flow field, where each transform is expressed as
             a list of [transform name, transform value 1, ... , transform value n]. Supported options:
-                ['translation', horizontal shift in px, vertical shift in px]
-                ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
-                ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
+
+            - ['translation', horizontal shift in px, vertical shift in px]
+            - ['rotation', horizontal centre in px, vertical centre in px, angle in degrees, counter-clockwise]
+            - ['scaling', horizontal centre in px, vertical centre in px, scaling fraction]
         :param shape: List or tuple [H, W] of flow field shape
         :param ref: Flow referencce, 't'arget or 's'ource. Defaults to 't'
         :param mask: Numpy array H-W containing a boolean mask indicating where the flow vectors are valid. Defaults to
@@ -512,11 +513,12 @@ class Flow(object):
         :param return_valid_area: Boolean determining whether a boolean numpy array of shape H-W containing the valid
             image area is returned (only relevant if target is a numpy array). This array is true where the image
             values in the function output:
-                1) have been affected by flow vectors: always true if the flow has reference 't' as the target image by
-                    default has a corresponding flow vector in each position, but only true for some parts of the image
-                    if the flow has reference 's': some target image positions would only be reachable by flow vectors
-                    originating outside of the source image area, which is obviously impossible
-                2) have been affected by flow vectors that were themselves valid, as determined by the flow mask
+
+            1) have been affected by flow vectors: always true if the flow has reference 't' as the target image by
+               default has a corresponding flow vector in each position, but only true for some parts of the image
+               if the flow has reference 's': some target image positions would only be reachable by flow vectors
+               originating outside of the source image area, which is obviously impossible
+            2) have been affected by flow vectors that were themselves valid, as determined by the flow mask
         :param padding: If flow applied only covers part of the target; [top, bot, left, right]; default None
         :param cut: If padding is given, whether the input is returned as cut to shape of flow; default True
         :return: An object of the same type as the input (numpy array, or flow)
@@ -606,12 +608,13 @@ class Flow(object):
     def switch_ref(self, mode: str = None) -> Flow:
         """Switches the reference coordinates from 's'ource to 't'arget, or vice versa
 
-        :param mode: 'valid' or 'invalid':
-            'invalid' means just the flow reference attribute is switched without any flow values being changed. This
-                is functionally equivalent to simply using flow.ref = 't' for a flow of ref 's', and the flow vectors
-                aren't changed.
-            'valid' means actually switching the flow field to the other coordinate reference, with flow vectors being
-                recalculated to correspond to this other reference.
+        :param mode: Options are 'valid' or 'invalid':
+
+            - 'invalid' means just the flow reference attribute is switched without any flow values being changed. This
+              is functionally equivalent to simply using flow.ref = 't' for a flow of ref 's', and the flow vectors
+              aren't changed.
+            - 'valid' means actually switching the flow field to the other coordinate reference, with flow vectors being
+              recalculated to correspond to this other reference.
         :return: Flow with switched coordinate reference.
         """
 
