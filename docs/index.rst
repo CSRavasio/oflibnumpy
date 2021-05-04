@@ -10,3 +10,4 @@ Contents
    intro
    usage
    documentation
+   licensing
