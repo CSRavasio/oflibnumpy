@@ -244,7 +244,7 @@ class TestBilinearInterpolation(unittest.TestCase):
 
 class TestApplyFlow(unittest.TestCase):
     def test_rotation(self):
-        img = cv2.imread('lena.png')
+        img = cv2.imread('smudge.png')
         for ref in ['t', 's']:
             flow = Flow.from_transforms([['rotation', 255.5, 255.5, -30]], img.shape[:2], ref).vecs
             control_img = rotate(img, -30, reshape=False)
@@ -254,7 +254,7 @@ class TestApplyFlow(unittest.TestCase):
             self.assertTrue(ssim > 0.98)
 
     def test_translation(self):
-        img = cv2.imread('lena.png')
+        img = cv2.imread('smudge.png')
         for ref in ['t', 's']:
             flow = Flow.from_transforms([['translation', 10, 20]], img.shape[:2], ref).vecs
             control_img = shift(img, [20, 10, 0])

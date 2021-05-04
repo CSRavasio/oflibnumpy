@@ -490,7 +490,7 @@ class TestFlow(unittest.TestCase):
             flow.pad([10, 10, 20, 20], mode='test')
 
     def test_apply(self):
-        img = cv2.imread('lena.png')
+        img = cv2.imread('smudge.png')
         # Check flow.apply results in the same as using apply_flow directly
         for ref in ['t', 's']:
             flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], ref)
@@ -548,7 +548,7 @@ class TestFlow(unittest.TestCase):
                 flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut='true')
 
     def test_switch_ref(self):
-        img = cv2.imread('lena.png')
+        img = cv2.imread('smudge.png')
         # Mode 'invalid'
         for refs in [['t', 's'], ['s', 't']]:
             flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], refs[0])
@@ -886,7 +886,7 @@ class TestFlow(unittest.TestCase):
             flow.visualise('rgb', range_max=-1)
 
     def test_visualise_arrows(self):
-        img = cv2.imread('lena.png')
+        img = cv2.imread('smudge.png')
         mask = np.zeros(img.shape[:2])
         mask[50:-50, 20:-20] = 1
         flow = Flow.from_transforms([['rotation', 256, 256, 30]], img.shape[:2], 's', mask)
