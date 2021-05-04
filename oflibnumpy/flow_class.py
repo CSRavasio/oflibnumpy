@@ -900,7 +900,7 @@ class Flow(object):
         """Visualises the flow as arrowed lines, in BGR mode
 
         :param grid_dist: Integer of the distance of the flow points to be used for the visualisation, defaults to 20
-        :param img: Numpy array with the background image to use (in BGR mode), defaults to black
+        :param img: Numpy array with the background image to use (in BGR mode), defaults to white
         :param scaling: Float or int of the flow line scaling, defaults to scaling the 99th percentile of arrowed line
             lengths to be equal to twice the grid distance (empirical value)
         :param show_mask: Boolean determining whether the flow mask is visualised, defaults to False
@@ -916,7 +916,7 @@ class Flow(object):
         if not grid_dist > 0:
             raise ValueError("Error visualising flow arrows: Grid_dist needs to be an integer larger than zero")
         if img is None:
-            img = np.zeros(self.shape[:2] + (3,), 'uint8')
+            img = np.full(self.shape[:2] + (3,), 255, 'uint8')
         if not isinstance(img, np.ndarray):
             raise TypeError("Error visualising flow arrows: Img needs to be a numpy array")
         if not img.ndim == 3 or img.shape[:2] != self.shape or img.shape[2] != 3:
@@ -943,7 +943,7 @@ class Flow(object):
         f = threshold_vectors(self._vecs)
 
         # Make points
-        x, y = np.mgrid[:f.shape[0] - 1:grid_dist, :f.shape[1] - 1:grid_dist]
+        x, y = np.mgrid[grid_dist//2:f.shape[0] - 1:grid_dist, grid_dist//2:f.shape[1] - 1:grid_dist]
         i_pts = np.dstack((x, y))
         i_pts_flat = np.reshape(i_pts, (-1, 2)).astype('i')
         f_at_pts = f[i_pts_flat[..., 0], i_pts_flat[..., 1]]
@@ -960,11 +960,16 @@ class Flow(object):
             colours = np.squeeze(cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
         for i_num, i_pt in enumerate(i_pts_flat):
             if flow_mags[i_num] > 0.5:  # Only draw if the flow length rounds to at least one pixel
-                e_pt = np.round(i_pt + f[i_pt[0], i_pt[1]][::-1]).astype('i')
                 c = tuple(int(item) for item in colours[i_num]) if colour is None else colour
-                tip_length = tip_size / flow_mags[i_num]
-                cv2.arrowedLine(img, (i_pt[1], i_pt[0]), (e_pt[1], e_pt[0]), c,
-                                thickness=1, tipLength=tip_length, line_type=cv2.LINE_AA)
+                tip_length = float(tip_size / flow_mags[i_num])
+                if self.ref == 's':
+                    e_pt = np.round(i_pt + f[i_pt[0], i_pt[1]][::-1]).astype('i')
+                    cv2.arrowedLine(img, (i_pt[1], i_pt[0]), (e_pt[1], e_pt[0]), c,
+                                    thickness=1, tipLength=tip_length, line_type=cv2.LINE_AA)
+                else:  # self.ref == 't'
+                    e_pt = np.round(i_pt - f[i_pt[0], i_pt[1]][::-1]).astype('i')
+                    cv2.arrowedLine(img, (e_pt[1], e_pt[0]), (i_pt[1], i_pt[0]), c,
+                                    thickness=1, tipLength=tip_length, line_type=cv2.LINE_AA)
             img[i_pt[0], i_pt[1]] = [0, 0, 255]
 
         # Show mask and mask borders if required
