@@ -11,7 +11,7 @@ the manipulation and combination of flow fields while keeping track of valid are
     flow = of.Flow.from_transforms([['rotation', 200, 150, -30]], shape)
     flow.show()
 
-.. image:: ../docs/imgs/flow_rotation.png
+.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_rotation.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation
 
@@ -22,7 +22,7 @@ the manipulation and combination of flow fields while keeping track of valid are
     result = of.combine_flows(flow, flow_2, mode=3)
     result.show(show_mask=True, show_mask_borders=True)
 
-.. image:: ../docs/imgs/flow_translated_rotation.png
+.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
@@ -30,7 +30,7 @@ the manipulation and combination of flow fields while keeping track of valid are
 
     result.show_arrows(show_mask=True, show_mask_borders=True)
 
-.. image:: ../docs/imgs/flow_translated_rotation_arrows.png
+.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation_arrows.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
