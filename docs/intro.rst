@@ -21,7 +21,7 @@ Here is a quick code example:
     flow = of.Flow.from_transforms([['rotation', 200, 150, -30]], shape)
     flow.show()
 
-.. image:: ../docs/imgs/flow_rotation.png
+.. image:: ../docs/_static/flow_rotation.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation
 
@@ -32,7 +32,7 @@ Here is a quick code example:
     result = of.combine_flows(flow, flow_2, mode=3)
     result.show(show_mask=True, show_mask_borders=True)
 
-.. image:: ../docs/imgs/flow_translated_rotation.png
+.. image:: ../docs/_static/flow_translated_rotation.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
@@ -40,6 +40,6 @@ Here is a quick code example:
 
     result.show_arrows(show_mask=True, show_mask_borders=True)
 
-.. image:: ../docs/imgs/flow_translated_rotation_arrows.png
+.. image:: ../docs/_static/flow_translated_rotation_arrows.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation, translated to the right
