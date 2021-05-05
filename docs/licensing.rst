@@ -7,9 +7,8 @@ Author: Claudio S. Ravasio, PhD student at University College London (UCL), rese
   Imaging Sciences (BMEIS) at King's College London (KCL)
 - Prof Lyndon Da Cruz, consultant ophthalmic surgeon, Moorfields Eye Hospital, London UK
 
-This code is licensed under the GNU General Public License (GPL), Version 3. For the full license text and more
-information, see |gnu_link|.
+This code is licensed under the MIT License (see |mit_link|).
 
-.. |gnu_link| raw:: html
+.. |mit_link| raw:: html
 
-   <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">the official GNU website</a>
+   <a href="https://opensource.org/licenses/MIT" target="_blank">the official GNU website</a>
