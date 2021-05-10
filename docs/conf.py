@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'oflibnumpy'
-copyright = '2021, Claudio Ravasio'
-author = 'Claudio Ravasio'
+copyright = '2021, Claudio S. Ravasio'
+author = 'Claudio S. Ravasio'
 
 
 # -- General configuration ---------------------------------------------------
