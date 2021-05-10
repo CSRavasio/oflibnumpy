@@ -1,6 +1,6 @@
 Introduction
 ============
-A handy python **o**\ ptical **f**\ low **lib**\ rary, based on **NumPy** arrays, that enables the manipulation and
+Oflibnumpy: a handy python **o**\ ptical **f**\ low **lib**\ rary, based on **NumPy** arrays, that enables the manipulation and
 combination of flow fields while keeping track of valid areas (see "Usage"). It is mostly code written from scratch,
 but also contains useful wrappers for specific functions from libraries such as OpenCV's ``remap``, to integrate them
 with the custom flow field class introduced by oflibnumpy. Features:
@@ -11,7 +11,13 @@ with the custom flow field class introduced by oflibnumpy. Features:
 - Allows for three different types of flow field combination operations
 - Keeps track of valid flow field areas through said operations
 
-Here is a quick code example:
+Install it using:
+
+.. code-block::
+
+   pip install oflibnumpy
+
+Code example:
 
 .. code-block:: python
 
@@ -22,7 +28,7 @@ Here is a quick code example:
     flow.show()
 
 .. image:: ../docs/_static/flow_rotation.png
-  :width: 200
+  :width: 50%
   :alt: Visualisation of optical flow representing a rotation
 
 .. code-block:: python
@@ -33,7 +39,7 @@ Here is a quick code example:
     result.show(show_mask=True, show_mask_borders=True)
 
 .. image:: ../docs/_static/flow_translated_rotation.png
-  :width: 200
+  :width: 50%
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
 .. code-block:: python
@@ -41,5 +47,5 @@ Here is a quick code example:
     result.show_arrows(show_mask=True, show_mask_borders=True)
 
 .. image:: ../docs/_static/flow_translated_rotation_arrows.png
-  :width: 200
+  :width: 50%
   :alt: Visualisation of optical flow representing a rotation, translated to the right
