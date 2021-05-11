@@ -137,25 +137,25 @@ def combine_flows(input_1: Flow, input_2: Flow, mode: int, thresholded: bool = N
             # F2_s = F1_s{F3_s - F1_s}
             result = input_1.apply(input_2 - input_1)
         elif input_1._ref == input_2._ref == 't':
+            # Strictly "translated" version from the ref 's' case:
             # F2_t = F1_t{F3_t-as-s - F1_t-as-s}_as-t)
             # result = (input_1.apply(input_2.switch_ref() - input_1.switch_ref())).switch_ref()
-            # Todo: sort this out
-            test = True
-            if test:
-                # F3 - F1, where F1 has been resampled to the source positions of F3.
-                coord_1 = np.copy(-input_1.vecs)
-                coord_1[:, :, 0] += np.arange(coord_1.shape[1])
-                coord_1[:, :, 1] += np.arange(coord_1.shape[0])[:, np.newaxis]
-                coord_1_flat = np.reshape(coord_1, (-1, 2))
-                vecs_with_mask = np.concatenate((input_1.vecs, input_1.mask[..., np.newaxis]), axis=-1)
-                vals_flat = np.reshape(vecs_with_mask, (-1, 3))
-                coord_3 = np.copy(-input_2.vecs)
-                coord_3[:, :, 0] += np.arange(coord_3.shape[1])
-                coord_3[:, :, 1] += np.arange(coord_3.shape[0])[:, np.newaxis]
-                vals_resampled = griddata(coord_1_flat, vals_flat,
-                                          (coord_3[..., 0], coord_3[..., 1]),
-                                          method='linear', fill_value=0)
-                result = input_2 - Flow(vals_resampled[..., :-1], 't', vals_resampled[..., -1] > .99)
+
+            # Improved version cutting down on operational complexity
+            # F3 - F1, where F1 has been resampled to the source positions of F3.
+            coord_1 = np.copy(-input_1.vecs)
+            coord_1[:, :, 0] += np.arange(coord_1.shape[1])
+            coord_1[:, :, 1] += np.arange(coord_1.shape[0])[:, np.newaxis]
+            coord_1_flat = np.reshape(coord_1, (-1, 2))
+            vecs_with_mask = np.concatenate((input_1.vecs, input_1.mask[..., np.newaxis]), axis=-1)
+            vals_flat = np.reshape(vecs_with_mask, (-1, 3))
+            coord_3 = np.copy(-input_2.vecs)
+            coord_3[:, :, 0] += np.arange(coord_3.shape[1])
+            coord_3[:, :, 1] += np.arange(coord_3.shape[0])[:, np.newaxis]
+            vals_resampled = griddata(coord_1_flat, vals_flat,
+                                      (coord_3[..., 0], coord_3[..., 1]),
+                                      method='linear', fill_value=0)
+            result = input_2 - Flow(vals_resampled[..., :-1], 't', vals_resampled[..., -1] > .99)
     elif mode == 3:  # Flows are in order (input_1, input_2, desired_result)
         if input_1._ref == input_2._ref == 's':
             # Explanation: f3 is (f1 plus f2), when S2 is moved to S1, achieved by applying inverted(f1)
