@@ -212,11 +212,12 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None) -> np.ndar
         return result
 
 
-def show_masked_image(img: np.ndarray, mask: np.ndarray):
+def show_masked_image(img: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """Mimics flow.show(), for an input image and a mask
 
     :param img: Numpy array, BGR input image
     :param mask: Numpy array, boolean mask showing the valid area
+    :return: Masked image, in BGR colour space
     """
 
     hsv = cv2.cvtColor(np.round(img).astype('uint8'), cv2.COLOR_BGR2HSV)
@@ -227,6 +228,7 @@ def show_masked_image(img: np.ndarray, mask: np.ndarray):
     bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
     cv2.imshow("Image masked by valid area", bgr)
     cv2.waitKey()
+    return bgr
 
 
 def points_inside_area(pts: np.ndarray, shape: Union[tuple, list]) -> np.ndarray:
