@@ -41,16 +41,16 @@ def get_valid_ref(ref: Any) -> str:
 def get_valid_padding(padding: Any, error_string: str = None) -> list:
     """Checks padding input for validity
 
-    :param padding: Padding to be checked, should be a list of length 4 of positive integers
+    :param padding: Padding to be checked, should be a list or tuple of length 4 of positive integers
     :param error_string: Optional string to be added before the error message
     :return: valid padding list, if indeed valid
     """
 
     error_string = '' if error_string is None else error_string
-    if not isinstance(padding, list):
-        raise TypeError(error_string + "Padding needs to be a list [top, bot, left, right]")
+    if not isinstance(padding, (list, tuple)):
+        raise TypeError(error_string + "Padding needs to be a tuple or a list list of values [top, bot, left, right]")
     if len(padding) != 4:
-        raise ValueError(error_string + "Padding list needs to be a list of length 4 [top, bot, left, right]")
+        raise ValueError(error_string + "Padding list needs to be a list or tuple of length 4 [top, bot, left, right]")
     if not all(isinstance(item, int) for item in padding):
         raise ValueError(error_string + "Padding list [top, bot, left, right] items need to be integers")
     if not all(item > 0 for item in padding):
