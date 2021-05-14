@@ -528,6 +528,9 @@ class Flow(object):
         cut = False if cut is None else cut
         if not isinstance(cut, bool):
             raise TypeError("Error applying flow: Cut needs to be a boolean")
+        if padding is None:
+            if self.shape[0] != target.shape[0] or self.shape[1] != target.shape[1]:
+                raise ValueError("Error applying flow: Flow shape does not match target shape")
         if padding is not None:
             padding = get_valid_padding(padding, "Error applying flow: ")
             if self.shape[0] + np.sum(padding[:2]) != target.shape[0] or \
