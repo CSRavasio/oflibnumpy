@@ -175,12 +175,13 @@ def bilinear_interpolation(data, pts):
     return result
 
 
-def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None) -> np.ndarray:
+def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.ndarray = None) -> np.ndarray:
     """Warps target according to flow of given reference
 
     :param flow: Numpy array H-W-2 containing the flow vectors in cv2 convention (1st channel hor, 2nd channel ver)
     :param target: Numpy array H-W or H-W-C containing the content to be warped
     :param ref: Reference of the flow, 't' or 's'. Defaults to 't'
+    :param mask: Numpy array H-W containing the flow mask, only relevant for 's' flows. Defaults to True everywhere
     :return: Numpy array of the same shape as the target, with the content warped by the flow
     """
 
@@ -195,14 +196,21 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None) -> np.ndar
         result = cv2.remap(target, field, None, cv2.INTER_LINEAR)
         return result
     elif ref == 's':
+        # Get the positions of the unstructured points with known values
         x, y = np.mgrid[:field.shape[0], :field.shape[1]]
         positions = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
         flow_flat = np.reshape(field[..., ::-1], (-1, 2))
+        pos = positions + flow_flat
+        # Get the known values themselves
         if target.ndim == 3:
             target_flat = np.reshape(target, (-1, target.shape[-1]))
         else:
             target_flat = target.ravel()
-        pos = positions + flow_flat
+        # Mask points, if required
+        if mask is not None:
+            pos = pos[mask.ravel()]
+            target_flat = target_flat[mask.ravel()]
+        # Perform interpolation of regular grid from unstructured data
         result = griddata(pos, target_flat, (x, y), method='linear')
         result = np.nan_to_num(result)
         # Make sure the output is returned with the same dtype as the input, if necessary rounded
