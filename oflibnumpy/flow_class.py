@@ -504,7 +504,9 @@ class Flow(object):
     def apply(
         self,
         target: Union[np.ndarray, Flow],
+        target_mask: np.ndarray = None,
         return_valid_area: bool = None,
+        consider_mask: bool = None,
         padding: Union[list, tuple] = None,
         cut: bool = None
     ) -> Union[np.ndarray, Flow]:
@@ -523,9 +525,20 @@ class Flow(object):
         :param padding: If flow applied only covers part of the target; [top, bot, left, right]; default None
         :param cut: If padding is given, whether the input is returned as cut to shape of flow; default True
         :return: An object of the same type as the input (numpy array, or flow)
+        :param target_mask: Optional numpy array of shape :math:`(H, W)` that indicates which part of the target is
+            valid (only relevant if `target` is a numpy array). Defaults to ``True`` everywhere
+        :param consider_mask: Boolean determining whether the flow vectors are masked before application (only relevant
+            for flows with reference ``ref = 's'``). Results in smoother outputs, but more artefacts. Defaults to
+            ``True``
         """
 
-        cut = False if cut is None else cut
+        return_valid_area = False if return_valid_area is None else return_valid_area
+        if not isinstance(return_valid_area, bool):
+            raise TypeError("Error applying flow: Return_valid_area needs to be a boolean")
+        consider_mask = True if consider_mask is None else consider_mask
+        if not isinstance(consider_mask, bool):
+            raise TypeError("Error applying flow: Consider_mask needs to be a boolean")
+        cut = True if cut is None else cut
         if not isinstance(cut, bool):
             raise TypeError("Error applying flow: Cut needs to be a boolean")
         if padding is None:
@@ -538,6 +551,7 @@ class Flow(object):
                 raise ValueError("Error applying flow: Padding values do not match flow and target shape difference")
 
         # Type check, prepare arrays
+        return_dtype = None
         if isinstance(target, Flow):
             return_flow = True
             t = target._vecs
@@ -547,7 +561,17 @@ class Flow(object):
             if not isinstance(target, np.ndarray):
                 raise ValueError("Error applying flow: Target needs to be either a flow object, or a numpy ndarray")
             t = target
-            mask = np.ones(t.shape[:2], 'b')
+            if target_mask is None:
+                mask = np.ones(t.shape[:2], 'b')
+            else:
+                if not isinstance(target_mask, np.ndarray):
+                    raise TypeError("Error applying flow: Target_mask needs to be a numpy ndarray")
+                if target_mask.shape != target.shape[:2]:
+                    raise ValueError("Error applying flow: Target_mask needs to match the target shape")
+                if target_mask.dtype != np.bool:
+                    raise TypeError("Error applying flow: Target_mask needs to have dtype 'bool'")
+                mask = target_mask
+            return_dtype = target.dtype
 
         # Concatenate the flow vectors with the mask if required, so they are warped in one step
         if return_flow or return_valid_area:
@@ -568,7 +592,7 @@ class Flow(object):
         if padding is None:
             if not target.shape[:2] == self.shape[:2]:
                 raise ValueError("Error applying flow: Flow and target have to have the same shape")
-            warped_t = apply_flow(self._vecs, t, self._ref)
+            warped_t = apply_flow(self._vecs, t, self._ref, self._mask if consider_mask else None)
         else:
             mode = 'constant' if self._ref == 't' else 'edge'
             # Note: this mode is very important: irrelevant for flow with reference 't' as this by definition covers
@@ -578,7 +602,7 @@ class Flow(object):
             # being warped, and the mask being warped. By padding with the 'edge' mode, large gradients in flow vector
             # values at the edge of the original flow area are avoided, as are interpolation artefacts.
             flow = self.pad(padding, mode=mode)
-            warped_t = apply_flow(flow._vecs, t, flow._ref)
+            warped_t = apply_flow(flow._vecs, t, flow._ref, flow._mask if consider_mask else None)
 
         # Cut if necessary
         if padding is not None and cut:
@@ -605,9 +629,14 @@ class Flow(object):
             return Flow(warped_t[..., :2], target._ref, mask)
         else:
             if return_valid_area:
-                return warped_t[..., :-1], mask
+                warped_t = warped_t[..., :-1]
+            if np.issubdtype(return_dtype, np.integer):
+                warped_t = np.round(warped_t)
+            if return_valid_area:
+                return warped_t.astype(return_dtype), mask
             else:
-                return warped_t
+                return warped_t.astype(return_dtype)
+
 
     def switch_ref(self, mode: str = None) -> Flow:
         """Switches the reference coordinates from 's'ource to 't'arget, or vice versa
