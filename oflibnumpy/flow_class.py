@@ -482,14 +482,14 @@ class Flow(object):
 
         return Flow(resized[..., :2], self._ref, np.round(resized[..., 2]))
 
-    def pad(self, padding: list = None, mode: str = None) -> Flow:
         """Pads the flow with the given padding. Sets padded mask values to False, and inserts 0 flow values if padding
         mode is 'constant'
+    def pad(self, padding: Union[list, tuple] = None, mode: str = None) -> FlowAlias:
 
-        :param padding: [top, bot, left, right] list of padding values
         :param mode: Numpy padding mode for the flow vectors, defaults to 'constant'. Options:
             'constant', 'edge', 'symmetric' (see numpy.pad documentation). 'Constant' value is 0.
         :return: Padded flow
+        :param padding: List or tuple of shape :math:`(4)` with padding values ``[top, bot, left, right]``
         """
 
         mode = 'constant' if mode is None else mode
@@ -505,7 +505,7 @@ class Flow(object):
         self,
         target: Union[np.ndarray, Flow],
         return_valid_area: bool = None,
-        padding: list = None,
+        padding: Union[list, tuple] = None,
         cut: bool = None
     ) -> Union[np.ndarray, Flow]:
         """Applies the flow to the target, which can be a numpy array or a Flow object.
