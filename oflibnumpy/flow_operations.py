@@ -19,13 +19,20 @@ from .utils import validate_shape
 from scipy.interpolate import griddata
 
 
-def visualise_definition(mode: str, shape: Union[list, tuple] = None, insert_text: bool = None) -> np.ndarray:
-    """Returns an image that shows the definition of the flow visualisation.
+FlowAlias = 'Flow'
 
-    :param mode: Output mode, options: 'rgb', 'bgr', 'hsv'
-    :param shape: List or tuple of the resulting image shape
-    :param insert_text: whether explanatory text should be put on the image (using cv2.putText), defaults to True
-    :return: Image that shows the colour definition of the flow visualisation
+
+def visualise_definition(mode: str, shape: Union[list, tuple] = None, insert_text: bool = None) -> np.ndarray:
+    """Return an image that shows the definition of the flow visualisation.
+
+    :param mode: Desired output colour space: ``rgb``, ``bgr``, or ``hsv``
+    :param shape: List or tuple of shape :math:`(2)` containing the desired image shape as values ``(H, W)``. Defaults
+        to (601, 601) - do not change if you leave `insert_text` as ``True`` as otherwise the text will appear in the
+        wrong location
+    :param insert_text: Boolean determining whether explanatory text is put on the image (using :func:`cv2.putText`),
+        defaults to ``True``
+    :return: Numpy array of shape :math:`(H, W, 3)` and type ``uint8`` showing the colour definition of the flow
+        visualisation
     """
 
     # Default arguments and input validation
@@ -61,14 +68,39 @@ def visualise_definition(mode: str, shape: Union[list, tuple] = None, insert_tex
 
 
 # noinspection PyProtectedMember
-def combine_flows(input_1: Flow, input_2: Flow, mode: int, thresholded: bool = None) -> Flow:
-    """Function that returns the result of flow combinations
+def combine_flows(input_1: FlowAlias, input_2: FlowAlias, mode: int, thresholded: bool = None) -> FlowAlias:
+    """Function that returns the result of the combination of two flow objects of the same shape :attr:`shape` and
+    reference :attr:`ref`
 
-    All formulas used in this function have been derived from first principles.
+    .. tip::
+       All of the flow field combinations in this function rely on some combination of the
+       :meth:`~oflibnumpy.Flow.apply`, :meth:`~oflibnumpy.Flow.invert`, and :func:`~oflibnumpy.combine_flows` methods,
+       and can be very slow (several seconds) due to calling :func:`scipy.interpolate.griddata` multiple times. The
+       table below aids decision-making with regards to which reference a flow field should be provided in to obtain
+       the fastest result.
 
-    Base formula: flow_1 ⊕ flow_2 = flow_3, where '⊕' is a non-commutative flow composition operation
+        .. list-table:: Calls to :func:`scipy.interpolate.griddata`
+           :header-rows: 1
+           :stub-columns: 1
+           :widths: 10, 15, 15
+           :align: center
 
-    Visualisation with start / end points of the flows:
+           * - `mode`
+             - ``ref = 's'``
+             - ``ref = 't'``
+           * - 1
+             - 1
+             - 3
+           * - 2
+             - 1
+             - 1
+           * - 3
+             - 0
+             - 0
+
+    All formulas used in this function have been derived from first principles. The base formula is
+    :math:`flow_1 ⊕ flow_2 = flow_3`, where :math:`⊕` is a non-commutative flow composition operation. This can be
+    visualised with the start / end points of the flows as follows:
 
     .. code-block::
 
@@ -77,15 +109,40 @@ def combine_flows(input_1: Flow, input_2: Flow, mode: int, thresholded: bool = N
         f = flow           f1                             v
                             └───> E1 = S2 ── f2 ──> E2 = E3
 
+    The main difficulty in combining flow fields is that it would be incorrect to simply add up or subtract flow vectors
+    at one location in the flow field area :math:`H \\times W`. This appears to work given e.g. a translation to the
+    right, and a translation downwards: the result will be the linear combination of the two vectors, or a translation
+    towards the bottom right. However, looking more closely, it becomes evident that this approach isn't actually
+    correct: A pixel that has been moved from `S1` to `E1` by the first flow field `f1` is then moved from that location
+    by the flow vector of the flow field `f2` that corresponds to the new pixel location `E1`, *not* the original
+    location `S1`. If the flow vectors are the same everywhere in the field, the difference will not be noticeable.
+    However, if the flow vectors of `f2` vary throughout the field, such as with a rotation around some point, it will!
+
+    In this case (corresponding to calling :func:`combine_flows(f1, f2, mode=3)<combine_flows>`), and if the flow
+    reference :attr:`ref` is ``s`` ("source"), the solution is to first apply the inverse of `f1` to `f2`, essentially
+    linking up each location `E1` back to `S1`, and *then* to add up the flow vectors. Analogous observations apply for
+    the other permutations of flow combinations and reference :attr:`ref` values.
+
+    .. note::
+       This is consistent with the observation that two translations are commutative in their application - the order
+       does not matter, and the vectors can simply be added up at every pixel location -, while a translation followed
+       by a rotation is not the same as a rotation followed by a translation: adding up vectors at each pixel cannot be
+       the correct solution as there wouldn't be a difference based on the order of vector addition.
+
     :param input_1: First input flow object
     :param input_2: Second input flow object
     :param mode: Integer determining how the input flows are combined, where the number corresponds to the position in
-        the formula flow_1 ⊕ flow_2 = flow_3, where '⊕' is a non-commutative flow composition operation:
-        Mode 1: input_1 corresponds to flow_2, input_2 corresponds to flow_3, the result will be flow_1
-        Mode 2: input_1 corresponds to flow_1, input_2 corresponds to flow_3, the result will be flow_2
-        Mode 3: input_1 corresponds to flow_1, input_2 corresponds to flow_2, the result will be flow_3
-    :param thresholded: Boolean determining whether flows are thresholded when is_zero() is checked, defaults to False
-    :return: Resulting flow object
+        the formula :math:`flow_1 ⊕ flow_2 = flow_3`:
+
+        - Mode ``1``: `input_1` corresponds to :math:`flow_2`, `input_2` corresponds to :math:`flow_3`, the result will
+          be :math:`flow_1`
+        - Mode ``2``: `input_1` corresponds to :math:`flow_1`, `input_2` corresponds to :math:`flow_3`, the result will
+          be :math:`flow_2`
+        - Mode ``3``: `input_1` corresponds to :math:`flow_1`, `input_2` corresponds to :math:`flow_2`, the result will
+          be :math:`flow_3`
+    :param thresholded: Boolean determining whether flows are thresholded during an internal call to
+        :meth:`~oflibnumpy.Flow.is_zero`, defaults to ``False``
+    :return: New flow object
     """
 
     # Check input validity
@@ -181,6 +238,9 @@ def combine_flows(input_1: Flow, input_2: Flow, mode: int, thresholded: bool = N
         if input_1._ref == input_2._ref == 's':
             # Explanation: f3 is (f1 plus f2), when S2 is moved to S1, achieved by applying inverted(f1)
             # F3_s = F1_s + (F1_s)^-1_t{F2_s}
+            # Note: instead of inverting the ref-s flow field to a ref-s flow field (slow) which is then applied to the
+            #   other flow field (also slow), it is inverted to a ref-t flow field (fast) which is then also much faster
+            #   to apply to the other flow field.
             result = input_1 + input_1.invert(ref='t').apply(input_2)
         elif input_1._ref == input_2._ref == 't':
             # Explanation: f3 is (f2 plus f1), with f1 pulled towards the f2 grid by applying f2 to f1.
