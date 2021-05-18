@@ -534,19 +534,31 @@ class TestFlow(unittest.TestCase):
 
         # Non-valid padding values
         for ref in ['t', 's']:
+            shape = (10, 10)
             flow = Flow.from_transforms([['rotation', 0, 0, 30]], shape, ref)
+            img = np.ones(shape + (3,), 'uint8')
             with self.assertRaises(TypeError):
-                flow.apply(target_flow, padding=100, cut=True)
+                flow.apply(flow, padding=100, cut=True)
             with self.assertRaises(ValueError):
-                flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=True)
+                flow.apply(flow, padding=[10, 20, 30, 40, 50], cut=True)
             with self.assertRaises(ValueError):
-                flow.apply(target_flow, padding=[10., 20, 30, 40], cut=True)
+                flow.apply(flow, padding=[10., 20, 30, 40], cut=True)
             with self.assertRaises(ValueError):
-                flow.apply(target_flow, padding=[-10, 10, 10, 10], cut=True)
+                flow.apply(flow, padding=[-10, 10, 10, 10], cut=True)
             with self.assertRaises(TypeError):
-                flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut=2)
+                flow.apply(flow, padding=[10, 20, 30, 40, 50], cut=2)
             with self.assertRaises(TypeError):
-                flow.apply(target_flow, padding=[10, 20, 30, 40, 50], cut='true')
+                flow.apply(flow, padding=[10, 20, 30, 40, 50], cut='true')
+            with self.assertRaises(TypeError):
+                flow.apply(flow, return_valid_area='test')
+            with self.assertRaises(TypeError):
+                flow.apply(flow, consider_mask='test')
+            with self.assertRaises(TypeError):
+                flow.apply(img, target_mask='test')
+            with self.assertRaises(TypeError):
+                flow.apply(img, target_mask=np.ones(shape, 'i'))
+            with self.assertRaises(ValueError):
+                flow.apply(img, target_mask=np.ones((5, 5), 'bool'))
 
     def test_switch_ref(self):
         img = cv2.imread('smudge.png')
