@@ -959,6 +959,15 @@ class TestFlow(unittest.TestCase):
             [0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0]
         ]).astype('bool')
+        desired_area_s_masked_consider_mask = np.array([
+            [1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0]
+        ]).astype('bool')
         desired_area_s_masked = np.array([
             [1, 1, 1, 1, 1, 1, 1],
             [0, 1, 1, 1, 0, 0, 1],
@@ -979,8 +988,12 @@ class TestFlow(unittest.TestCase):
         ]).astype('bool')
         self.assertIsNone(np.testing.assert_equal(f_s.valid_target(), desired_area_s))
         self.assertIsNone(np.testing.assert_equal(f_t.valid_target(), desired_area_t))
-        self.assertIsNone(np.testing.assert_equal(f_s_masked.valid_target(), desired_area_s_masked))
+        self.assertIsNone(np.testing.assert_equal(f_s_masked.valid_target(), desired_area_s_masked_consider_mask))
+        self.assertIsNone(np.testing.assert_equal(f_s_masked.valid_target(False), desired_area_s_masked))
         self.assertIsNone(np.testing.assert_equal(f_t_masked.valid_target(), desired_area_t_masked))
+
+        with self.assertRaises(TypeError):
+            f_s.valid_target(consider_mask='test')
 
     def test_valid_source(self):
         transforms = [['rotation', 0, 0, 45]]
@@ -1020,6 +1033,15 @@ class TestFlow(unittest.TestCase):
             [0, 0, 0, 1, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0]
         ]).astype('bool')
+        desired_area_t_masked_consider_mask = np.array([
+            [1, 0, 0, 0, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0]
+        ]).astype('bool')
         desired_area_t_masked = np.array([
             [1, 0, 0, 0, 0, 0, 0],
             [1, 1, 0, 0, 0, 0, 0],
@@ -1032,7 +1054,11 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(f_s.valid_source(), desired_area_s))
         self.assertIsNone(np.testing.assert_equal(f_t.valid_source(), desired_area_t))
         self.assertIsNone(np.testing.assert_equal(f_s_masked.valid_source(), desired_area_s_masked))
-        self.assertIsNone(np.testing.assert_equal(f_t_masked.valid_source(), desired_area_t_masked))
+        self.assertIsNone(np.testing.assert_equal(f_t_masked.valid_source(), desired_area_t_masked_consider_mask))
+        self.assertIsNone(np.testing.assert_equal(f_t_masked.valid_source(False), desired_area_t_masked))
+
+        with self.assertRaises(TypeError):
+            f_s.valid_target(consider_mask='test')
 
     def test_get_padding(self):
         transforms = [['rotation', 0, 0, 45]]
