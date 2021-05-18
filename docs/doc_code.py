@@ -308,3 +308,12 @@ from oflibnumpy.utils import show_masked_image
 # cv2.imshow('test', img)
 # cv2.waitKey()
 
+# # # # Images for the repo "social preview"
+# img = cv2.imread('_static/thames_300x400.jpg')
+# shape = (300, 400)
+# flow = of.Flow.from_transforms([['rotation', 200, 150, -30]], shape)
+# warped = flow.apply(img)
+# cv2.imwrite('C:/Users/RVIM_Claudio/Downloads/img.png', img)
+# cv2.imwrite('C:/Users/RVIM_Claudio/Downloads/warped.png', warped)
+# cv2.imwrite('C:/Users/RVIM_Claudio/Downloads/flow.png', flow.visualise('bgr'))
+# cv2.imwrite('C:/Users/RVIM_Claudio/Downloads/arrows.png', flow.visualise_arrows(50, None, .5, thickness=6))
