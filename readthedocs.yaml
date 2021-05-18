@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 sphinx:
   configuration: docs/conf.py
@@ -6,4 +6,4 @@ sphinx:
 python:
   version: 3.7
   install:
-    - requirements: docs/requirements.yaml
+    - requirements: docs/environment.yaml
