@@ -309,9 +309,9 @@ from oflibnumpy.utils import show_masked_image
 # cv2.waitKey()
 
 # # # # Images for the repo "social preview"
-# img = cv2.imread('_static/thames_300x400.jpg')
-# shape = (300, 400)
-# flow = of.Flow.from_transforms([['rotation', 200, 150, -30]], shape)
+# img = cv2.imread('_static/thames_300x400.jpg')[60:-40]
+# shape = (200, 400)
+# flow = of.Flow.from_transforms([['rotation', 200, 100, -30]], shape)
 # warped = flow.apply(img)
 # cv2.imwrite('C:/Users/RVIM_Claudio/Downloads/img.png', img)
 # cv2.imwrite('C:/Users/RVIM_Claudio/Downloads/warped.png', warped)
