@@ -927,6 +927,10 @@ class TestFlow(unittest.TestCase):
             flow.visualise_arrows(10, img, None, True, True, colour='test')
         with self.assertRaises(ValueError):
             flow.visualise_arrows(10, img, None, True, True, colour=(0, 0))
+        with self.assertRaises(TypeError):
+            flow.visualise_arrows(10, img, None, True, True, None, thickness=1.5)
+        with self.assertRaises(ValueError):
+            flow.visualise_arrows(10, img, None, True, True, None, thickness=0)
 
     def test_show(self):
         flow = Flow.zero([200, 300])

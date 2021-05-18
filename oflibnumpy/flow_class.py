@@ -12,6 +12,8 @@
 # This file is part of oflibnumpy
 
 from __future__ import annotations
+
+import math
 from typing import Union
 import warnings
 import cv2
@@ -1035,7 +1037,8 @@ class Flow(object):
         scaling: Union[float, int] = None,
         show_mask: bool = None,
         show_mask_borders: bool = None,
-        colour: tuple = None
+        colour: tuple = None,
+        thickness: int = None,
     ) -> np.ndarray:
         """Visualises the flow as arrowed lines, optionally showing the outline of the flow mask :attr:`mask` as a black
         line, and the invalid areas greyed out.
@@ -1049,6 +1052,7 @@ class Flow(object):
         :param show_mask_borders: Boolean determining whether the flow mask border is visualised, defaults to ``False``
         :param colour: Tuple of the flow arrow colour, defaults to hue based on flow direction as in
             :meth:`~oflibnumpy.Flow.visualise`
+        :param thickness: Integer of the flow arrow thickness, larger than zero. Defaults to ``1``
         :return: Numpy array of shape :math:`(H, W, 3)` containing the flow visualisation, in ``bgr`` colour space
         """
 
@@ -1081,6 +1085,11 @@ class Flow(object):
                 raise TypeError("Error visualising flow: Colour needs to be a tuple")
             if len(colour) != 3:
                 raise ValueError("Error visualising flow arrows: Colour list or tuple needs to have length 3")
+        thickness = 1 if thickness is None else thickness
+        if not isinstance(thickness, int):
+            raise TypeError("Error visualising flow: Thickness needs to be an integer")
+        if thickness <= 0:
+            raise ValueError("Error visualising flow: Thickness needs to be a integer larger than zero")
 
         # Thresholding
         f = threshold_vectors(self._vecs)
@@ -1096,7 +1105,7 @@ class Flow(object):
         flow_mags *= scaling
         f *= scaling
         colours = None
-        tip_size = 3.5
+        tip_size = math.sqrt(thickness) * 3.5  # Empirical value
         if colour is None:
             hsv = np.full((1, ang.shape[0], 3), 255, 'uint8')
             hsv[0, :, 0] = np.round(np.mod(ang[:, 0], 360) / 2)
@@ -1112,7 +1121,7 @@ class Flow(object):
                 else:  # self.ref == 't'
                     e_pt = np.round(i_pt - f[i_pt[0], i_pt[1]][::-1]).astype('i')
                     cv2.arrowedLine(img, (e_pt[1], e_pt[0]), (i_pt[1], i_pt[0]), c,
-                                    thickness=1, tipLength=tip_length, line_type=cv2.LINE_AA)
+                                    thickness=thickness, tipLength=tip_length, line_type=cv2.LINE_AA)
             img[i_pt[0], i_pt[1]] = [0, 0, 255]
 
         # Show mask and mask borders if required
