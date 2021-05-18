@@ -252,7 +252,7 @@ is valid, i.e. contains actual content. For an illustration, see the example bel
 .. code-block:: python
 
     # Load image, and define a flow as a combination of a rotation and scaling motion
-    img = cv2.imread('thames.jpg')
+    img = cv2.imread('thames.jpg')  # 300x400 pixels
     transforms = [['rotation', 200, 150, -30], ['scaling', 100, 50, 0.7]]
     flow = of.Flow.from_transforms(transforms, img.shape[:2])
 
@@ -439,7 +439,7 @@ is being pushed outside of the image.
 .. code-block:: python
 
     # Load an image, define a flow field
-    img = cv2.imread('docs/_static/thames_300x400.jpg')
+    img = cv2.imread('thames.jpg')  # 300x400 pixels
     transforms = [['rotation', 200, 150, -30], ['scaling', 100, 50, 0.9]]
     flow = of.Flow.from_transforms(transforms, img.shape[:2], 's')  # 300x400 pixels
 
