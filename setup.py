@@ -43,7 +43,7 @@ setup(
     ],
     keywords='optical flow, flow, flow field, flow composition, flow combination, flow visualisation',
     project_urls={
-        'Documentation': 'https://readthedocs.org',
+        'Documentation': 'https://oflibnumpy.rtfd.io',
         'Source': 'https://github.com/RViMLab/oflibnumpy',
         'Tracker': 'https://github.com/RViMLab/oflibnumpy/issues',
     },

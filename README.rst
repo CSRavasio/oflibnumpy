@@ -15,7 +15,7 @@ Usage & Documentation
 ---------------------
 A user's guide as well as full documentation of the library is available at ReadTheDocs_. Some quick examples:
 
-.. _ReadTheDocs: https://readthedocs.org
+.. _ReadTheDocs: https://oflibnumpy.rtfd.io
 
 .. code-block:: python
 
