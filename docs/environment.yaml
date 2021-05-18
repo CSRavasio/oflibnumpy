@@ -1,0 +1,11 @@
+name: docs
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy==1.18.1
+  - opencv-python==4.2.0.34
+  - scipy==1.6.0
+  - sphinx==3.5.2
+  - pip:
+    - sphinx_rtd_theme==0.5.2
