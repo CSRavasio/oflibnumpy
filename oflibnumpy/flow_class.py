@@ -1199,7 +1199,7 @@ class Flow(object):
         pixel values having been warped to that (valid) location by the flow.
 
         :param consider_mask: Boolean determining whether the flow vectors are masked before application (only relevant
-            for flows with reference ``ref = 's'``, analogous to :meth:`~oflibnumpy.Flow.apply'). Results in smoother
+            for flows with reference ``ref = 's'``, analogous to :meth:`~oflibnumpy.Flow.apply`). Results in smoother
             outputs, but more artefacts. Defaults to ``True``
         :return: Boolean numpy array of the same shape :math:`(H, W)` as the flow
         """
@@ -1237,7 +1237,7 @@ class Flow(object):
 
         :param consider_mask: Boolean determining whether the flow vectors are masked before application (only relevant
             for flows with reference ``ref = 't'`` as their inverse flow will be applied, using the reference ``s``;
-            analogous to :meth:`~oflibnumpy.Flow.apply'). Results in smoother outputs, but more artefacts. Defaults
+            analogous to :meth:`~oflibnumpy.Flow.apply`). Results in smoother outputs, but more artefacts. Defaults
             to ``True``
         :return: Boolean numpy array of the same shape :math:`(H, W)` as the flow
         """
