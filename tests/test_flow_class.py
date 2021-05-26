@@ -206,6 +206,17 @@ class TestFlow(unittest.TestCase):
             self.assertIsNone(np.testing.assert_allclose(flow[i[0]:i[0] + 40, i[1]:i[1] + 40].vecs,
                                                          vectors[i[0]:i[0] + 40, i[1]:i[1] + 40]))
 
+    def test_copy(self):
+        vectors = np.random.rand(200, 200, 2)
+        mask = np.random.rand(200, 200) > 0.5
+        for ref in ['t', 's']:
+            flow = Flow(vectors, ref, mask)
+            flow_copy = flow.copy()
+            self.assertIsNone(np.testing.assert_equal(flow.vecs, flow_copy.vecs))
+            self.assertIsNone(np.testing.assert_equal(flow.mask, flow_copy.mask))
+            self.assertEqual(flow.ref, flow_copy.ref)
+            self.assertNotEqual(id(flow), id(flow_copy))
+
     def test_add(self):
         mask1 = np.ones((100, 200), 'bool')
         mask1[:40] = 0
