@@ -308,6 +308,15 @@ class Flow(object):
         matrix = matrix_from_transforms(transform_list)
         return cls.from_matrix(matrix, shape, ref, mask)
 
+    def copy(self) -> FlowAlias:
+        """Copy a flow object by constructing a new one with the same vectors :attr:`vecs`, reference :attr:`ref`, and
+        mask :attr:`mask`
+
+        :return: Copy of the flow object
+        """
+
+        return Flow(self._vecs, self._ref, self._mask)
+
     def __str__(self) -> str:
         """Enhanced string representation of the flow object, containing the flow reference :attr:`ref` and shape
         :attr:`shape`
@@ -330,15 +339,6 @@ class Flow(object):
         """
 
         return Flow(self._vecs.__getitem__(item), self._ref, self._mask.__getitem__(item))
-
-    def __copy__(self) -> FlowAlias:
-        """Copy a flow object by constructing a new one with the same vectors :attr:`vecs`, reference :attr:`ref`, and
-        mask :attr:`mask`
-
-        :return: Copy of the flow object
-        """
-
-        return Flow(self._vecs, self._ref, self._mask)
 
     def __add__(self, other: Union[np.ndarray, FlowAlias]) -> FlowAlias:
         """Adds a flow object or a numpy array to a flow object
