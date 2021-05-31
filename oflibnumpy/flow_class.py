@@ -375,7 +375,7 @@ class Flow(object):
                 return Flow(vecs, self._ref, self._mask)
 
     def __sub__(self, other: Union[np.ndarray, FlowAlias]) -> FlowAlias:
-        """Subtracts a flow objects or a numpy array from a flow object
+        """Subtracts a flow object or a numpy array from a flow object
 
         .. caution::
             This is **not** equal to subtracting the effects of applying flow fields to an image. For that, use

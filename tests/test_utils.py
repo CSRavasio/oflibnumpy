@@ -154,7 +154,7 @@ class TestMatrixFromTransform(unittest.TestCase):
 class TestFlowFromMatrix(unittest.TestCase):
     # All numerical values in calculated manually and independently
     def test_identity(self):
-        # No transformation, equals passing identy matrix, to 200 by 300 flow field
+        # No transformation, equals passing identity matrix, to 200 by 300 flow field
         shape = [200, 300]
         matrix = np.eye(3)
         flow = flow_from_matrix(matrix, shape)
