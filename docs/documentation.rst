@@ -8,8 +8,8 @@ code and flow field visualisations.
 Flow Constructors and Operators
 -------------------------------
 .. autoclass:: oflibnumpy.Flow
-    :members: zero, from_matrix, from_transforms, vecs, ref, mask, shape, is_zero
-    :special-members: __str__, __getitem__, __copy__, __add__, __sub__, __mul__, __truediv__, __pow__, __neg__
+    :members: zero, from_matrix, from_transforms, vecs, ref, mask, shape, copy, is_zero
+    :special-members: __str__, __getitem__, __add__, __sub__, __mul__, __truediv__, __pow__, __neg__
 
     .. automethod:: __init__
 
