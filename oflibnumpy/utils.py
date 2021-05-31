@@ -194,8 +194,7 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.n
         field[:, :, 0] += np.arange(field.shape[1])
         field[:, :, 1] += np.arange(field.shape[0])[:, np.newaxis]
         result = cv2.remap(target, field, None, cv2.INTER_LINEAR)
-        return result
-    elif ref == 's':
+    else:  # if ref == 's'
         # Get the positions of the unstructured points with known values
         x, y = np.mgrid[:field.shape[0], :field.shape[1]]
         positions = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
@@ -217,7 +216,9 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.n
         if np.issubdtype(target.dtype, np.integer):
             result = np.round(result)
         result = result.astype(target.dtype)
-        return result
+    if result.shape != target.shape:  # target was H-W-1, but e.g. remap returns H-W
+        result = result[:, :, np.newaxis]
+    return result
 
 
 def show_masked_image(img: np.ndarray, mask: np.ndarray) -> np.ndarray:
