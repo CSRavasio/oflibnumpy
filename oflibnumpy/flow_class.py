@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import math
-from typing import Union
+from typing import Union, Tuple
 import warnings
 import cv2
 import numpy as np
@@ -35,7 +35,7 @@ class Flow(object):
     _mask: np.ndarray
     _ref: str
 
-    def __init__(self, flow_vectors: np.ndarray, ref: str = None, mask: np.ndarray = None):
+    def __init__(self, flow_vectors: np.ndarray, ref: str = None, mask: np.ndarray = None) -> FlowAlias:
         """Flow object constructor. For a more detailed explanation of the arguments, see the class attributes
         :attr:`vecs`, :attr:`ref`, and :attr:`mask`.
 
@@ -83,10 +83,10 @@ class Flow(object):
     @property
     def ref(self) -> str:
         """Flow reference, a string: either ``s`` for "source" or ``t`` for "target". This determines whether the
-        regular grid of shape H-W associated with the flow vectors should be understood as the source of the vectors
-        (which then point to any other position), or the target of the vectors (whose start point can then be any other
-        position). The flow reference ``t`` is the default, meaning the regular grid refers to the coordinates the
-        pixels whose motion is being recorded by the vectors end up at.
+        regular grid of shape :math:`(H, W)` associated with the flow vectors should be understood as the source of the
+        vectors (which then point to any other position), or the target of the vectors (whose start point can then be
+        any other position). The flow reference ``t`` is the default, meaning the regular grid refers to the
+        coordinates the pixels whose motion is being recorded by the vectors end up at.
 
         .. caution::
 
@@ -160,7 +160,7 @@ class Flow(object):
     @property
     def shape(self) -> tuple:
         """Shape (resolution) :math:`(H, W)` of the flow, corresponding to the first two dimensions of the flow
-        vector array of shape :math:`(H, W, 2)` and of the shape array of shape :math:`(H, W)`
+        vector array of shape :math:`(H, W, 2)`
 
         :return: Tuple of the shape (resolution) :math:`(H, W)` of the flow object
         """
@@ -323,6 +323,7 @@ class Flow(object):
 
         :return: String representation
         """
+
         info_string = "Flow object, reference {}, shape {}*{}; ".format(self._ref, *self.shape)
         info_string += self.__repr__()
         return info_string
@@ -330,9 +331,9 @@ class Flow(object):
     def __getitem__(self, item: Union[int, list, slice]) -> FlowAlias:
         """Mimics ``__getitem__`` of a numpy array, returning a new flow object cut accordingly
 
-        Will throw an error if ``mask.__getitem__(item)`` or ``vecs.__getitem__(item)`` throw an error. Also throws an
-        error if sliced :attr:`vecs` or :attr:`mask` are not suitable to construct a new flow object with, e.g. if the
-        number of dimensions
+        Will throw an error if ``mask.__getitem__(item)`` or ``vecs.__getitem__(item)`` (corresponding to
+        ``mask[item]`` and ``vecs[item]``) throw an error. Also throws an error if sliced :attr:`vecs` or :attr:`mask`
+        are not suitable to construct a new flow object with, e.g. if the number of dimensions is too low.
 
         :param item: Slice used to select a part of the flow
         :return: New flow object cut as a corresponding numpy array would be cut
@@ -583,7 +584,7 @@ class Flow(object):
         consider_mask: bool = None,
         padding: Union[list, tuple] = None,
         cut: bool = None
-    ) -> Union[np.ndarray, FlowAlias]:
+    ) -> Union[Union[np.ndarray, FlowAlias], Tuple[Union[np.ndarray, FlowAlias], np.ndarray]]:
         """Apply the flow to a target, which can be a numpy array or a Flow object itself. If the flow shape
         :math:`(H_{flow}, W_{flow})` is smaller than the target shape :math:`(H_{target}, W_{target})`, a list of
         padding values needs to be passed to localise the flow in the larger :math:`H_{target} \\times W_{target}` area.
@@ -606,11 +607,12 @@ class Flow(object):
             :meth:`~oflibnumpy.Flow.valid_target` is not a convex hull. For a more detailed explanation with an
             illustrative example, see the section ":ref:`Applying a Flow`" in the usage documentation.
 
-        :param target: Numpy array of shape :math:`(H, W, C)` or flow object of shape :math:`(H, W)` to which the flow
-            should be applied, where :math:`H` and :math:`W` are equal or larger than the corresponding dimensions of
-            the flow itself
+        :param target: Numpy array of shape :math:`(H, W)` or :math:`(H, W, C)`, or a flow object of shape
+            :math:`(H, W)` to which the flow should be applied, where :math:`H` and :math:`W` are equal or larger
+            than the corresponding dimensions of the flow itself
         :param target_mask: Optional numpy array of shape :math:`(H, W)` that indicates which part of the target is
-            valid (only relevant if `target` is a numpy array). Defaults to ``True`` everywhere
+            valid (only relevant if `target` is a numpy array). Only impacts the valid area returned when
+            ``return_valid_area = True``. Defaults to ``True`` everywhere
         :param return_valid_area: Boolean determining whether the valid image area is returned (only if the target is a
             numpy array), defaults to ``False``. The valid image area is returned as a boolean numpy array of shape
             :math:`(H, W)`.
@@ -621,8 +623,8 @@ class Flow(object):
             if the flow and the target don't have the same shape. Defaults to ``None``, which means no padding needed
         :param cut: Boolean determining whether the warped target is returned cut from :math:`(H_{target}, W_{target})`
             to :math:`(H_{flow}, W_{flow})`, in the case that the shapes are not the same. Defaults to ``True``
-        :return: The warped target in the same dtype as the input (rounded if necessary), and optionally the valid area
-            of the flow as a boolean numpy array of shape :math:`(H, W)`.
+        :return: The warped target of the same shape :math:`(C, H, W)` and type as the input (rounded if necessary),
+            and optionally the valid area of the flow as a boolean array of shape :math:`(H, W)`
         """
 
         return_valid_area = False if return_valid_area is None else return_valid_area
@@ -645,15 +647,21 @@ class Flow(object):
 
         # Type check, prepare arrays
         return_dtype = None
+        return_2d = False
         if isinstance(target, Flow):
             return_flow = True
             t = target._vecs
             mask = target._mask
-        else:
+        elif isinstance(target, np.ndarray):
             return_flow = False
-            if not isinstance(target, np.ndarray):
-                raise ValueError("Error applying flow: Target needs to be either a flow object, or a numpy ndarray")
-            t = target
+            if target.ndim == 3:
+                t = target
+            elif target.ndim == 2:
+                return_2d = True
+                t = target[..., np.newaxis]
+            else:
+                raise ValueError("Error applying flow: Target needs to have the shape H-W (2 dimensions) "
+                                 "or H-W-C (3 dimensions)")
             if target_mask is None:
                 mask = np.ones(t.shape[:2], 'b')
             else:
@@ -663,8 +671,13 @@ class Flow(object):
                     raise ValueError("Error applying flow: Target_mask needs to match the target shape")
                 if target_mask.dtype != np.bool:
                     raise TypeError("Error applying flow: Target_mask needs to have dtype 'bool'")
+                if not return_valid_area:
+                    warnings.warn("Warning applying flow: a mask is passed, but return_valid_area is False - so the "
+                                  "mask passed will not affect the output, but possibly make the function slower.")
                 mask = target_mask
             return_dtype = target.dtype
+        else:
+            raise ValueError("Error applying flow: Target needs to be either a flow object, or a numpy ndarray")
 
         # Concatenate the flow vectors with the mask if required, so they are warped in one step
         if return_flow or return_valid_area:
@@ -719,12 +732,14 @@ class Flow(object):
 
         # Return as correct type
         if return_flow:
-            return Flow(warped_t[..., :2], target._ref, mask)
+            return Flow(warped_t[:, :, :2], target._ref, mask)
         else:
             if return_valid_area:
-                warped_t = warped_t[..., :-1]
+                warped_t = warped_t[:, :, :-1]
             if np.issubdtype(return_dtype, np.integer):
                 warped_t = np.round(warped_t)
+            if return_2d:
+                warped_t = warped_t[:, :, 0]
             if return_valid_area:
                 return warped_t.astype(return_dtype), mask
             else:
