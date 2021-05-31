@@ -760,7 +760,10 @@ class TestFlow(unittest.TestCase):
         failed = 0
         for i in range(1000):
             matrix = (np.random.rand(3, 3) - .5) * 20
-            matrix /= matrix[2, 2]
+            if -1e-4 < matrix[2, 2] < 1e-4:
+                matrix[2, 2] = 0
+            else:
+                matrix /= matrix[2, 2]
             flow_s = Flow.from_matrix(matrix, (50, 100), 's')
             try:
                 np.testing.assert_allclose(flow_s.matrix(8, 'lms'), matrix, atol=1e-2, rtol=1e-2)
