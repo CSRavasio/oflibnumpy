@@ -1032,7 +1032,7 @@ class Flow(object):
 
     def visualise_arrows(
         self,
-        grid_dist: int,
+        grid_dist: int = None,
         img: np.ndarray = None,
         scaling: Union[float, int] = None,
         show_mask: bool = None,
