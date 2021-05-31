@@ -506,9 +506,18 @@ class TestFlow(unittest.TestCase):
         # Check flow.apply results in the same as using apply_flow directly
         for ref in ['t', 's']:
             flow = Flow.from_transforms([['rotation', 30, 50, 30]], img.shape[:2], ref)
-            # Target is a numpy array
+            mask = np.ones(img.shape[:2], 'bool')
+            # Target is a 3D numpy array, without / with mask
             warped_img_desired = apply_flow(flow.vecs, img, ref)
             warped_img_actual = flow.apply(img)
+            self.assertIsNone(np.testing.assert_equal(warped_img_actual, warped_img_desired))
+            warped_img_actual, _ = flow.apply(img, mask, return_valid_area=True)
+            self.assertIsNone(np.testing.assert_equal(warped_img_actual, warped_img_desired))
+            # Target is a 2D numpy array
+            warped_img_desired = apply_flow(flow.vecs, img[..., 0], ref)
+            warped_img_actual = flow.apply(img[..., 0])
+            self.assertIsNone(np.testing.assert_equal(warped_img_actual, warped_img_desired))
+            warped_img_actual, _ = flow.apply(img[..., 0], mask, return_valid_area=True)
             self.assertIsNone(np.testing.assert_equal(warped_img_actual, warped_img_desired))
             # Target is a flow object
             warped_flow_desired = apply_flow(flow.vecs, flow.vecs, ref)
@@ -543,11 +552,15 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(warped_flow_actual.vecs, warped_flow_desired[padding[0]:-padding[1],
                                                                                                padding[2]:-padding[3]]))
 
-        # Non-valid padding values
+        # Non-valid input values
         for ref in ['t', 's']:
             shape = (10, 10)
             flow = Flow.from_transforms([['rotation', 0, 0, 30]], shape, ref)
             img = np.ones(shape + (3,), 'uint8')
+            with self.assertRaises(ValueError):  # 1D input
+                flow.apply(img[0, 0])
+            with self.assertRaises(ValueError):  # 4D input
+                flow.apply(img[..., np.newaxis])
             with self.assertRaises(TypeError):
                 flow.apply(flow, padding=100, cut=True)
             with self.assertRaises(ValueError):
