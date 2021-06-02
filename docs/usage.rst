@@ -223,7 +223,7 @@ section ":ref:`Combining Flows`"):
     :width: 49%
     :alt: Flow 1 visualisation (rotation)
 
-.. image:: ../docs/_static/usage_mask_flow1.png
+.. image:: ../docs/_static/usage_mask_flow2.png
     :width: 49%
     :alt: Flow 2 visualisation (scaling)
 
