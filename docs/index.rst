@@ -1,5 +1,9 @@
 Introduction
 ============
+.. image:: ../docs/_static/oflibnumpy.png
+    :width: 100%
+    :alt: Oflibnumpy cover image
+
 Oflibnumpy: a handy python **o**\ ptical **f**\ low **lib**\ rary, based on **NumPy** arrays, that enables the manipulation and
 combination of flow fields while keeping track of valid areas (see "Usage"). It is mostly code written from scratch,
 but also contains useful wrappers for specific functions from libraries such as OpenCV's ``remap``, to integrate them
