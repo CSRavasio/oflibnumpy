@@ -374,14 +374,14 @@ class TestFlow(unittest.TestCase):
             self.assertIsNone(np.testing.assert_allclose((flow1 ** i).vecs, vecs1 ** i, rtol=1e-6, atol=1e-6))
             self.assertIsNone(np.testing.assert_allclose((flow1 ** f).vecs, vecs1 ** f, rtol=1e-6, atol=1e-6))
         # ... using a list of length 2
-        int_list = np.random.randint(-10, 10, (100, 2))
+        int_list = np.random.randint(-5, 5, (100, 2))
         for li in int_list:
             v = vecs1.astype('f')
             v[..., 0] **= li[0]
             v[..., 1] **= li[1]
             self.assertIsNone(np.testing.assert_allclose((flow1 ** list(li)).vecs, v, rtol=1e-6, atol=1e-6))
         # ... using a numpy array of size 2
-        int_list = np.random.randint(-10, 10, (100, 2))
+        int_list = np.random.randint(-5, 5, (100, 2))
         for li in int_list:
             v = vecs1.astype('f')
             v[..., 0] **= li[0]
@@ -678,10 +678,10 @@ class TestFlow(unittest.TestCase):
                                                      atol=1e-6, rtol=1e-6))
         pts_tracked_t = f_t.track(pts, int_out=True)
         self.assertIsNone(np.testing.assert_equal(pts_tracked_t, np.round(desired_pts)))
-        self.assertEqual(pts_tracked_t.dtype, np.int)
+        self.assertEqual(pts_tracked_t.dtype, int)
         pts_tracked_t, tracked = f_t.track(pts, get_valid_status=True)
         self.assertIsNone(np.testing.assert_equal(tracked, True))
-        self.assertEqual(pts_tracked_t.dtype, np.float)
+        self.assertEqual(pts_tracked_t.dtype, float)
 
         # Test tracking for 's' flow and int pts (checked via debugger)
         f = Flow.from_transforms([['translation', 10, 20]], (512, 512), 's')
