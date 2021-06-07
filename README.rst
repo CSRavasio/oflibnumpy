@@ -11,6 +11,13 @@ with the custom flow field class introduced by oflibnumpy. Features:
 - Allows for three different types of flow field combination operations
 - Keeps track of valid flow field areas through said operations
 
+Note there is an equivalent flow library called Oflibpytorch, mostly based on PyTorch tensors. Its
+`code is available on Github`_, and the `documentation is accessible on ReadTheDocs`_.
+
+.. _code is available on Github:  https://github.com/RViMLab/oflibpytorch
+.. _documentation is accessible on ReadTheDocs: https://oflibpytorch.rtfd.io
+
+
 Usage & Documentation
 ---------------------
 A user's guide as well as full documentation of the library is available at ReadTheDocs_. Some quick examples:

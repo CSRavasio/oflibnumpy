@@ -4,6 +4,14 @@ This section aims to illustrate the benefits of ``oflibnumpy`` with examples. In
 library was imported using the command ``import oflibnumpy as of``, and therefore the flow class can be accessed using
 ``of.Flow`` and the functions using ``of.<function>``.
 
+There is an equivalent flow library called Oflibpytorch, mostly based on PyTorch tensors. Its
+`code is available on Github`_, and the `documentation is accessible on ReadTheDocs`_. This can be advantageous for
+fast operations, potentially on GPU, when the flow fields are output as a CUDA tensor e.g. by a PyTorch-based deep
+learning algorithm.
+
+.. _code is available on Github:  https://github.com/RViMLab/oflibpytorch
+.. _documentation is accessible on ReadTheDocs: https://oflibpytorch.rtfd.io
+
 The Flow Object
 ---------------
 The custom flow object introduced here has three attributes: vectors :attr:`~oflibnumpy.Flow.vecs`, reference

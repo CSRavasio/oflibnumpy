@@ -5,9 +5,11 @@ combination of flow fields while keeping track of valid areas (see "Usage"). It 
 but also contains useful wrappers for specific functions from libraries such as OpenCV's ``remap``, to integrate them
 with the custom flow field class introduced by oflibnumpy.
 
-An equivalent flow library based on PyTorch tensors exists. Its documentation can be found on `ReadTheDocs`_.
+Note there is an equivalent flow library called Oflibpytorch, mostly based on PyTorch tensors. Its
+`code is available on Github`_, and the `documentation is accessible on ReadTheDocs`_.
 
-.. _ReadTheDocs: https://oflibpytorch.readthedocs.io
+.. _code is available on Github:  https://github.com/RViMLab/oflibpytorch
+.. _documentation is accessible on ReadTheDocs: https://oflibpytorch.rtfd.io
 
 **Features:**
 
