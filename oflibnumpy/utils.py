@@ -248,7 +248,7 @@ def points_inside_area(pts: np.ndarray, shape: Union[tuple, list]) -> np.ndarray
     :return: Boolean array True for all points within image area defined by shape
     """
 
-    if np.issubdtype(pts.dtype, np.float):
+    if np.issubdtype(pts.dtype, float):
         pts = np.round(pts).astype('i')
     status_array = (pts[..., 0] >= 0) & (pts[..., 0] <= shape[0] - 1) & \
                    (pts[..., 1] >= 0) & (pts[..., 1] <= shape[1] - 1)

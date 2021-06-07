@@ -669,7 +669,7 @@ class Flow(object):
                     raise TypeError("Error applying flow: Target_mask needs to be a numpy ndarray")
                 if target_mask.shape != target.shape[:2]:
                     raise ValueError("Error applying flow: Target_mask needs to match the target shape")
-                if target_mask.dtype != np.bool:
+                if target_mask.dtype != bool:
                     raise TypeError("Error applying flow: Target_mask needs to have dtype 'bool'")
                 if not return_valid_area:
                     warnings.warn("Warning applying flow: a mask is passed, but return_valid_area is False - so the "
