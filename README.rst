@@ -26,7 +26,7 @@ A user's guide as well as full documentation of the library is available at Read
     flow = of.Flow.from_transforms([['rotation', 200, 150, -30]], shape)
     flow.show()
 
-.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_rotation.png?token=AG5S37QEFXP3HTKIN4E4TT3ATPBRG
+.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_rotation.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation
 
@@ -37,7 +37,7 @@ A user's guide as well as full documentation of the library is available at Read
     result = of.combine_flows(flow, flow_2, mode=3)
     result.show(show_mask=True, show_mask_borders=True)
 
-.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation.png?token=AG5S37VDNMWDNFKKMNXTVVTATPBP4
+.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
@@ -45,7 +45,7 @@ A user's guide as well as full documentation of the library is available at Read
 
     result.show_arrows(show_mask=True, show_mask_borders=True)
 
-.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation_arrows.png?token=AG5S37WIKWJFZDDVRJPUE2TATPBOQ
+.. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation_arrows.png
   :width: 200
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
