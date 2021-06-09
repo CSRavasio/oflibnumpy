@@ -1,1 +1,2 @@
+opencv-python==4.2.0.34
 readthedocs-sphinx-search==0.1.0rc3
