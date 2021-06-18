@@ -1,9 +1,9 @@
 Introduction
 ============
-Oflibnumpy: a handy python **o**\ ptical **f**\ low **lib**\ rary, based on **NumPy** arrays, that enables the manipulation and
-combination of flow fields while keeping track of valid areas (see "Usage"). It is mostly code written from scratch,
-but also contains useful wrappers for specific functions from libraries such as OpenCV's ``remap``, to integrate them
-with the custom flow field class introduced by oflibnumpy. Features:
+**Oflibnumpy:** a handy python **o**\ ptical **f**\ low **lib**\ rary, based on **NumPy** arrays, that enables
+the manipulation and combination of flow fields while keeping track of valid areas (see "Usage"). It is mostly code
+written from scratch, but also contains useful wrappers for specific functions from libraries such as OpenCV's
+``remap``, to integrate them with the custom flow field class introduced by oflibnumpy. Features:
 
 - Provides a custom flow field class for both backwards and forwards ('source' / 'target' based) flow fields
 - Provides a number of class methods to create flow fields from lists of affine transforms, or a transformation matrix
@@ -34,7 +34,7 @@ A user's guide as well as full documentation of the library is available at Read
     flow.show()
 
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_rotation.png
-  :width: 200
+  :width: 50%
   :alt: Visualisation of optical flow representing a rotation
 
 .. code-block:: python
@@ -45,7 +45,7 @@ A user's guide as well as full documentation of the library is available at Read
     result.show(show_mask=True, show_mask_borders=True)
 
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation.png
-  :width: 200
+  :width: 50%
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
 .. code-block:: python
@@ -53,7 +53,7 @@ A user's guide as well as full documentation of the library is available at Read
     result.show_arrows(show_mask=True, show_mask_borders=True)
 
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation_arrows.png
-  :width: 200
+  :width: 50%
   :alt: Visualisation of optical flow representing a rotation, translated to the right
 
 

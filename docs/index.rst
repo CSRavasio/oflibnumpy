@@ -4,10 +4,10 @@ Introduction
     :width: 100%
     :alt: Oflibnumpy cover image
 
-Oflibnumpy: a handy python **o**\ ptical **f**\ low **lib**\ rary, based on **NumPy** arrays, that enables the manipulation and
-combination of flow fields while keeping track of valid areas (see "Usage"). It is mostly code written from scratch,
-but also contains useful wrappers for specific functions from libraries such as OpenCV's ``remap``, to integrate them
-with the custom flow field class introduced by oflibnumpy.
+**Oflibnumpy:** a handy python **o**\ ptical **f**\ low **lib**\ rary, based on **NumPy** arrays, that enables the
+manipulation and combination of flow fields while keeping track of valid areas (see "Usage"). It is mostly code
+written from scratch, but also contains useful wrappers for specific functions from libraries such as OpenCV's
+``remap``, to integrate them with the custom flow field class introduced by oflibnumpy.
 
 Note there is an equivalent flow library called Oflibpytorch, mostly based on PyTorch tensors. Its
 `code is available on Github`_, and the `documentation is accessible on ReadTheDocs`_.
