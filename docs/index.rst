@@ -29,6 +29,14 @@ Note there is an equivalent flow library called Oflibpytorch, mostly based on Py
 
     pip install oflibnumpy
 
+**Testing:**
+
+Make sure ``unittest`` is installed. In the command line, navigate to the folder ``oflibnumpy/tests`` and run:
+
+.. code-block::
+
+    python -m unittest discover .
+
 **Code example:**
 
 .. code-block:: python
