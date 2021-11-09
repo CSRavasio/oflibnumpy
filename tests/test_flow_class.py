@@ -191,6 +191,22 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose(flow.vecs[199, 10], [-74.5, 19.9622148361]))
         self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
         self.assertEqual(flow.ref, 't')
+    
+    def test_from_kitti(self):
+        path = 'kitti.png'
+        f = Flow.from_kitti(path, load_valid=True)
+        desired_flow = np.arange(0, 10)[:, np.newaxis] * np.arange(0, 20)[np.newaxis, :]
+        self.assertIsNone(np.testing.assert_equal(f.vecs[..., 0], desired_flow))
+        self.assertIsNone(np.testing.assert_equal(f.vecs[..., 1], 0))
+        self.assertIsNone(np.testing.assert_equal(f.mask[:, 0], True))
+        self.assertIsNone(np.testing.assert_equal(f.mask[:, 10], False))
+
+        with self.assertRaises(TypeError):  # Wrong load_valid type
+            Flow.from_kitti(path, load_valid='test')
+        with self.assertRaises(ValueError):  # Wrong path
+            Flow.from_kitti('test')
+        with self.assertRaises(ValueError):  # Wrong flow shape
+            Flow.from_kitti('kitti_wrong.png')
 
     def test_getitem(self):
         vectors = np.random.rand(200, 200, 2)

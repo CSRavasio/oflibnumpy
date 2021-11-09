@@ -311,6 +311,29 @@ class Flow(object):
         matrix = matrix_from_transforms(transform_list)
         return cls.from_matrix(matrix, shape, ref, mask)
 
+    @classmethod
+    def from_kitti(cls, path: str, load_valid: bool = None) -> FlowAlias:
+        """Loads the flow field contained in KITTI ``uint16`` png images files, including the valid pixels. Follows the
+        official instructions on how to read the provided .png files
+
+        :param path: String containing the path to the KITTI flow data (``uint16``, .png file)
+        :param load_valid: Boolean determining whether the valid pixels are loaded as the flow :attr:`mask`. Defaults
+            to ``True``
+        :return: A flow object corresponding to the KITTI flow data, with flow reference :attr:`ref` ``s``.
+        """
+        load_valid = True if load_valid is None else load_valid
+        if not isinstance(load_valid, bool):
+            raise TypeError("Error loading flow from KITTI data: Load_valid needs to be boolean")
+        inp = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        # Note: cv2.IMREAD_UNCHANGED necessary to read uint16 correctly. Channels then need to be inverted (BGR to RGB)
+        if inp is None:
+            raise ValueError("Error loading flow from KITTI data: Flow data could not be loaded")
+        if inp.ndim != 3 or inp.shape[-1] != 3:
+            raise ValueError("Error loading flow from KITTI data: Loaded flow data has the wrong shape")
+        flow = (inp[..., 2:0:-1].astype('float64') - 2 ** 15) / 64
+        mask = inp[..., 0].astype('bool') if load_valid else None
+        return cls(flow, 's', mask)
+
     def copy(self) -> FlowAlias:
         """Copy a flow object by constructing a new one with the same vectors :attr:`vecs`, reference :attr:`ref`, and
         mask :attr:`mask`
