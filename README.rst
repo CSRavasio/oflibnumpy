@@ -68,8 +68,8 @@ Oflibnumpy is based on Python>=3.7. Install it by running:
 
 Testing
 ------------
-Oflibnumpy contains a large number of tests to verify it is working as intended. To run them, ensure the ``unittest``
-package is installed. Then, use the command line to navigate to ``oflibnumpy/tests`` and run the following code:
+Oflibnumpy contains a large number of tests to verify it is working as intended. Use the command line to navigate
+to ``oflibnumpy/tests`` and run the following code:
 
 .. code-block::
 
