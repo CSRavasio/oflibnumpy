@@ -19,7 +19,8 @@ from scipy.ndimage import rotate, shift
 from skimage.metrics import structural_similarity
 from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
-    points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask
+    points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, \
+    resize
 from oflibnumpy.flow_class import Flow
 
 
@@ -426,6 +427,59 @@ class TestFromSintel(unittest.TestCase):
             load_sintel_mask(0)
         with self.assertRaises(ValueError):  # File does not exist
             load_sintel_mask('test.png')
+
+
+class TestResize(unittest.TestCase):
+    def test_resize(self):
+        shape = [20, 10]
+        ref = 's'
+        flow = Flow.from_transforms([['rotation', 30, 50, 30]], shape, ref).vecs
+        # Different scales
+        scales = [.2, .5, 1, 1.5, 2, 10]
+        for scale in scales:
+            resized_flow = resize(flow, scale)
+            resized_shape = scale * np.array(shape)
+            self.assertIsNone(np.testing.assert_equal(resized_flow.shape[:2], resized_shape))
+            self.assertIsNone(np.testing.assert_allclose(resized_flow[0, 0], flow[0, 0] * scale, rtol=.1))
+
+        # Scale list
+        scale = [.5, 2]
+        resized_flow = resize(flow, scale)
+        resized_shape = np.array(scale) * np.array(shape)
+        self.assertIsNone(np.testing.assert_equal(resized_flow.shape[:2], resized_shape))
+        self.assertIsNone(np.testing.assert_allclose(resized_flow[0, 0], flow[0, 0] * np.array(scale)[::-1], rtol=.1))
+
+        # Scale tuple
+        scale = (2, .5)
+        resized_flow = resize(flow, scale)
+        resized_shape = np.array(scale) * np.array(shape)
+        self.assertIsNone(np.testing.assert_equal(resized_flow.shape[:2], resized_shape))
+        self.assertIsNone(np.testing.assert_allclose(resized_flow[0, 0], flow[0, 0] * np.array(scale)[::-1], rtol=.1))
+
+    def test_resize_on_fields(self):
+        # Check scaling is performed correctly based on the actual flow field
+        ref = 't'
+        flow_small = Flow.from_transforms([['rotation', 0, 0, 30]], (50, 80), ref).vecs
+        flow_large = Flow.from_transforms([['rotation', 0, 0, 30]], (150, 240), ref).vecs
+        flow_resized = resize(flow_large, 1/3)
+        self.assertIsNone(np.testing.assert_allclose(flow_resized, flow_small, atol=1, rtol=.1))
+
+    def test_failed_resize(self):
+        flow = Flow.from_transforms([['rotation', 30, 50, 30]], [20, 10], 's').vecs
+        with self.assertRaises(TypeError):  # Wrong flow array type
+            resize('test', 2)
+        with self.assertRaises(ValueError):  # Wrong flow array shape
+            resize(flow[..., 0], 2)
+        with self.assertRaises(TypeError):  # Wrong shape type
+            resize(flow, 'test')
+        with self.assertRaises(ValueError):  # Wrong shape values
+            resize(flow, ['test', 0])
+        with self.assertRaises(ValueError):  # Wrong shape shape
+            resize(flow, [1, 2, 3])
+        with self.assertRaises(ValueError):  # Shape is 0
+            resize(flow, 0)
+        with self.assertRaises(ValueError):  # Shape below 0
+            resize(flow, -0.1)
 
 
 if __name__ == '__main__':

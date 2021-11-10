@@ -435,3 +435,41 @@ def load_sintel_mask(path: str) -> nd:
         raise ValueError("Error loading flow from Sintel data: Invalid mask could not be loaded from path")
     mask = ~(mask.astype('bool'))
     return mask
+
+
+def resize(flow_array, scale: Union[float, int, list, tuple]) -> nd:
+    """Resize a flow field array, scaling the flow vectors values accordingly
+
+    :param flow_array: Numpy array containing the flow vectors to be resized
+    :param scale: Scale used for resizing, options:
+
+        - Integer or float of value ``scaling`` applied both vertically and horizontally
+        - List or tuple of shape :math:`(2)` with values ``[vertical scaling, horizontal scaling]``
+    :return: Scaled flow field as a numpy array
+    """
+
+    # Check validity
+    if not isinstance(flow_array, np.ndarray):
+        raise TypeError("Error resizing flow: Flow_array is not a numpy array")
+    if not flow_array.ndim == 3:
+        raise ValueError("Error resizing flow: Flow_array is not 3-dimensional")
+
+    if isinstance(scale, (float, int)):
+        scale = [scale, scale]
+    elif isinstance(scale, (tuple, list)):
+        if len(scale) != 2:
+            raise ValueError("Error resizing flow: Scale {} must have a length of 2".format(type(scale)))
+        if not all(isinstance(item, (float, int)) for item in scale):
+            raise ValueError("Error resizing flow: Scale {} items must be integers or floats".format(type(scale)))
+    else:
+        raise TypeError("Error resizing flow: "
+                        "Scale must be an integer, float, or list or tuple of integers or floats")
+    if any(s <= 0 for s in scale):
+        raise ValueError("Error resizing flow: Scale values must be larger than 0")
+
+    # Resize and adjust values
+    resized = cv2.resize(flow_array, None, fx=scale[1], fy=scale[0])
+    resized[..., 0] *= scale[1]
+    resized[..., 1] *= scale[0]
+
+    return resized

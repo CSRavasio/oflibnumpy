@@ -20,8 +20,8 @@ import cv2
 import numpy as np
 from scipy.interpolate import griddata
 from .utils import get_valid_ref, get_valid_padding, validate_shape, \
-    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow, threshold_vectors, \
-    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask
+    bilinear_interpolation, apply_flow, threshold_vectors, \
+    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, resize
 
 
 FlowAlias = 'Flow'
@@ -494,27 +494,9 @@ class Flow(object):
         :return: New flow object scaled as desired
         """
 
-        # Check validity
-        if isinstance(scale, (float, int)):
-            scale = [scale, scale]
-        elif isinstance(scale, (tuple, list)):
-            if len(scale) != 2:
-                raise ValueError("Error resizing flow: Scale {} must have a length of 2".format(type(scale)))
-            if not all(isinstance(item, (float, int)) for item in scale):
-                raise ValueError("Error resizing flow: Scale {} items must be integers or floats".format(type(scale)))
-        else:
-            raise TypeError("Error resizing flow: "
-                            "Scale must be an integer, float, or list or tuple of integers or floats")
-        if any(s <= 0 for s in scale):
-            raise ValueError("Error resizing flow: Scale values must be larger than 0")
-
         # Resize vectors and mask
         to_resize = np.concatenate((self._vecs, self._mask.astype('f')[..., np.newaxis]), axis=-1)
-        resized = cv2.resize(to_resize, None, fx=scale[1], fy=scale[0])
-
-        # Adjust values
-        resized[..., 0] *= scale[1]
-        resized[..., 1] *= scale[0]
+        resized = resize(to_resize, scale)
 
         return Flow(resized[..., :2], self._ref, np.round(resized[..., 2]))
 
