@@ -336,6 +336,13 @@ class Flow(object):
 
     @classmethod
     def from_sintel(cls, path: str, inv_path: str = None) -> FlowAlias:
+        """Loads the flow field contained in Sintel .flo byte files, including the invalid pixels if required. Follows
+        the official instructions provided alongside the .flo data.
+
+        :param path: String containing the path to the Sintel flow data (.flo byte file, little Endian)
+        :param inv_path: String containing the path to the Sintel invalid pixel data (.png, black and white)
+        :return: A flow object corresponding to the Sintel flow data, with flow reference :attr:`ref` ``s``
+        """
         file = open(path, 'rb')
         if file.read(4).decode('ascii') != 'PIEH':
             raise ValueError("Error loading flow from Sintel data: Path not a valid .flo file")
