@@ -437,7 +437,7 @@ def load_sintel_mask(path: str) -> nd:
     return mask
 
 
-def resize(flow_array, scale: Union[float, int, list, tuple]) -> nd:
+def resize_flow(flow_array, scale: Union[float, int, list, tuple]) -> nd:
     """Resize a flow field array, scaling the flow vectors values accordingly
 
     :param flow_array: Numpy array containing the flow vectors to be resized

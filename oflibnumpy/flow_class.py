@@ -21,7 +21,7 @@ import numpy as np
 from scipy.interpolate import griddata
 from .utils import get_valid_ref, get_valid_padding, validate_shape, \
     bilinear_interpolation, apply_flow, threshold_vectors, \
-    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, resize
+    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, resize_flow
 
 
 FlowAlias = 'Flow'
@@ -496,7 +496,7 @@ class Flow(object):
 
         # Resize vectors and mask
         to_resize = np.concatenate((self._vecs, self._mask.astype('f')[..., np.newaxis]), axis=-1)
-        resized = resize(to_resize, scale)
+        resized = resize_flow(to_resize, scale)
 
         return Flow(resized[..., :2], self._ref, np.round(resized[..., 2]))
 
