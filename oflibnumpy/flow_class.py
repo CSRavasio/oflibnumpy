@@ -334,6 +334,30 @@ class Flow(object):
         mask = inp[..., 0].astype('bool') if load_valid else None
         return cls(flow, 's', mask)
 
+    @classmethod
+    def from_sintel(cls, path: str, inv_path: str = None) -> FlowAlias:
+        file = open(path, 'rb')
+        if file.read(4).decode('ascii') != 'PIEH':
+            raise ValueError("Error loading flow from Sintel data: Path not a valid .flo file")
+        w, h = int.from_bytes(file.read(4), 'little'), int.from_bytes(file.read(4), 'little')
+        if 99999 < w < 1:
+            raise ValueError("Error loading flow from Sintel data: Invalid width read from file ('{}')".format(w))
+        if 99999 < h < 1:
+            raise ValueError("Error loading flow from Sintel data: Invalid height read from file ('{}')".format(h))
+        dt = np.dtype('float32')
+        dt = dt.newbyteorder('<')
+        flow = np.fromfile(file, dtype=dt).reshape(h, w, 2)
+        mask = None
+        if inv_path is not None:
+            mask = cv2.imread(inv_path, 0)
+            if mask is None:
+                raise ValueError("Error loading flow from Sintel data: Invalid mask could not be loaded from path")
+            if mask.shape[0] != h or mask.shape[1] != w:
+                raise ValueError("Error loading flow from Sintel data: Invalid mask does not have the same shape as "
+                                 "the flow")
+            mask = ~(mask.astype('bool'))
+        return cls(flow, 's', mask)
+
     def copy(self) -> FlowAlias:
         """Copy a flow object by constructing a new one with the same vectors :attr:`vecs`, reference :attr:`ref`, and
         mask :attr:`mask`
