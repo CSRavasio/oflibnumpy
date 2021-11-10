@@ -20,7 +20,8 @@ import cv2
 import numpy as np
 from scipy.interpolate import griddata
 from .utils import get_valid_ref, get_valid_padding, validate_shape, \
-    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow, threshold_vectors
+    flow_from_matrix, matrix_from_transforms, bilinear_interpolation, apply_flow, threshold_vectors, \
+    load_kitti, load_sintel, load_sintel_mask
 
 
 FlowAlias = 'Flow'
@@ -313,26 +314,24 @@ class Flow(object):
 
     @classmethod
     def from_kitti(cls, path: str, load_valid: bool = None) -> FlowAlias:
-        """Loads the flow field contained in KITTI ``uint16`` png images files, including the valid pixels. Follows the
-        official instructions on how to read the provided .png files
+        """Loads the flow field contained in KITTI ``uint16`` png images files, optionally including the valid pixels.
+        Follows the official instructions on how to read the provided .png files
 
         :param path: String containing the path to the KITTI flow data (``uint16``, .png file)
         :param load_valid: Boolean determining whether the valid pixels are loaded as the flow :attr:`mask`. Defaults
             to ``True``
         :return: A flow object corresponding to the KITTI flow data, with flow reference :attr:`ref` ``s``.
         """
+
         load_valid = True if load_valid is None else load_valid
         if not isinstance(load_valid, bool):
             raise TypeError("Error loading flow from KITTI data: Load_valid needs to be boolean")
-        inp = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-        # Note: cv2.IMREAD_UNCHANGED necessary to read uint16 correctly. Channels then need to be inverted (BGR to RGB)
-        if inp is None:
-            raise ValueError("Error loading flow from KITTI data: Flow data could not be loaded")
-        if inp.ndim != 3 or inp.shape[-1] != 3:
-            raise ValueError("Error loading flow from KITTI data: Loaded flow data has the wrong shape")
-        flow = (inp[..., 2:0:-1].astype('float64') - 2 ** 15) / 64
-        mask = inp[..., 0].astype('bool') if load_valid else None
-        return cls(flow, 's', mask)
+
+        data = load_kitti(path)
+        if load_valid:
+            return cls(data[..., :2], 's', data[..., 2].astype('bool'))
+        else:
+            return cls(data[..., :2], 's')
 
     @classmethod
     def from_sintel(cls, path: str, inv_path: str = None) -> FlowAlias:
@@ -343,26 +342,9 @@ class Flow(object):
         :param inv_path: String containing the path to the Sintel invalid pixel data (.png, black and white)
         :return: A flow object corresponding to the Sintel flow data, with flow reference :attr:`ref` ``s``
         """
-        file = open(path, 'rb')
-        if file.read(4).decode('ascii') != 'PIEH':
-            raise ValueError("Error loading flow from Sintel data: Path not a valid .flo file")
-        w, h = int.from_bytes(file.read(4), 'little'), int.from_bytes(file.read(4), 'little')
-        if 99999 < w < 1:
-            raise ValueError("Error loading flow from Sintel data: Invalid width read from file ('{}')".format(w))
-        if 99999 < h < 1:
-            raise ValueError("Error loading flow from Sintel data: Invalid height read from file ('{}')".format(h))
-        dt = np.dtype('float32')
-        dt = dt.newbyteorder('<')
-        flow = np.fromfile(file, dtype=dt).reshape(h, w, 2)
-        mask = None
-        if inv_path is not None:
-            mask = cv2.imread(inv_path, 0)
-            if mask is None:
-                raise ValueError("Error loading flow from Sintel data: Invalid mask could not be loaded from path")
-            if mask.shape[0] != h or mask.shape[1] != w:
-                raise ValueError("Error loading flow from Sintel data: Invalid mask does not have the same shape as "
-                                 "the flow")
-            mask = ~(mask.astype('bool'))
+
+        flow = load_sintel(path)
+        mask = None if inv_path is None else load_sintel_mask(inv_path)
         return cls(flow, 's', mask)
 
     def copy(self) -> FlowAlias:

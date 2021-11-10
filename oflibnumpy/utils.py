@@ -14,10 +14,11 @@
 import math
 import cv2
 import numpy as np
-from typing import Union, Any
+from typing import Union, Any, List
 from scipy.interpolate import griddata
 
 
+nd = np.ndarray
 DEFAULT_THRESHOLD = 1e-3
 
 
@@ -268,3 +269,62 @@ def threshold_vectors(vecs: np.ndarray, threshold: Union[float, int] = None) -> 
     f = vecs.copy()
     f[mags < threshold] = 0
     return f
+
+
+def load_kitti(path: str) -> Union[List[nd], nd]:
+    """Loads the flow field contained in KITTI ``uint16`` png images files, including the valid pixels.
+    Follows the official instructions on how to read the provided .png files
+
+    :param path: String containing the path to the KITTI flow data (``uint16``, .png file)
+    :return: A numpy array with the KITTI flow data (including valid pixels)
+    """
+
+    inp = cv2.imread(path, cv2.IMREAD_UNCHANGED)  # cv2.IMREAD_UNCHANGED necessary to read uint16 correctly
+    if inp is None:
+        raise ValueError("Error loading flow from KITTI data: Flow data could not be loaded")
+    if inp.ndim != 3 or inp.shape[-1] != 3:
+        raise ValueError("Error loading flow from KITTI data: Loaded flow data has the wrong shape")
+    inp = inp[..., ::-1].astype('float64')  # Invert channels as cv2 loads as BGR instead of RGB
+    inp[..., :2] = (inp[..., :2] - 2 ** 15) / 64
+    return inp
+
+
+def load_sintel(path: str) -> nd:
+    """Loads the flow field contained in Sintel .flo byte files. Follows the official instructions provided with
+    the Sintel .flo data.
+
+    :param path: String containing the path to the Sintel flow data (.flo byte file, little Endian)
+    :return: A numpy array containing the Sintel flow data
+    """
+
+    if not isinstance(path, str):
+        raise TypeError("Error loading flow from Sintel data: Path needs to be a string")
+    file = open(path, 'rb')
+    if file.read(4).decode('ascii') != 'PIEH':
+        raise ValueError("Error loading flow from Sintel data: Path not a valid .flo file")
+    w, h = int.from_bytes(file.read(4), 'little'), int.from_bytes(file.read(4), 'little')
+    if 99999 < w < 1:
+        raise ValueError("Error loading flow from Sintel data: Invalid width read from file ('{}')".format(w))
+    if 99999 < h < 1:
+        raise ValueError("Error loading flow from Sintel data: Invalid height read from file ('{}')".format(h))
+    dt = np.dtype('float32')
+    dt = dt.newbyteorder('<')
+    flow = np.fromfile(file, dtype=dt).reshape(h, w, 2)
+    return flow
+
+
+def load_sintel_mask(path: str) -> nd:
+    """Loads the invalid pixels contained in Sintel .png mask files. Follows the official instructions provided
+    with the .flo data.
+
+    :param path: String containing the path to the Sintel invalid pixel data (.png, black and white)
+    :return: A numpy array containing the Sintel invalid pixels (mask) data
+    """
+
+    if not isinstance(path, str):
+        raise TypeError("Error loading flow from Sintel data: Path needs to be a string")
+    mask = cv2.imread(path, 0)
+    if mask is None:
+        raise ValueError("Error loading flow from Sintel data: Invalid mask could not be loaded from path")
+    mask = ~(mask.astype('bool'))
+    return mask

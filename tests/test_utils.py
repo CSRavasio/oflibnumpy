@@ -19,7 +19,7 @@ from scipy.ndimage import rotate, shift
 from skimage.metrics import structural_similarity
 from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
-    points_inside_area, threshold_vectors
+    points_inside_area, threshold_vectors, load_kitti, load_sintel, load_sintel_mask
 from oflibnumpy.flow_class import Flow
 
 
@@ -293,6 +293,50 @@ class TestThresholdVectors(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 1e-4, 1e-3, 1]))
         thresholded = threshold_vectors(vecs, threshold=1e-5)
         self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [1e-5, 1e-4, 1e-3, 1]))
+
+
+class TestFromKITTI(unittest.TestCase):
+    def test_load(self):
+        output = load_kitti('kitti.png')
+        self.assertIsInstance(output, np.ndarray)
+        desired_flow = np.arange(0, 10)[:, np.newaxis] * np.arange(0, 20)[np.newaxis, :]
+        self.assertIsNone(np.testing.assert_equal(output[..., 0], desired_flow))
+        self.assertIsNone(np.testing.assert_equal(output[..., 1], 0))
+        self.assertIsNone(np.testing.assert_equal(output[:, 0, 2], 1))
+        self.assertIsNone(np.testing.assert_equal(output[:, 10, 2], 0))
+
+    def test_failed_load(self):
+        with self.assertRaises(ValueError):  # Wrong path
+            load_kitti('test')
+        with self.assertRaises(ValueError):  # Wrong flow shape
+            load_kitti('kitti_wrong.png')
+
+
+class TestFromSintel(unittest.TestCase):
+    def test_load_flow(self):
+        f = load_sintel('sintel.flo')
+        self.assertIsInstance(f, np.ndarray)
+        desired_flow = np.arange(0, 10)[:, np.newaxis] * np.arange(0, 20)[np.newaxis, :]
+        self.assertIsNone(np.testing.assert_equal(f[..., 0], desired_flow))
+        self.assertIsNone(np.testing.assert_equal(f[..., 1], 0))
+
+    def test_failed_load_flow(self):
+        with self.assertRaises(TypeError):  # Path not a string
+            load_sintel(0)
+        with self.assertRaises(ValueError):  # Wrong tag
+            load_sintel('sintel_wrong.flo')
+
+    def test_load_mask(self):
+        m = load_sintel_mask('sintel_invalid.png')
+        self.assertIsInstance(m, np.ndarray)
+        self.assertIsNone(np.testing.assert_equal(m[:, 0], True))
+        self.assertIsNone(np.testing.assert_equal(m[:, 10], False))
+
+    def test_failed_load_mask(self):
+        with self.assertRaises(TypeError):  # Path not a string
+            load_sintel_mask(0)
+        with self.assertRaises(ValueError):  # File does not exist
+            load_sintel_mask('test.png')
 
 
 if __name__ == '__main__':
