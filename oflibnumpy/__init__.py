@@ -13,4 +13,4 @@
 
 from .flow_class import Flow
 from .flow_operations import *
-from .utils import load_kitti, load_sintel, load_sintel_mask
+from .utils import from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask

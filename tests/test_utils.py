@@ -19,7 +19,7 @@ from scipy.ndimage import rotate, shift
 from skimage.metrics import structural_similarity
 from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
-    points_inside_area, threshold_vectors, load_kitti, load_sintel, load_sintel_mask
+    points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask
 from oflibnumpy.flow_class import Flow
 
 
@@ -293,6 +293,95 @@ class TestThresholdVectors(unittest.TestCase):
         self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 1e-4, 1e-3, 1]))
         thresholded = threshold_vectors(vecs, threshold=1e-5)
         self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [1e-5, 1e-4, 1e-3, 1]))
+
+
+class TestFromMatrix(unittest.TestCase):
+    def test_from_matrix(self):
+        # With reference 's', this simply corresponds to using flow_from_matrix, tested in test_utils.
+        # With reference 't':
+        # Rotation of 30 degrees clockwise around point [10, 50] (hor, ver)
+        matrix = np.array([[math.sqrt(3) / 2, -.5, 26.3397459622],
+                           [.5, math.sqrt(3) / 2, 1.69872981078],
+                           [0, 0, 1]])
+        shape = [200, 300]
+        flow = from_matrix(matrix, shape, 't')
+        self.assertIsNone(np.testing.assert_array_almost_equal(flow[50, 10], [0, 0]))
+        self.assertIsNone(np.testing.assert_allclose(flow[50, 299], [38.7186583063, 144.5]))
+        self.assertIsNone(np.testing.assert_allclose(flow[199, 10], [-74.5, 19.9622148361]))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
+
+    def test_failed_from_matrix(self):
+        with self.assertRaises(TypeError):  # Invalid matrix type
+            from_matrix('test', [10, 10])
+        with self.assertRaises(ValueError):  # Invalid matrix shape
+            from_matrix(np.eye(4), [10, 10])
+
+
+class TestFromTransforms(unittest.TestCase):
+    def test_from_transforms_rotation(self):
+        shape = [200, 300]
+        transforms = [['rotation', 10, 50, -30]]
+        flow = from_transforms(transforms, shape)
+        self.assertIsNone(np.testing.assert_array_almost_equal(flow[50, 10], [0, 0]))
+        self.assertIsNone(np.testing.assert_allclose(flow[50, 299], [38.7186583063, 144.5]))
+        self.assertIsNone(np.testing.assert_allclose(flow[199, 10], [-74.5, 19.9622148361]))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
+
+    def test_from_transforms_scaling(self):
+        shape = [200, 300]
+        transforms = [['scaling', 20, 30, 2]]
+        flow = from_transforms(transforms, shape, 's')
+        self.assertIsNone(np.testing.assert_array_almost_equal(flow[30, 20], [0, 0]))
+        self.assertIsNone(np.testing.assert_allclose(flow[30, 70], [50, 0]))
+        self.assertIsNone(np.testing.assert_allclose(flow[80, 20], [0, 50]))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
+
+    def test_from_transforms_multiple_s(self):
+        shape = [200, 300]
+        transforms = [
+            ['translation', -20, -30],
+            ['scaling', 0, 0, 2],
+            ['translation', 20, 30]
+        ]
+        flow = from_transforms(transforms, shape, 's')
+        self.assertIsNone(np.testing.assert_array_almost_equal(flow[30, 20], [0, 0]))
+        self.assertIsNone(np.testing.assert_allclose(flow[30, 70], [50, 0]))
+        self.assertIsNone(np.testing.assert_allclose(flow[80, 20], [0, 50]))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
+
+    def test_from_transforms_multiple_t(self):
+        shape = [200, 300]
+        transforms = [
+            ['translation', -10, -50],
+            ['rotation', 0, 0, -30],
+            ['translation', 10, 50]
+        ]
+        flow = from_transforms(transforms, shape, 't')
+        self.assertIsNone(np.testing.assert_array_almost_equal(flow[50, 10], [0, 0]))
+        self.assertIsNone(np.testing.assert_allclose(flow[50, 299], [38.7186583063, 144.5]))
+        self.assertIsNone(np.testing.assert_allclose(flow[199, 10], [-74.5, 19.9622148361]))
+        self.assertIsNone(np.testing.assert_equal(flow.shape[:2], shape))
+
+    def test_failed_from_transforms(self):
+        shape = [200, 300]
+        transforms = 'test'
+        with self.assertRaises(TypeError):  # transforms not a list
+            from_transforms(transforms, shape)
+        transforms = ['test']
+        with self.assertRaises(TypeError):  # transform not a list
+            from_transforms(transforms, shape)
+        transforms = [['translation', 20, 10], ['rotation']]
+        with self.assertRaises(ValueError):  # transform missing information
+            from_transforms(transforms, shape)
+        transforms = [['translation', 20, 10], ['rotation', 1]]
+        with self.assertRaises(ValueError):  # transform with incomplete information
+            from_transforms(transforms, shape)
+        transforms = [['translation', 20, 10], ['rotation', 1, 'test', 10]]
+        with self.assertRaises(ValueError):  # transform with invalid information
+            from_transforms(transforms, shape)
+        transforms = [['translation', 20, 10], ['test', 1, 1, 10]]
+        with self.assertRaises(ValueError):  # transform type invalid
+            from_transforms(transforms, shape)
 
 
 class TestFromKITTI(unittest.TestCase):
