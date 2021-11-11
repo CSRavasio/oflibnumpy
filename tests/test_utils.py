@@ -19,7 +19,7 @@ from scipy.ndimage import rotate, shift
 from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, validate_flow_array, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
     points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, \
-    resize_flow
+    resize_flow, is_zero_flow
 from oflibnumpy.flow_class import Flow
 
 
@@ -512,6 +512,29 @@ class TestResizeFlow(unittest.TestCase):
             resize_flow(flow, 0)
         with self.assertRaises(ValueError):  # Shape below 0
             resize_flow(flow, -0.1)
+
+
+class TestIsZeroFlow(unittest.TestCase):
+    def test_is_zero_flow(self):
+        flow = np.zeros((10, 10, 2), 'float32')
+        self.assertEqual(is_zero_flow(flow, thresholded=True), True)
+        self.assertEqual(is_zero_flow(flow, thresholded=False), True)
+
+        flow[:3, :, 0] = 1e-4
+        self.assertEqual(is_zero_flow(flow, thresholded=True), True)
+        self.assertEqual(is_zero_flow(flow, thresholded=False), False)
+
+        flow[:3, :, 1] = -1e-3
+        self.assertEqual(is_zero_flow(flow, thresholded=True), False)
+        self.assertEqual(is_zero_flow(flow, thresholded=False), False)
+
+        flow[0, 0] = 10
+        self.assertEqual(is_zero_flow(flow, thresholded=True), False)
+        self.assertEqual(is_zero_flow(flow, thresholded=False), False)
+
+    def test_failed_is_zero_flow(self):
+        with self.assertRaises(TypeError):  # Wrong thresholded type
+            is_zero_flow(np.zeros((10, 10, 2)), 'test')
 
 
 if __name__ == '__main__':

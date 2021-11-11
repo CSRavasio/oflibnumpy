@@ -1033,25 +1033,17 @@ class TestFlow(unittest.TestCase):
 
     def test_is_zero(self):
         shape = (10, 10)
-        flow = Flow.zero(shape)
-        self.assertEqual(flow.is_zero(thresholded=True), True)
-        self.assertEqual(flow.is_zero(thresholded=False), True)
+        mask = np.ones(shape, 'bool')
+        mask[0, 0] = False
+        flow = np.zeros(shape + (2,))
+        flow[0, 0] = 10
+        flow = Flow(flow, mask=mask)
+        self.assertEqual(flow.is_zero(), True)
+        self.assertEqual(flow.is_zero(masked=True), True)
+        self.assertEqual(flow.is_zero(masked=False), False)
 
-        flow.vecs[:3, :, 0] = 1e-4
-        self.assertEqual(flow.is_zero(thresholded=True), True)
-        self.assertEqual(flow.is_zero(thresholded=False), False)
-
-        flow.vecs[:3, :, 1] = -1e-3
-        self.assertEqual(flow.is_zero(thresholded=True), False)
-        self.assertEqual(flow.is_zero(thresholded=False), False)
-
-        transforms = [['rotation', 0, 0, 45]]
-        flow = Flow.from_transforms(transforms, shape)
-        self.assertEqual(flow.is_zero(thresholded=True), False)
-        self.assertEqual(flow.is_zero(thresholded=False), False)
-
-        with self.assertRaises(TypeError):
-            flow.is_zero('test')
+        with self.assertRaises(TypeError):  # Masked wrong type
+            flow.is_zero(masked='test')
 
 
 if __name__ == '__main__':

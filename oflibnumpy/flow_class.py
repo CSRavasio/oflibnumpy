@@ -21,7 +21,7 @@ import numpy as np
 from scipy.interpolate import griddata
 from .utils import get_valid_ref, get_valid_padding, validate_shape, \
     bilinear_interpolation, apply_flow, threshold_vectors, \
-    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, resize_flow
+    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, resize_flow, is_zero_flow
 
 
 FlowAlias = 'Flow'
@@ -1261,21 +1261,19 @@ class Flow(object):
         padding = [int(np.ceil(p)) for p in padding]
         return padding
 
-    def is_zero(self, thresholded: bool = None) -> bool:
+    def is_zero(self, thresholded: bool = None, masked: bool = None) -> bool:
         """Check whether all flow vectors (where :attr:`mask` is ``True``) are zero. Optionally, a threshold flow
         magnitude value of ``1e-3`` is used. This can be useful to filter out motions that are equal to very small
         fractions of a pixel, which might just be a computational artefact to begin with.
 
         :param thresholded: Boolean determining whether the flow is thresholded, defaults to ``True``
+        :param masked: Boolean determining whether the flow is masked with :attr:`mask`, defaults to ``True``
         :return: ``True`` if the flow field is zero everywhere, otherwise ``False``
         """
 
-        thresholded = True if thresholded is None else thresholded
-        if not isinstance(thresholded, bool):
-            raise TypeError("Error checking whether flow is zero: Thresholded needs to be a boolean")
+        masked = True if masked is None else masked
+        if not isinstance(masked, bool):
+            raise TypeError("Error checking whether flow is zero: Masked needs to be a boolean")
 
-        if thresholded:
-            vecs = threshold_vectors(self._vecs)
-        else:
-            vecs = self._vecs
-        return np.all(vecs == 0)
+        f = self._vecs[self._mask][np.newaxis, ...] if masked else self._vecs
+        return is_zero_flow(f, thresholded)

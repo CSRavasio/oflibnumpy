@@ -508,3 +508,23 @@ def resize_flow(flow: nd, scale: Union[float, int, list, tuple]) -> nd:
     resized[..., 1] *= scale[0]
 
     return resized
+
+
+def is_zero_flow(flow: nd, thresholded: bool = None) -> bool:
+    """Check whether all flow vectors are zero. Optionally, a threshold flow magnitude value of ``1e-3`` is used.
+    This can be useful to filter out motions that are equal to very small fractions of a pixel, which might just be
+    a computational artefact to begin with.
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param thresholded: Boolean determining whether the flow is thresholded, defaults to ``True``
+    :return: ``True`` if the flow field is zero everywhere, otherwise ``False``
+    """
+
+    # Check input validity
+    flow = validate_flow_array(flow, "Error checking whether flow is zero: ")
+    thresholded = True if thresholded is None else thresholded
+    if not isinstance(thresholded, bool):
+        raise TypeError("Error checking whether flow is zero: Thresholded needs to be a boolean")
+
+    f = threshold_vectors(flow) if thresholded else flow
+    return np.all(f == 0)
