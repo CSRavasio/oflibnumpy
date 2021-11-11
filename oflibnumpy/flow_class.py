@@ -702,7 +702,7 @@ class Flow(object):
             - ``invalid``: just the flow reference attribute is switched without any flow values being changed. This
               is functionally equivalent to simply assigning ``flow.ref = 't'`` for a "source" flow or
               ``flow.ref = 's'`` for a "target" flow
-            - ``valid``: the flow field is switched to the other coordinate reference, with flow vectors recalculated
+            - ``valid`` (default): the flow field is switched to the other coordinate reference, with flow vectors recalculated
               accordingly
         :return: New flow object with switched coordinate reference
         """
