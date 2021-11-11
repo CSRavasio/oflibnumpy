@@ -177,16 +177,38 @@ def bilinear_interpolation(data, pts):
 
 
 def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.ndarray = None) -> np.ndarray:
-    """Warps target according to flow of given reference
+    """Uses a given flow to warp a target. The flow reference, if not given, is assumed to be ``t``. Optionally, a mask
+    can be passed which (only for flows in ``s`` reference) masks undesired (e.g. undefined or invalid) flow vectors.
 
-    :param flow: Numpy array H-W-2 containing the flow vectors in cv2 convention (1st channel hor, 2nd channel ver)
-    :param target: Numpy array H-W or H-W-C containing the content to be warped
-    :param ref: Reference of the flow, 't' or 's'. Defaults to 't'
-    :param mask: Numpy array H-W containing the flow mask, only relevant for 's' flows. Defaults to True everywhere
-    :return: Numpy array of the same shape as the target, with the content warped by the flow
+    :param flow: Numpy array containing the flow vectors in cv2 convention (1st channel hor, 2nd channel ver), with
+        shape :math:`(H, W, 2)`
+    :param target: Numpy array containing the content to be warped, with shape :math:`(H, W)` or :math:`(H, W, C)`
+    :param ref: Reference of the flow, ``t`` or ``s``. Defaults to ``t``
+    :param mask: Boolean numpy array containing the flow mask, with shape :math:`(H, W)`. Only relevant for ``s``
+        flows. Defaults to ``True`` everywhere
+    :return: Numpy array of the same shape :math:`(H, W)` as the target, with the content warped by the flow
     """
 
+    # Input validity check
     ref = get_valid_ref(ref)
+    if not (isinstance(flow, np.ndarray) and isinstance(target, np.ndarray)):
+        raise TypeError("Error applying flow to a target: Both flow and target need to be numpy arrays")
+    if flow.ndim != 3:
+        raise ValueError("Error applying flow to a target: Flow array needs to have shape H-W-2")
+    if flow.shape[2] != 2:
+        raise ValueError("Error applying flow to a target: Flow array needs to have shape H-W-2")
+    if target.ndim < 2 or target.ndim > 3:
+        raise ValueError("Error applying flow to a target: Target array needs to have shape H-W or H-W-C")
+    if target.shape[:2] != flow.shape[:2]:
+        raise ValueError("Error applying flow to a target: Target height and width needs to match flow field array")
+    if mask is not None:
+        if not isinstance(mask, np.ndarray):
+            raise TypeError("Error applying flow to a target: Mask needs to be a numpy array")
+        if mask.shape != flow.shape[:2]:
+            raise ValueError("Error applying flow to a target: Mask height and width needs to match flow field array")
+        if mask.dtype is not bool:
+            raise TypeError("Error applying flow to a target: Mask needs to be boolean")
+
     field = flow.astype('float32')
     if np.all(np.linalg.norm(flow, axis=-1) <= DEFAULT_THRESHOLD):  # If the flow field is actually 0 or very close
         return target

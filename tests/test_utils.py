@@ -16,7 +16,6 @@ import math
 import cv2
 import numpy as np
 from scipy.ndimage import rotate, shift
-from skimage.metrics import structural_similarity
 from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
     points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, \
@@ -246,14 +245,14 @@ class TestBilinearInterpolation(unittest.TestCase):
 
 class TestApplyFlow(unittest.TestCase):
     def test_rotation(self):
-        img = cv2.imread('smudge.png')
+        img = cv2.imread('smudge.png', 0)
         for ref in ['t', 's']:
             flow = Flow.from_transforms([['rotation', 255.5, 255.5, -30]], img.shape[:2], ref).vecs
             control_img = rotate(img, -30, reshape=False)
             warped_img = apply_flow(flow, img, ref)
-            # Values will not be exactly the same due to rounding etc., so use SSIM instead
-            ssim = structural_similarity(control_img, warped_img, multichannel=True)
-            self.assertTrue(ssim > 0.98)
+            self.assertIsNone(np.testing.assert_allclose(control_img[200:300, 200:300], warped_img[200:300, 200:300],
+                                                         atol=20, rtol=0.05))
+            # Note: using SSIM would be a better measure of similarity here, but wanted to avoid extra dependency
 
     def test_translation(self):
         img = cv2.imread('smudge.png')
@@ -262,6 +261,31 @@ class TestApplyFlow(unittest.TestCase):
             control_img = shift(img, [20, 10, 0])
             warped_img = apply_flow(flow, img, ref)
             self.assertIsNone(np.testing.assert_equal(warped_img, control_img))
+
+    def test_failed_apply(self):
+        # Test failure cases
+        img = cv2.imread('smudge.png')
+        flow = Flow.from_transforms([['translation', 10, 20]], img.shape[:2], 't').vecs
+        with self.assertRaises(TypeError):  # Target wrong type
+            apply_flow(flow, 2)
+        with self.assertRaises(TypeError):  # Flow wrong type
+            apply_flow(2, img)
+        with self.assertRaises(ValueError):  # Flow ndim only 2
+            apply_flow(flow[..., 0], img)
+        with self.assertRaises(ValueError):  # Flow channel length only 1
+            apply_flow(flow[..., 0:1], img)
+        with self.assertRaises(ValueError):  # Target ndim smaller than 2
+            apply_flow(flow, img[0, :, 0])
+        with self.assertRaises(ValueError):  # Target ndim larger than 2
+            apply_flow(flow, img[..., np.newaxis])
+        with self.assertRaises(ValueError):  # Target shape does not match flow
+            apply_flow(flow, img[:10])
+        with self.assertRaises(TypeError):  # Mask wrong type
+            apply_flow(flow, img, mask=0)
+        with self.assertRaises(TypeError):  # Mask values wrong type
+            apply_flow(flow, img, mask=img[..., 0])
+        with self.assertRaises(ValueError):  # Mask wrong shape
+            apply_flow(flow, img, mask=img)
 
 
 class TestPointsInsideArea(unittest.TestCase):
