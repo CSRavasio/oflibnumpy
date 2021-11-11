@@ -196,14 +196,14 @@ def bilinear_interpolation(data, pts):
     return result
 
 
-def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.ndarray = None) -> np.ndarray:
+def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str, mask: np.ndarray = None) -> np.ndarray:
     """Uses a given flow to warp a target. The flow reference, if not given, is assumed to be ``t``. Optionally, a mask
     can be passed which (only for flows in ``s`` reference) masks undesired (e.g. undefined or invalid) flow vectors.
 
     :param flow: Numpy array containing the flow vectors in cv2 convention (1st channel hor, 2nd channel ver), with
         shape :math:`(H, W, 2)`
     :param target: Numpy array containing the content to be warped, with shape :math:`(H, W)` or :math:`(H, W, C)`
-    :param ref: Reference of the flow, ``t`` or ``s``. Defaults to ``t``
+    :param ref: Reference of the flow, ``t`` or ``s``
     :param mask: Boolean numpy array containing the flow mask, with shape :math:`(H, W)`. Only relevant for ``s``
         flows. Defaults to ``True`` everywhere
     :return: Numpy array of the same shape :math:`(H, W)` as the target, with the content warped by the flow
@@ -310,12 +310,12 @@ def threshold_vectors(vecs: np.ndarray, threshold: Union[float, int] = None) -> 
     return f
 
 
-def from_matrix(matrix: np.ndarray, shape: Union[list, tuple], ref: str = None) -> nd:
+def from_matrix(matrix: np.ndarray, shape: Union[list, tuple], ref: str) -> nd:
     """Flow field array calculated from a transformation matrix
 
     :param matrix: Transformation matrix to be turned into a flow field, as numpy array of shape :math:`(3, 3)`
     :param shape: List or tuple of the shape :math:`(H, W)` of the flow field
-    :param ref: Flow reference, string of value ``t`` ("target") or ``s`` ("source"). Defaults to ``t``
+    :param ref: Flow reference, string of value ``t`` ("target") or ``s`` ("source")
     :return: Flow field, as numpy array
     """
 
@@ -338,7 +338,7 @@ def from_matrix(matrix: np.ndarray, shape: Union[list, tuple], ref: str = None) 
     return flow_vectors
 
 
-def from_transforms(transform_list: list, shape: Union[list, tuple], ref: str = None) -> nd:
+def from_transforms(transform_list: list, shape: Union[list, tuple], ref: str) -> nd:
     """Flow field array calculated from a list of transforms
 
     :param transform_list: List of transforms to be turned into a flow field, where each transform is expressed as
@@ -350,7 +350,7 @@ def from_transforms(transform_list: list, shape: Union[list, tuple], ref: str = 
         - Transform ``scaling``, with values ``horizontal centre in px``, ``vertical centre in px``,
           ``scaling fraction``
     :param shape: List or tuple of the shape :math:`(H, W)` of the flow field
-    :param ref: Flow reference, string of value ``t`` ("target") or ``s`` ("source"). Defaults to ``t``
+    :param ref: Flow reference, string of value ``t`` ("target") or ``s`` ("source")
     :return: Flow field as a numpy array
     """
 

@@ -285,19 +285,19 @@ class TestApplyFlow(unittest.TestCase):
         img = cv2.imread('smudge.png')
         flow = Flow.from_transforms([['translation', 10, 20]], img.shape[:2], 't').vecs
         with self.assertRaises(TypeError):  # Target wrong type
-            apply_flow(flow, 2)
+            apply_flow(flow, 2, 't')
         with self.assertRaises(ValueError):  # Target ndim smaller than 2
-            apply_flow(flow, img[0, :, 0])
+            apply_flow(flow, img[0, :, 0], 't')
         with self.assertRaises(ValueError):  # Target ndim larger than 2
-            apply_flow(flow, img[..., np.newaxis])
+            apply_flow(flow, img[..., np.newaxis], 't')
         with self.assertRaises(ValueError):  # Target shape does not match flow
-            apply_flow(flow, img[:10])
+            apply_flow(flow, img[:10], 't')
         with self.assertRaises(TypeError):  # Mask wrong type
-            apply_flow(flow, img, mask=0)
+            apply_flow(flow, img, 't', mask=0)
         with self.assertRaises(TypeError):  # Mask values wrong type
-            apply_flow(flow, img, mask=img[..., 0])
+            apply_flow(flow, img, 't', mask=img[..., 0])
         with self.assertRaises(ValueError):  # Mask wrong shape
-            apply_flow(flow, img, mask=img)
+            apply_flow(flow, img, 't', mask=img)
 
 
 class TestPointsInsideArea(unittest.TestCase):
@@ -349,16 +349,16 @@ class TestFromMatrix(unittest.TestCase):
 
     def test_failed_from_matrix(self):
         with self.assertRaises(TypeError):  # Invalid matrix type
-            from_matrix('test', [10, 10])
+            from_matrix('test', [10, 10], 't')
         with self.assertRaises(ValueError):  # Invalid matrix shape
-            from_matrix(np.eye(4), [10, 10])
+            from_matrix(np.eye(4), [10, 10], 't')
 
 
 class TestFromTransforms(unittest.TestCase):
     def test_from_transforms_rotation(self):
         shape = [200, 300]
         transforms = [['rotation', 10, 50, -30]]
-        flow = from_transforms(transforms, shape)
+        flow = from_transforms(transforms, shape, 't')
         self.assertIsNone(np.testing.assert_array_almost_equal(flow[50, 10], [0, 0]))
         self.assertIsNone(np.testing.assert_allclose(flow[50, 299], [38.7186583063, 144.5]))
         self.assertIsNone(np.testing.assert_allclose(flow[199, 10], [-74.5, 19.9622148361]))
@@ -403,22 +403,22 @@ class TestFromTransforms(unittest.TestCase):
         shape = [200, 300]
         transforms = 'test'
         with self.assertRaises(TypeError):  # transforms not a list
-            from_transforms(transforms, shape)
+            from_transforms(transforms, shape, 't')
         transforms = ['test']
         with self.assertRaises(TypeError):  # transform not a list
-            from_transforms(transforms, shape)
+            from_transforms(transforms, shape, 't')
         transforms = [['translation', 20, 10], ['rotation']]
         with self.assertRaises(ValueError):  # transform missing information
-            from_transforms(transforms, shape)
+            from_transforms(transforms, shape, 't')
         transforms = [['translation', 20, 10], ['rotation', 1]]
         with self.assertRaises(ValueError):  # transform with incomplete information
-            from_transforms(transforms, shape)
+            from_transforms(transforms, shape, 't')
         transforms = [['translation', 20, 10], ['rotation', 1, 'test', 10]]
         with self.assertRaises(ValueError):  # transform with invalid information
-            from_transforms(transforms, shape)
+            from_transforms(transforms, shape, 't')
         transforms = [['translation', 20, 10], ['test', 1, 1, 10]]
         with self.assertRaises(ValueError):  # transform type invalid
-            from_transforms(transforms, shape)
+            from_transforms(transforms, shape, 't')
 
 
 class TestFromKITTI(unittest.TestCase):
