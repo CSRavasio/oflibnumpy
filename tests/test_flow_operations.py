@@ -65,7 +65,6 @@ class TestFlowOperations(unittest.TestCase):
         flow_t = Flow.from_transforms(transforms, shape, 't')
         self.assertIsNone(np.testing.assert_equal(flow_s.switch_ref().vecs, switch_flow_ref(flow_s.vecs, 's')))
         self.assertIsNone(np.testing.assert_equal(flow_t.switch_ref().vecs, switch_flow_ref(flow_t.vecs, 't')))
-        self.assertIsNone(np.testing.assert_equal(flow_t.switch_ref().vecs, switch_flow_ref(flow_t.vecs)))
 
     def test_invert_flow(self):
         shape = [10, 20]

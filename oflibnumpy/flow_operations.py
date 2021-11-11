@@ -251,11 +251,11 @@ def combine_flows(input_1: FlowAlias, input_2: FlowAlias, mode: int, thresholded
     return result
 
 
-def switch_flow_ref(flow: nd, input_ref: str = None) -> nd:
+def switch_flow_ref(flow: nd, input_ref: str) -> nd:
     """Recalculate flow vectors to correspond to a switched flow reference (see Flow reference :attr:`ref`)
 
     :param flow: The flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param input_ref: The reference of the input flow field, either ``s`` or ``t``. Defaults to ``t``
+    :param input_ref: The reference of the input flow field, either ``s`` or ``t``
     :return: Flow field as a numpy array of shape :math:`(H, W, 2)`
     """
 
@@ -263,12 +263,12 @@ def switch_flow_ref(flow: nd, input_ref: str = None) -> nd:
     return f.vecs
 
 
-def invert_flow(flow: nd, input_ref: str = None, output_ref: str = None) -> nd:
+def invert_flow(flow: nd, input_ref: str, output_ref: str = None) -> nd:
     """Inverting a flow: `img`\\ :sub:`1` -- `f` --> `img`\\ :sub:`2` becomes `img`\\ :sub:`1` <-- `f` --
     `img`\\ :sub:`2`. The smaller the input flow, the closer the inverse is to simply multiplying the flow by -1.
 
     :param flow: The flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param input_ref: Reference of the input flow field,  either ``s`` or ``t``. Defaults to ``t``
+    :param input_ref: Reference of the input flow field,  either ``s`` or ``t``
     :param output_ref: Desired reference of the output field, either ``s`` or ``t``. Defaults to ``input_ref``
     :return: Flow field as a numpy array of shape :math:`(H, W, 2)`
     """
@@ -279,7 +279,7 @@ def invert_flow(flow: nd, input_ref: str = None, output_ref: str = None) -> nd:
     return f.vecs
 
 
-def valid_target(flow: nd, ref: str = None) -> nd:
+def valid_target(flow: nd, ref: str) -> nd:
     """Find the valid area in the target domain
 
     Given a source image and a flow, both of shape :math:`(H, W)`, the target image is created by warping the source
@@ -293,14 +293,14 @@ def valid_target(flow: nd, ref: str = None) -> nd:
     pixel values having been warped to that (valid) location by the flow.
 
     :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param ref: Reference of the flow field, ``s`` or ``t``
     :return: Boolean numpy array of the same shape :math:`(H, W)` as the flow
     """
 
     return Flow(flow, ref).valid_target()
 
 
-def valid_source(flow: nd, ref: str = None) -> nd:
+def valid_source(flow: nd, ref: str) -> nd:
     """Finds the area in the source domain that will end up being valid in the target domain (see
     :meth:`~oflibnumpy.valid_target`) after warping
 
@@ -311,14 +311,14 @@ def valid_source(flow: nd, ref: str = None) -> nd:
     vectors connecting to this position.
 
     :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param ref: Reference of the flow field, ``s`` or ``t``
     :return: Boolean numpy array of the same shape :math:`(H, W)` as the flow
     """
 
     return Flow(flow, ref).valid_source()
 
 
-def get_flow_padding(flow: nd, ref: str = None) -> nd:
+def get_flow_padding(flow: nd, ref: str) -> nd:
     """Determine necessary padding from the flow field:
 
     - When the flow reference is ``t`` ("target"), this corresponds to the padding needed in
@@ -332,18 +332,18 @@ def get_flow_padding(flow: nd, ref: str = None) -> nd:
       the warped output, i.e each input image pixel will come to lie inside the padded area.
 
     :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param ref: Reference of the flow field, ``s`` or ``t``
     :return: A list of shape :math:`(4)` with the values ``[top, bottom, left, right]``
     """
 
     return Flow(flow, ref).get_padding()
 
 
-def get_flow_matrix(flow: nd, ref: str = None, dof: int = None, method: str = None) -> nd:
+def get_flow_matrix(flow: nd, ref: str, dof: int = None, method: str = None) -> nd:
     """Fit a transformation matrix to the flow field using OpenCV functions
 
     :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param ref: Reference of the flow field, ``s`` or ``t``
     :param dof: Integer describing the degrees of freedom in the transformation matrix to be fitted, defaults to
         ``8``. Options are:
 
@@ -387,7 +387,7 @@ def visualise_flow_arrows(
     """Visualises the flow as arrowed lines
 
     :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param ref: Reference of the flow field, ``s`` or ``t``
     :param grid_dist: Integer of the distance of the flow points to be used for the visualisation, defaults to
         ``20``
     :param img: Numpy array with the background image to use (in BGR mode), defaults to white
@@ -416,7 +416,7 @@ def show_flow(flow: nd, wait: int = None):
 
 def show_flow_arrows(
     flow: nd,
-    ref: str = None,
+    ref: str,
     wait: int = None,
     grid_dist: int = None,
     img: np.ndarray = None,
@@ -426,7 +426,7 @@ def show_flow_arrows(
     """Shows the flow in an OpenCV window using :func:`~oflibnumpy.visualise_arrows`
 
     :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
-    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param ref: Reference of the flow field, ``s`` or ``t``
     :param wait: Integer determining how long to show the flow for, in milliseconds. Defaults to ``0``, which means
         it will be shown until the window is closed, or the process is terminated
     :param grid_dist: Integer of the distance of the flow points to be used for the visualisation, defaults to
