@@ -19,7 +19,7 @@ from scipy.ndimage import rotate, shift
 from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, validate_flow_array, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
     points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, \
-    resize_flow, is_zero_flow
+    resize_flow, is_zero_flow, track_pts
 from oflibnumpy.flow_class import Flow
 
 
@@ -535,6 +535,51 @@ class TestIsZeroFlow(unittest.TestCase):
     def test_failed_is_zero_flow(self):
         with self.assertRaises(TypeError):  # Wrong thresholded type
             is_zero_flow(np.zeros((10, 10, 2)), 'test')
+
+
+class TestTrackPts(unittest.TestCase):
+    def test(self):
+        f_s = Flow.from_transforms([['rotation', 0, 0, 30]], (512, 512), 's').vecs
+        f_t = Flow.from_transforms([['rotation', 0, 0, 30]], (512, 512), 't').vecs
+        pts = np.array([[20.5, 10.5], [8.3, 7.2], [120.4, 160.2]])
+        desired_pts = [
+            [12.5035207776, 19.343266740],
+            [3.58801085141, 10.385382907],
+            [24.1694586156, 198.93726969]
+        ]
+        pts_tracked_s = track_pts(f_s, 's', pts)
+        self.assertIsNone(np.testing.assert_allclose(pts_tracked_s, desired_pts,
+                                                     atol=1e-1, rtol=1e-2))
+        # High tolerance needed as exact result is compared to an interpolated one
+        pts_tracked_s = track_pts(f_s, 's', pts, s_exact_mode=True)
+        self.assertIsNone(np.testing.assert_allclose(pts_tracked_s, desired_pts))
+        pts_tracked_t = track_pts(f_t, 't', pts)
+        self.assertIsNone(np.testing.assert_allclose(pts_tracked_t, desired_pts,
+                                                     atol=1e-6, rtol=1e-6))
+        pts_tracked_t = track_pts(f_t, 't', pts, int_out=True)
+        self.assertIsNone(np.testing.assert_equal(pts_tracked_t, np.round(desired_pts)))
+        self.assertEqual(pts_tracked_t.dtype, int)
+
+        # Test tracking for 's' flow and int pts (checked via debugger)
+        f = Flow.from_transforms([['translation', 10, 20]], (512, 512), 's').vecs
+        pts = np.array([[20, 10], [8, 7]])
+        desired_pts = [[40, 20], [28, 17]]
+        pts_tracked_s = track_pts(f, 's', pts)
+        self.assertIsNone(np.testing.assert_equal(pts_tracked_s, desired_pts))
+
+    def test_failed_track_pts(self):
+        pts = np.array([[20, 10], [20, 10], [8, 7]])
+        flow = np.zeros((10, 10, 2))
+        with self.assertRaises(TypeError):  # Wrong pts type
+            track_pts(flow, 's', pts='test')
+        with self.assertRaises(ValueError):  # Wrong pts shape
+            track_pts(flow, 's', pts=np.zeros((10, 10, 2)))
+        with self.assertRaises(ValueError):  # Pts channel not of size 2
+            track_pts(flow, 's', pts=pts.transpose())
+        with self.assertRaises(TypeError):  # Wrong int_out type
+            track_pts(flow, 's', pts, int_out='test')
+        with self.assertRaises(TypeError):  # Wrong s_exact_mode type
+            track_pts(flow, 's', pts, True, s_exact_mode='test')
 
 
 if __name__ == '__main__':

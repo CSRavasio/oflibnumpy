@@ -18,10 +18,8 @@ from typing import Union, Tuple
 import warnings
 import cv2
 import numpy as np
-from scipy.interpolate import griddata
-from .utils import get_valid_ref, get_valid_padding, validate_shape, \
-    bilinear_interpolation, apply_flow, threshold_vectors, \
-    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, resize_flow, is_zero_flow
+from .utils import get_valid_ref, get_valid_padding, validate_shape, apply_flow, threshold_vectors, \
+    from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, resize_flow, is_zero_flow, track_pts
 
 
 FlowAlias = 'Flow'
@@ -777,55 +775,11 @@ class Flow(object):
         """
 
         # Validate inputs
-        if not isinstance(pts, np.ndarray):
-            raise TypeError("Error tracking points: Pts needs to be a numpy array")
-        if pts.ndim != 2:
-            raise ValueError("Error tracking points: Pts needs to have shape N-2")
-        if pts.shape[1] != 2:
-            raise ValueError("Error tracking points: Pts needs to have shape N-2")
-        int_out = False if int_out is None else int_out
         get_valid_status = False if get_valid_status is None else get_valid_status
-        s_exact_mode = False if s_exact_mode is None else s_exact_mode
-        if not isinstance(int_out, bool):
-            raise TypeError("Error tracking points: Int_out needs to be a boolean")
         if not isinstance(get_valid_status, bool):
             raise TypeError("Error tracking points: Get_tracked needs to be a boolean")
-        if not isinstance(s_exact_mode, bool):
-            raise TypeError("Error tracking points: S_exact_mode needs to be a boolean")
 
-        if self.is_zero(thresholded=True):
-            warped_pts = pts
-        else:
-            if self._ref == 's':
-                if np.issubdtype(pts.dtype, np.integer):
-                    flow_vecs = self._vecs[pts[:, 0], pts[:, 1], ::-1]
-                elif np.issubdtype(pts.dtype, float):
-                    # Using bilinear_interpolation here is not as accurate as using griddata(), but up to two orders of
-                    # magnitude faster. Usually, points being tracked will have to be rounded at some point anyway,
-                    # which means errors e.g. in the order of e-2 (much below 1 pixel) will not have large consequences
-                    if s_exact_mode:
-                        x, y = np.mgrid[:self.shape[0], :self.shape[1]]
-                        grid = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
-                        flow_flat = np.reshape(self._vecs[..., ::-1], (-1, 2))
-                        flow_vecs = griddata(grid, flow_flat, (pts[:, 0], pts[:, 1]), method='linear')
-                    else:
-                        flow_vecs = bilinear_interpolation(self._vecs[..., ::-1], pts)
-                else:
-                    raise TypeError("Error tracking points: Pts numpy array needs to have a float or int dtype")
-                warped_pts = pts + flow_vecs
-            else:  # self._ref == 't'
-                x, y = np.mgrid[:self.shape[0], :self.shape[1]]
-                grid = np.swapaxes(np.vstack([x.ravel(), y.ravel()]), 0, 1)
-                flow_flat = np.reshape(self._vecs[..., ::-1], (-1, 2))
-                origin_points = grid - flow_flat
-                flow_vecs = griddata(origin_points, flow_flat, (pts[:, 0], pts[:, 1]), method='linear')
-                warped_pts = pts + flow_vecs
-            nan_vals = np.isnan(warped_pts)
-            nan_vals = nan_vals[:, 0] | nan_vals[:, 1]
-            warped_pts[nan_vals] = 0
-        if int_out:
-            warped_pts = np.round(warped_pts).astype('i')
-
+        warped_pts = track_pts(flow=self._vecs, ref=self._ref, pts=pts, int_out=int_out, s_exact_mode=s_exact_mode)
         if get_valid_status:
             status_array = self.valid_source()[np.round(pts[..., 0]).astype('i'),
                                                np.round(pts[..., 1]).astype('i')]
