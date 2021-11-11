@@ -286,12 +286,6 @@ class TestApplyFlow(unittest.TestCase):
         flow = Flow.from_transforms([['translation', 10, 20]], img.shape[:2], 't').vecs
         with self.assertRaises(TypeError):  # Target wrong type
             apply_flow(flow, 2)
-        with self.assertRaises(TypeError):  # Flow wrong type
-            apply_flow(2, img)
-        with self.assertRaises(ValueError):  # Flow ndim only 2
-            apply_flow(flow[..., 0], img)
-        with self.assertRaises(ValueError):  # Flow channel length only 1
-            apply_flow(flow[..., 0:1], img)
         with self.assertRaises(ValueError):  # Target ndim smaller than 2
             apply_flow(flow, img[0, :, 0])
         with self.assertRaises(ValueError):  # Target ndim larger than 2
@@ -508,10 +502,6 @@ class TestResizeFlow(unittest.TestCase):
 
     def test_failed_resize(self):
         flow = Flow.from_transforms([['rotation', 30, 50, 30]], [20, 10], 's').vecs
-        with self.assertRaises(TypeError):  # Wrong flow array type
-            resize_flow('test', 2)
-        with self.assertRaises(ValueError):  # Wrong flow array shape
-            resize_flow(flow[..., 0], 2)
         with self.assertRaises(TypeError):  # Wrong shape type
             resize_flow(flow, 'test')
         with self.assertRaises(ValueError):  # Wrong shape values

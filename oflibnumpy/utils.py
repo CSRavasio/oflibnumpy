@@ -211,12 +211,9 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.n
 
     # Input validity check
     ref = get_valid_ref(ref)
-    if not (isinstance(flow, np.ndarray) and isinstance(target, np.ndarray)):
-        raise TypeError("Error applying flow to a target: Both flow and target need to be numpy arrays")
-    if flow.ndim != 3:
-        raise ValueError("Error applying flow to a target: Flow array needs to have shape H-W-2")
-    if flow.shape[2] != 2:
-        raise ValueError("Error applying flow to a target: Flow array needs to have shape H-W-2")
+    flow = validate_flow_array(flow, "Error applying flow to a target: ")
+    if not isinstance(target, np.ndarray):
+        raise TypeError("Error applying flow to a target: Target needs to be a numpy array")
     if target.ndim < 2 or target.ndim > 3:
         raise ValueError("Error applying flow to a target: Target array needs to have shape H-W or H-W-C")
     if target.shape[:2] != flow.shape[:2]:
@@ -491,11 +488,7 @@ def resize_flow(flow: nd, scale: Union[float, int, list, tuple]) -> nd:
     """
 
     # Check validity
-    if not isinstance(flow, np.ndarray):
-        raise TypeError("Error resizing flow: Flow_array is not a numpy array")
-    if not flow.ndim == 3:
-        raise ValueError("Error resizing flow: Flow_array is not 3-dimensional")
-
+    flow = validate_flow_array(flow, "Error resizing flow: ")
     if isinstance(scale, (float, int)):
         scale = [scale, scale]
     elif isinstance(scale, (tuple, list)):
