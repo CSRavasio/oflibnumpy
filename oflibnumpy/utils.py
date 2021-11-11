@@ -206,7 +206,7 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str = None, mask: np.n
             raise TypeError("Error applying flow to a target: Mask needs to be a numpy array")
         if mask.shape != flow.shape[:2]:
             raise ValueError("Error applying flow to a target: Mask height and width needs to match flow field array")
-        if mask.dtype is not bool:
+        if mask.dtype != bool:
             raise TypeError("Error applying flow to a target: Mask needs to be boolean")
 
     field = flow.astype('float32')
