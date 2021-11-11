@@ -459,10 +459,10 @@ def load_sintel_mask(path: str) -> nd:
     return mask
 
 
-def resize_flow(flow_array: nd, scale: Union[float, int, list, tuple]) -> nd:
+def resize_flow(flow: nd, scale: Union[float, int, list, tuple]) -> nd:
     """Resize a flow field array, scaling the flow vectors values accordingly
 
-    :param flow_array: Numpy array containing the flow vectors to be resized, shape :math:`(H, W, 2)`
+    :param flow: Numpy array containing the flow vectors to be resized, shape :math:`(H, W, 2)`
     :param scale: Scale used for resizing, options:
 
         - Integer or float of value ``scaling`` applied both vertically and horizontally
@@ -471,9 +471,9 @@ def resize_flow(flow_array: nd, scale: Union[float, int, list, tuple]) -> nd:
     """
 
     # Check validity
-    if not isinstance(flow_array, np.ndarray):
+    if not isinstance(flow, np.ndarray):
         raise TypeError("Error resizing flow: Flow_array is not a numpy array")
-    if not flow_array.ndim == 3:
+    if not flow.ndim == 3:
         raise ValueError("Error resizing flow: Flow_array is not 3-dimensional")
 
     if isinstance(scale, (float, int)):
@@ -490,7 +490,7 @@ def resize_flow(flow_array: nd, scale: Union[float, int, list, tuple]) -> nd:
         raise ValueError("Error resizing flow: Scale values must be larger than 0")
 
     # Resize and adjust values
-    resized = cv2.resize(flow_array, None, fx=scale[1], fy=scale[0])
+    resized = cv2.resize(flow, None, fx=scale[1], fy=scale[0])
     resized[..., 0] *= scale[1]
     resized[..., 1] *= scale[0]
 
