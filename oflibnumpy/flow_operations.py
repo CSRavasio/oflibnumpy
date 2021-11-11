@@ -15,11 +15,12 @@ import cv2
 import numpy as np
 from typing import Union
 from .flow_class import Flow
-from .utils import validate_shape
+from .utils import validate_shape, get_valid_ref
 from scipy.interpolate import griddata
 
 
 FlowAlias = 'Flow'
+nd = np.ndarray
 
 
 def visualise_definition(mode: str, shape: Union[list, tuple] = None, insert_text: bool = None) -> np.ndarray:
@@ -248,3 +249,71 @@ def combine_flows(input_1: FlowAlias, input_2: FlowAlias, mode: int, thresholded
             result = input_2 + input_2.apply(input_1)
 
     return result
+
+
+def switch_flow_ref(flow: nd, input_ref: str = None) -> nd:
+    """Recalculate flow vectors to correspond to a switched flow reference (see Flow reference :attr:`ref`)
+
+    :param flow: The flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param input_ref: The reference of the input flow field, either ``s`` or ``t``. Defaults to ``t``
+    :return: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    """
+
+    f = Flow(flow, get_valid_ref(input_ref)).switch_ref()
+    return f.vecs
+
+
+def invert_flow(flow: nd, input_ref: str = None, output_ref: str = None) -> nd:
+    """Inverting a flow: `img`\\ :sub:`1` -- `f` --> `img`\\ :sub:`2` becomes `img`\\ :sub:`1` <-- `f` --
+    `img`\\ :sub:`2`. The smaller the input flow, the closer the inverse is to simply multiplying the flow by -1.
+
+    :param flow: The flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param input_ref: Reference of the input flow field,  either ``s`` or ``t``. Defaults to ``t``
+    :param output_ref: Desired reference of the output field, either ``s`` or ``t``. Defaults to ``input_ref``
+    :return: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    """
+
+    i_ref = get_valid_ref(input_ref)
+    o_ref = i_ref if output_ref is None else get_valid_ref(output_ref)
+    f = Flow(flow, i_ref).invert(o_ref)
+    return f.vecs
+
+
+def track_pts():
+    pass
+
+
+def flow_matrix():
+    pass
+
+
+def visualise_flow():
+    pass
+
+
+def visualise_flow_arrows():
+    pass
+
+
+def show_flow():
+    pass
+
+
+def show_flow_arrows():
+    pass
+
+
+def valid_target():
+    pass
+
+
+def valid_source():
+    pass
+
+
+def get_padding():
+    pass
+
+
+def is_zero():
+    pass

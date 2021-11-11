@@ -15,7 +15,7 @@ import unittest
 import cv2
 import numpy as np
 from oflibnumpy.flow_class import Flow
-from oflibnumpy.flow_operations import combine_flows
+from oflibnumpy.flow_operations import combine_flows, switch_flow_ref, invert_flow
 
 
 class TestFlowOperations(unittest.TestCase):
@@ -57,6 +57,25 @@ class TestFlowOperations(unittest.TestCase):
             self.assertEqual(f3_actual.ref, ref)
             comb_mask = f3_actual.mask & f3.mask
             self.assertIsNone(np.testing.assert_allclose(f3_actual.vecs[comb_mask], f3.vecs[comb_mask], atol=5e-2))
+
+    def test_switch_flow_ref(self):
+        shape = [10, 20]
+        transforms = [['rotation', 5, 10, 30]]
+        flow_s = Flow.from_transforms(transforms, shape, 's')
+        flow_t = Flow.from_transforms(transforms, shape, 't')
+        self.assertIsNone(np.testing.assert_equal(flow_s.switch_ref().vecs, switch_flow_ref(flow_s.vecs, 's')))
+        self.assertIsNone(np.testing.assert_equal(flow_t.switch_ref().vecs, switch_flow_ref(flow_t.vecs, 't')))
+        self.assertIsNone(np.testing.assert_equal(flow_t.switch_ref().vecs, switch_flow_ref(flow_t.vecs)))
+
+    def test_invert_flow(self):
+        shape = [10, 20]
+        transforms = [['rotation', 5, 10, 30]]
+        flow_s = Flow.from_transforms(transforms, shape, 's')
+        flow_t = Flow.from_transforms(transforms, shape, 't')
+        self.assertIsNone(np.testing.assert_equal(flow_s.invert().vecs, invert_flow(flow_s.vecs, 's')))
+        self.assertIsNone(np.testing.assert_equal(flow_s.invert('t').vecs, invert_flow(flow_s.vecs, 's', 't')))
+        self.assertIsNone(np.testing.assert_equal(flow_t.invert().vecs, invert_flow(flow_t.vecs, 't')))
+        self.assertIsNone(np.testing.assert_equal(flow_t.invert('s').vecs, invert_flow(flow_t.vecs, 't', 's')))
 
 
 if __name__ == '__main__':
