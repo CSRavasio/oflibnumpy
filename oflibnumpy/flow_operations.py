@@ -316,3 +316,126 @@ def valid_source(flow: nd, ref: str = None) -> nd:
     """
 
     return Flow(flow, ref).valid_source()
+
+
+def get_flow_padding(flow: nd, ref: str = None) -> nd:
+    """Determine necessary padding from the flow field:
+
+    - When the flow reference is ``t`` ("target"), this corresponds to the padding needed in
+      a source image which ensures that every flow vector in :attr:`vecs` marked as valid by the
+      mask :attr:`mask` will find a value in the source domain to warp towards the target domain. I.e. any invalid
+      locations in the area :math:`H \\times W` of the target domain (see :func:`~oflibnumpy.valid_target`) are
+      purely due to no valid flow vector being available to pull a source value to this target location, rather than
+      no source value being available in the first place.
+    - When the flow reference is ``s`` ("source"), this corresponds to the padding needed for
+      the flow itself, so that applying it to a source image will result in no input image information being lost in
+      the warped output, i.e each input image pixel will come to lie inside the padded area.
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :return: A list of shape :math:`(4)` with the values ``[top, bottom, left, right]``
+    """
+
+    return Flow(flow, ref).get_padding()
+
+
+def get_flow_matrix(flow: nd, ref: str = None, dof: int = None, method: str = None) -> nd:
+    """Fit a transformation matrix to the flow field using OpenCV functions
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param dof: Integer describing the degrees of freedom in the transformation matrix to be fitted, defaults to
+        ``8``. Options are:
+
+        - ``4``: Partial affine transform with rotation, translation, scaling
+        - ``6``: Affine transform with rotation, translation, scaling, shearing
+        - ``8``: Projective transform, i.e estimation of a homography
+    :param method: String describing the method used to fit the transformations matrix by OpenCV, defaults to
+        ``ransac``. Options are:
+
+        - ``lms``: Least mean squares
+        - ``ransac``: RANSAC-based robust method
+        - ``lmeds``: Least-Median robust method
+    :return: Numpy array of shape :math:`(3, 3)` containing the transformation matrix
+    """
+
+    return Flow(flow, ref).matrix(dof=dof, method=method)
+
+
+def visualise_flow(flow: nd, mode: str, range_max: float = None) -> nd:
+    """Visualises the flow as an rgb / bgr / hsv image
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param mode: Output mode, options: ``rgb``, ``bgr``, ``hsv``
+    :param range_max: Maximum vector magnitude expected, corresponding to the HSV maximum Value of 255 when scaling
+        the flow magnitudes. Defaults to the 99th percentile of the flow field magnitudes
+    :return: Numpy array of shape :math:`(H, W, 3)` containing the flow visualisation
+    """
+
+    return Flow(flow).visualise(mode=mode, range_max=range_max)
+
+
+def visualise_flow_arrows(
+    flow: nd,
+    ref: str,
+    grid_dist: int = None,
+    img: np.ndarray = None,
+    scaling: Union[float, int] = None,
+    colour: tuple = None,
+    thickness: int = None
+) -> nd:
+    """Visualises the flow as arrowed lines
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param grid_dist: Integer of the distance of the flow points to be used for the visualisation, defaults to
+        ``20``
+    :param img: Numpy array with the background image to use (in BGR mode), defaults to white
+    :param scaling: Float or int of the flow line scaling, defaults to scaling the 99th percentile of arrowed line
+        lengths to be equal to twice the grid distance (empirical value)
+    :param colour: Tuple of the flow arrow colour, defaults to hue based on flow direction as in
+        :func:`~oflibnumpy.visualise`
+    :param thickness: Integer of the flow arrow thickness, larger than zero. Defaults to ``1``
+    :return: Numpy array of shape :math:`(H, W, 3)` containing the flow visualisation, in ``bgr`` colour space
+    """
+
+    return Flow(flow, ref).visualise_arrows(grid_dist=grid_dist, img=img, scaling=scaling,
+                                            colour=colour, thickness=thickness)
+
+
+def show_flow(flow: nd, wait: int = None):
+    """Shows the flow in an OpenCV window using :func:`~oflibnumpy.visualise`
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param wait: Integer determining how long to show the flow for, in milliseconds. Defaults to ``0``, which means
+        it will be shown until the window is closed, or the process is terminated
+    """
+
+    Flow(flow).show(wait=wait)
+
+
+def show_flow_arrows(
+    flow: nd,
+    ref: str,
+    wait: int = None,
+    grid_dist: int = None,
+    img: np.ndarray = None,
+    scaling: Union[float, int] = None,
+    colour: tuple = None
+):
+    """Shows the flow in an OpenCV window using :func:`~oflibnumpy.visualise_arrows`
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :param wait: Integer determining how long to show the flow for, in milliseconds. Defaults to ``0``, which means
+        it will be shown until the window is closed, or the process is terminated
+    :param grid_dist: Integer of the distance of the flow points to be used for the visualisation, defaults to
+        ``20``
+    :param img: Numpy array with the background image to use (in BGR colour space), defaults to black
+    :param scaling: Float or int of the flow line scaling, defaults to scaling the 99th percentile of arrowed line
+        lengths to be equal to twice the grid distance (empirical value)
+    :param colour: Tuple of the flow arrow colour, defaults to hue based on flow direction as in
+        :func:`~oflibnumpy.visualise`
+    """
+
+    return Flow(flow, ref).show_arrows(wait=wait, grid_dist=grid_dist, img=img, scaling=scaling, colour=colour)
