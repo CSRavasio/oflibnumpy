@@ -279,41 +279,40 @@ def invert_flow(flow: nd, input_ref: str = None, output_ref: str = None) -> nd:
     return f.vecs
 
 
-def track_pts():
-    pass
+def valid_target(flow: nd, ref: str = None) -> nd:
+    """Find the valid area in the target domain
+
+    Given a source image and a flow, both of shape :math:`(H, W)`, the target image is created by warping the source
+    with the flow. The valid area is then a boolean numpy array of shape :math:`(H, W)` that is ``True`` wherever
+    the value in the target img stems from warping a value from the source, and ``False`` where no valid information
+    is known.
+
+    Pixels that are ``False`` will often be black (or 'empty') in the warped target image - but not necessarily, due
+    to warping artefacts etc. The valid area also allows a distinction between pixels that are black due to no
+    actual information being available at this position (validity ``False``), and pixels that are black due to black
+    pixel values having been warped to that (valid) location by the flow.
+
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :return: Boolean numpy array of the same shape :math:`(H, W)` as the flow
+    """
+
+    return Flow(flow, ref).valid_target()
 
 
-def flow_matrix():
-    pass
+def valid_source(flow: nd, ref: str = None) -> nd:
+    """Finds the area in the source domain that will end up being valid in the target domain (see
+    :meth:`~oflibnumpy.valid_target`) after warping
 
+    Given a source image and a flow, both of shape :math:`(H, W)`, the target image is created by warping the source
+    with the flow. The source area is then a boolean numpy array of shape :math:`(H, W)` that is ``True`` wherever
+    the value in the source will end up somewhere inside the valid target area, and ``False`` where the value in the
+    source will either be warped outside of the target image, or not be warped at all due to a lack of valid flow
+    vectors connecting to this position.
 
-def visualise_flow():
-    pass
+    :param flow: Flow field as a numpy array of shape :math:`(H, W, 2)`
+    :param ref: Reference of the flow field, ``s`` or ``t``. Defaults to ``t``
+    :return: Boolean numpy array of the same shape :math:`(H, W)` as the flow
+    """
 
-
-def visualise_flow_arrows():
-    pass
-
-
-def show_flow():
-    pass
-
-
-def show_flow_arrows():
-    pass
-
-
-def valid_target():
-    pass
-
-
-def valid_source():
-    pass
-
-
-def get_padding():
-    pass
-
-
-def is_zero():
-    pass
+    return Flow(flow, ref).valid_source()
