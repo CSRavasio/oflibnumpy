@@ -16,7 +16,7 @@ import math
 import cv2
 import numpy as np
 from scipy.ndimage import rotate, shift
-from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, \
+from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, validate_flow_array, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
     points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, \
     resize_flow
@@ -52,6 +52,24 @@ class TestValidityChecks(unittest.TestCase):
             validate_shape([-1, 10])
         with self.assertRaises(ValueError):
             validate_shape([10., 10])
+
+    def test_validate_flow_array(self):
+        f = np.zeros((10, 10, 2))
+        self.assertEqual(validate_flow_array(f).dtype, 'float32')
+        with self.assertRaises(TypeError):  # Wrong type
+            validate_flow_array('test')
+        with self.assertRaises(ValueError):  # Wrong number of dimensions
+            validate_flow_array(np.zeros((10, 10)))
+        with self.assertRaises(ValueError):  # Wrong number of channels
+            validate_flow_array(np.zeros((10, 10, 3)))
+        with self.assertRaises(ValueError):  # NaN values
+            f = np.zeros((10, 10, 2))
+            f[0, 0] = np.NaN
+            validate_flow_array(f)
+        with self.assertRaises(ValueError):  # Inf values
+            f = np.zeros((10, 10, 2))
+            f[0, 0] = np.Inf
+            validate_flow_array(f)
 
 
 class TestMatrixFromTransforms(unittest.TestCase):

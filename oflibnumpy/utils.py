@@ -68,6 +68,26 @@ def validate_shape(shape: Any):
         raise ValueError("Error creating flow from matrix: Dims need to be a list or a tuple of integers above zero")
 
 
+def validate_flow_array(flow, error_string: str = None) -> nd:
+    """Checks flow array for validity, ensures the flow is returned with dtype ``float32``
+
+    :param flow: Flow array to be checked, should be a numpy array of shape :math:`(H, W, 2) containing floats
+    :param error_string: Optional string to be added before the error message
+    :return: Flow numpy array with dtype ``float32``
+    """
+
+    error_string = '' if error_string is None else error_string
+    if not isinstance(flow, np.ndarray):
+        raise TypeError(error_string + "Flow is not a numpy array")
+    if flow.ndim != 3:
+        raise ValueError(error_string + "Flow array is not 3-dimensional")
+    if flow.shape[2] != 2:
+        raise ValueError(error_string + "Flow array does not have 2 channels")
+    if not np.isfinite(flow).all():
+        raise ValueError(error_string + "Flow array contains NaN or Inf values")
+    return flow.astype('float32')
+
+
 def flow_from_matrix(matrix: np.ndarray, shape: Union[list, tuple]) -> np.ndarray:
     """Flow calculated from a transformation matrix
 
