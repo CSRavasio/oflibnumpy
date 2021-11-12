@@ -493,11 +493,12 @@ class Flow(object):
         :return: New flow object scaled as desired
         """
 
-        # Resize vectors and mask
-        to_resize = np.concatenate((self._vecs, self._mask.astype('f')[..., np.newaxis]), axis=-1)
-        resized = resize_flow(to_resize, scale)
-
-        return Flow(resized[..., :2], self._ref, np.round(resized[..., 2]))
+        resized_flow = resize_flow(self._vecs, scale)
+        if isinstance(scale, (float, int)):
+            scale = [scale, scale]
+        resized_mask = cv2.resize(self._mask.astype('f'), None, fx=scale[1], fy=scale[0])
+        # Note: scale can be used with no validity checks because already validated in resize_flows
+        return Flow(resized_flow, self._ref, np.round(resized_mask))
 
     def pad(self, padding: Union[list, tuple] = None, mode: str = None) -> FlowAlias:
         """Pad the flow with the given padding. Padded flow :attr:`vecs` values are either constant (set to ``0``),

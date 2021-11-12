@@ -15,7 +15,7 @@ import unittest
 import numpy as np
 import cv2
 import math
-from oflibnumpy.utils import matrix_from_transforms, apply_flow
+from oflibnumpy.utils import matrix_from_transforms, apply_flow, resize_flow
 from oflibnumpy.flow_class import Flow
 
 
@@ -367,6 +367,14 @@ class TestFlow(unittest.TestCase):
         self.assertIsNone(np.testing.assert_allclose((-flow1).vecs, -vecs1))
 
     def test_resize(self):
+        shape = [20, 10]
+        ref = 's'
+        flow = Flow.from_transforms([['rotation', 30, 50, 30]], shape, ref)
+        # Different scales
+        scales = [.2, .5, 1, 1.5, 2, 10]
+        for scale in scales:
+            self.assertIsNone(np.testing.assert_equal(flow.resize(scale).vecs, resize_flow(flow.vecs, scale)))
+
         # Test mask scaling
         shape_small = (20, 40)
         shape_large = (30, 80)
