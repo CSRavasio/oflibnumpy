@@ -32,31 +32,40 @@ class TestFlowOperations(unittest.TestCase):
             f3 = Flow.from_transforms(transforms, shape, ref)
 
             # Mode 1
-            f1_actual = combine_flows(f2, f3, 1)
+            f1_actual_f = combine_flows(f2, f3, 1)
+            f1_actual = combine_flows(f2.vecs, f3.vecs, 1, ref)
             # f1.show(500, show_mask=True, show_mask_borders=True)
-            # f1_actual.show(show_mask=True, show_mask_borders=True)
-            self.assertIsInstance(f1_actual, Flow)
-            self.assertEqual(f1_actual.ref, ref)
-            comb_mask = f1_actual.mask & f1.mask
-            self.assertIsNone(np.testing.assert_allclose(f1_actual.vecs[comb_mask], f1.vecs[comb_mask], atol=5e-2))
+            # f1_actual_f.show(show_mask=True, show_mask_borders=True)
+            self.assertIsInstance(f1_actual_f, Flow)
+            self.assertEqual(f1_actual_f.ref, ref)
+            comb_mask = f1_actual_f.mask & f1.mask
+            self.assertIsNone(np.testing.assert_allclose(f1_actual_f.vecs[comb_mask], f1.vecs[comb_mask], atol=5e-2))
+            self.assertIsInstance(f1_actual, np.ndarray)
+            self.assertIsNone(np.testing.assert_equal(f1_actual_f.vecs, f1_actual))
 
             # Mode 2
-            f2_actual = combine_flows(f1, f3, 2)
+            f2_actual_f = combine_flows(f1, f3, 2)
+            f2_actual = combine_flows(f1.vecs, f3.vecs, 2, ref)
             # f2.show(500, show_mask=True, show_mask_borders=True)
-            # f2_actual.show(show_mask=True, show_mask_borders=True)
-            self.assertIsInstance(f2_actual, Flow)
-            self.assertEqual(f2_actual.ref, ref)
-            comb_mask = f2_actual.mask & f2.mask
-            self.assertIsNone(np.testing.assert_allclose(f2_actual.vecs[comb_mask], f2.vecs[comb_mask], atol=5e-2))
+            # f2_actual_f.show(show_mask=True, show_mask_borders=True)
+            self.assertIsInstance(f2_actual_f, Flow)
+            self.assertEqual(f2_actual_f.ref, ref)
+            comb_mask = f2_actual_f.mask & f2.mask
+            self.assertIsNone(np.testing.assert_allclose(f2_actual_f.vecs[comb_mask], f2.vecs[comb_mask], atol=5e-2))
+            self.assertIsInstance(f2_actual, np.ndarray)
+            self.assertIsNone(np.testing.assert_equal(f2_actual_f.vecs, f2_actual))
 
             # Mode 3
-            f3_actual = combine_flows(f1, f2, 3)
+            f3_actual_f = combine_flows(f1, f2, 3)
+            f3_actual = combine_flows(f1.vecs, f2.vecs, 3, ref)
             # f3.show(500, show_mask=True, show_mask_borders=True)
-            # f3_actual.show(show_mask=True, show_mask_borders=True)
-            self.assertIsInstance(f3_actual, Flow)
-            self.assertEqual(f3_actual.ref, ref)
-            comb_mask = f3_actual.mask & f3.mask
-            self.assertIsNone(np.testing.assert_allclose(f3_actual.vecs[comb_mask], f3.vecs[comb_mask], atol=5e-2))
+            # f3_actual_f.show(show_mask=True, show_mask_borders=True)
+            self.assertIsInstance(f3_actual_f, Flow)
+            self.assertEqual(f3_actual_f.ref, ref)
+            comb_mask = f3_actual_f.mask & f3.mask
+            self.assertIsNone(np.testing.assert_allclose(f3_actual_f.vecs[comb_mask], f3.vecs[comb_mask], atol=5e-2))
+            self.assertIsInstance(f3_actual, np.ndarray)
+            self.assertIsNone(np.testing.assert_equal(f3_actual_f.vecs, f3_actual))
 
     def test_switch_flow_ref(self):
         shape = [10, 20]
