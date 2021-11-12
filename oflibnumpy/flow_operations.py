@@ -289,7 +289,7 @@ def visualise_flow(flow: nd, mode: str, range_max: float = None) -> nd:
 
 def visualise_flow_arrows(
     flow: nd,
-    ref: str = None,
+    ref: str,
     grid_dist: int = None,
     img: np.ndarray = None,
     scaling: Union[float, int] = None,
