@@ -531,11 +531,11 @@ def is_zero_flow(flow: nd, thresholded: bool = None) -> bool:
 
 
 def track_pts(
-        flow: nd,
-        ref: str,
-        pts: nd,
-        int_out: bool = None,
-        s_exact_mode: bool = None
+    flow: nd,
+    ref: str,
+    pts: nd,
+    int_out: bool = None,
+    s_exact_mode: bool = None
 ) -> nd:
     """Warp input points with the flow field, returning the warped point coordinates as integers if required
 
