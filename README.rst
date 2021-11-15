@@ -10,6 +10,7 @@ written from scratch, but also contains useful wrappers for specific functions f
 - Provides a number of functions to resize the flow field, visualise it, warp images, find necessary image padding
 - Allows for three different types of flow field combination operations
 - Keeps track of valid flow field areas through said operations
+- Provides alternative functions to avoid the explicit use of the custom flow class, with slightly limited functionality
 
 Note there is an equivalent flow library called Oflibpytorch, mostly based on PyTorch tensors. Its
 `code is available on Github`_, and the `documentation is accessible on ReadTheDocs`_.
@@ -28,10 +29,16 @@ A user's guide as well as full documentation of the library is available at Read
 
     import oflibnumpy as of
 
-    # Make a flow field and display it
     shape = (300, 400)
-    flow = of.Flow.from_transforms([['rotation', 200, 150, -30]], shape)
+    transform = [['rotation', 200, 150, -30]]
+
+    # Make a flow field and display it
+    flow = of.Flow.from_transforms(transform, shape)
     flow.show()
+
+    # Alternative option without using the custom flow class
+    flow = of.from_transforms(transform, shape, 't')
+    of.show_flow(flow)
 
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_rotation.png
   :width: 50%
@@ -44,17 +51,25 @@ A user's guide as well as full documentation of the library is available at Read
     result = flow.combine_with(flow_2, mode=3)
     result.show(show_mask=True, show_mask_borders=True)
 
+    # Alternative option without using the custom flow class
+    flow_2 = of.from_transforms([['translation', 40, 0]], shape, 't')
+    result = of.combine_flows(flow, flow_2, mode=3, ref='t')
+    of.show_flow(result)  # Note: no way to show the valid flow area (see documentation)
+
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation.png
   :width: 50%
-  :alt: Visualisation of optical flow representing a rotation, translated to the right
+  :alt: Visualisation of optical flow representing a rotation, translated to the right, using the custom flow class
 
 .. code-block:: python
 
     result.show_arrows(show_mask=True, show_mask_borders=True)
 
+    # Alternative option without using the custom flow class
+    of.show_flow_arrows(result, 't')  # Note: again no way to show the valid flow area
+
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation_arrows.png
   :width: 50%
-  :alt: Visualisation of optical flow representing a rotation, translated to the right
+  :alt: Visualisation of optical flow representing a rotation, translated to the right, using the custom flow class
 
 
 Installation
