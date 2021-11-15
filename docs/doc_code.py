@@ -287,6 +287,23 @@ from oflibnumpy.utils import show_masked_image
 # flow.show_arrows(grid_dist=50)
 
 
+# # # # Examples for functions not requiring flow class inputs
+# # Define NumPy array flow fields
+# shape = (100, 100)
+# flow = of.from_transforms([['rotation', 50, 100, -30]], shape, 's')
+# flow_2 = of.from_transforms([['scaling', 100, 50, 1.2]], shape, 't')
+#
+# # Visualise NumPy array flow field as arrows
+# flow_vis = of.show_flow(flow, wait=2000)
+#
+# # Combine two NumPy array flow fields
+# flow_t = of.switch_flow_ref(flow, 's')
+# flow_3 = of.combine_flows(flow_t, flow_2, 3, 't')
+#
+# # Visualise NumPy array flow field
+# flow_3_vis = of.show_flow_arrows(flow_3, 't')
+
+
 # # # # Flow field for README
 #
 # # Make a flow field and display it

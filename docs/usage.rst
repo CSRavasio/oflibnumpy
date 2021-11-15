@@ -2,7 +2,10 @@ Usage
 =====
 This section aims to illustrate the benefits of ``oflibnumpy`` with examples. In all sample code, it is assumed that the
 library was imported using the command ``import oflibnumpy as of``, and therefore the flow class can be accessed using
-``of.Flow`` and the functions using ``of.<function>``.
+``of.Flow`` and the functions using ``of.<function>``. All the main examples use class methods instead of the
+alternative array-based functions. These work much the same way, but are more limited in their capabilities and
+therefore do not illustrate the full scope of ``oflibnumpy``. For some examples, see the section ":ref:`Array-Based
+Functions`".
 
 There is an equivalent flow library called Oflibpytorch, mostly based on PyTorch tensors. Its
 `code is available on Github`_, and the `documentation is accessible on ReadTheDocs`_. This can be advantageous for
@@ -33,7 +36,7 @@ with :meth:`~oflibnumpy.Flow.pad`, and sliced using square brackets ``[]`` analo
 :meth:`~oflibnumpy.Flow.__get_item__` internally. They can also be added with ``+``, subtracted with ``-``, multiplied
 with ``*``, divided with ``/``, exponentiated with ``**``, and negated by prepending ``-``. However, note that using
 the standard operator ``+`` is **not** the same as sequentially combining flow fields, and the same goes for a
-subtraction or a negation with ``-``. To do this correctly, use :meth:`~oflibnumpy.combine_flows` (see the section
+subtraction or a negation with ``-``. To do this correctly, use :meth:`~oflibnumpy.Flow.combine_with` (see the section
 ":ref:`Combining Flows`").
 
 Visualisation
@@ -225,7 +228,7 @@ section ":ref:`Combining Flows`"):
     flow_2 = of.Flow.from_transforms([['scaling', 100, 50, 0.7]], shape)
 
     # Combine the flow fields
-    result = of.combine_flows(flow, flow_2, mode=3)
+    result = flow.combine_with(flow_2, mode=3)
 
 .. image:: ../docs/_static/usage_mask_flow1.png
     :width: 49%
@@ -585,14 +588,14 @@ this is due to the new location of the point being outside of the image area.
 
 Combining Flows
 ---------------
-The :func:`~oflibnumpy.combine_flows` function was already used in the section ":ref:`The Flow Mask`" with ``mode = 3``
-to sequentially combine two different flow fields. This is a fast operation both for reference ``s`` and ``t``.
-In the formula :math:`flow_1 ⊕ flow_2 = flow_3`, where :math:`⊕` corresponds to a flow combination operation, this is
-equivalent to inputting :math:`flow_1` and :math:`flow_2`, and obtaining :math:`flow_3`. However, it is also possible
-to obtain either :math:`flow_1` or :math:`flow_2` when the other flows in the equation are known, by setting
-``mode = 1`` or ``mode = 2``, respectively. These operations are comparatively slow due to calls to SciPy's
-:func:`griddata`. The calculation will often lead to a flow field with some invalid areas, similar to the example in
-the section ":ref:`The Flow Mask`".
+The :meth:`~oflibnumpy.Flow.combine_with` function was already used in the section ":ref:`The Flow Mask`" with
+``mode = 3`` to sequentially combine two different flow fields. This is a fast operation both for reference ``s``
+and ``t``. In the formula :math:`flow_1 ⊕ flow_2 = flow_3`, where :math:`⊕` corresponds to a flow combination
+operation, this is equivalent to inputting :math:`flow_1` and :math:`flow_2`, and obtaining :math:`flow_3`.
+However, it is also possible to obtain either :math:`flow_1` or :math:`flow_2` when the other flows in the equation
+are known, by setting ``mode = 1`` or ``mode = 2``, respectively. These operations are comparatively slow due to
+calls to SciPy's :func:`griddata`. The calculation will often lead to a flow field with some invalid areas, similar
+to the example in the section ":ref:`The Flow Mask`".
 
 .. code-block:: python
 
@@ -601,9 +604,9 @@ the section ":ref:`The Flow Mask`".
     flow_2 = of.Flow.from_transforms([['scaling', 100, 50, 1.2]], shape)
     flow_3 = of.Flow.from_transforms([['rotation', 200, 150, -30], ['scaling', 100, 50, 1.2]], shape)
 
-    flow_1_result = of.combine_flows(flow_2, flow_3, mode=1)
-    flow_2_result = of.combine_flows(flow_1, flow_3, mode=2)
-    flow_3_result = of.combine_flows(flow_1, flow_2, mode=3)
+    flow_1_result = flow_2.combine_with(flow_3, mode=1)
+    flow_2_result = flow_1.combine_with(flow_3, mode=2)
+    flow_3_result = flow_1.combine_with(flow_2, mode=3)
 
 .. image:: ../docs/_static/usage_combining_1.png
     :width: 32%
@@ -625,5 +628,30 @@ the section ":ref:`The Flow Mask`".
     :alt: Calculated flow 3
 
 **Above:** *Top:* Flows 1 through 3. *Bottom:* Flows 1 through 3, as calculated using
-:func:`~oflibnumpy.combine_flows`, matching the original flow fields. Note that the first flow field has some invalid
-areas.
+:meth:`~oflibnumpy.Flow.combine_with`, matching the original flow fields. Note that the first flow field
+has some invalid areas.
+
+Array-Based Functions
+---------------------
+Almost all the class methods discussed above are also available as functions that take numpy arrays representing flow
+fields as inputs directly. This can appear more straight-forward to use, but they are generally more limited in their
+scope, and the user has to keep track of potentially changing flow attributes such as the reference frame manually.
+Valid areas are also not tracked. It is recommended to make use of the custom flow class for anything but the simplest
+flow operations.
+
+.. code-block:: python
+
+    # Define NumPy array flow fields
+    shape = (100, 100)
+    flow = of.from_transforms([['rotation', 50, 100, -30]], shape, 's')
+    flow_2 = of.from_transforms([['scaling', 100, 50, 1.2]], shape, 't')
+
+    # Visualise NumPy array flow field as arrows
+    flow_vis = of.show_flow(flow, wait=2000)
+
+    # Combine two NumPy array flow fields
+    flow_t = of.switch_flow_ref(flow, 's')
+    flow_3 = of.combine_flows(flow_t, flow_2, 3, 't')
+
+    # Visualise NumPy array flow field
+    flow_3_vis = of.show_flow_arrows(flow_3, 't')

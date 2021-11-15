@@ -17,11 +17,12 @@ Note there is an equivalent flow library called Oflibpytorch, mostly based on Py
 
 **Features:**
 
-- Provides a custom flow field class for both backwards and forwards ('source' / 'target' based) flow fields
-- Provides a number of class methods to create flow fields from lists of affine transforms, or a transformation matrix
-- Provides a number of functions to resize the flow field, visualise it, warp images, find necessary image padding
-- Allows for three different types of flow field combination operations
+- Provides a custom flow field :class:`~oflibnumpy.Flow` class for both forwards and backwards ('source' / 'target' based) flow fields
+- Provides class methods to create flow fields from lists of affine transforms, or a transformation matrix
+- Provides class methods to resize the flow field, visualise it, warp images, find necessary image padding
+- Provides a class method to process three different types of flow field combination operations
 - Keeps track of valid flow field areas through said operations
+- Provides alternative functions to avoid the explicit use of the custom flow class, with slightly limited functionality
 
 **Installation:**
 
@@ -55,7 +56,7 @@ In the command line, navigate to the folder ``oflibnumpy/tests`` and run:
 
     # Combine sequentially with another flow field, display the result
     flow_2 = of.Flow.from_transforms([['translation', 40, 0]], shape)
-    result = of.combine_flows(flow, flow_2, mode=3)
+    result = flow.combine_with(flow_2, mode=3)
     result.show(show_mask=True, show_mask_borders=True)
 
 .. image:: ../docs/_static/flow_translated_rotation.png
