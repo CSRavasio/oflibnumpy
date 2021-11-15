@@ -16,7 +16,6 @@ import numpy as np
 from typing import Union
 from .flow_class import Flow
 from .utils import validate_shape, get_valid_ref
-from scipy.interpolate import griddata
 
 
 FlowAlias = 'Flow'

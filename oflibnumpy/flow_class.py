@@ -307,7 +307,7 @@ class Flow(object):
 
         .. caution::
             This is **not** equal to applying the two flows sequentially. For that, use
-            :func:`~oflibnumpy.combine_flows` with ``mode`` set to ``3``.
+            :meth:`~oflibnumpy.Flow.combine_with` with ``mode`` set to ``3``.
 
         .. caution::
             If this method is used to add two flow objects, there is no check on whether they have the same reference
@@ -340,7 +340,7 @@ class Flow(object):
 
         .. caution::
             This is **not** equal to subtracting the effects of applying flow fields to an image. For that, use
-            :func:`~oflibnumpy.combine_flows` with ``mode`` set to ``1`` or ``2``.
+            :meth:`~oflibnumpy.Flow.combine_with` with ``mode`` set to ``1`` or ``2``.
 
         .. caution::
             If this method is used to subtract two flow objects, there is no check on whether they have the same
@@ -1240,7 +1240,7 @@ class Flow(object):
 
         .. tip::
            All of the flow field combinations in this function rely on some combination of the
-           :meth:`~oflibnumpy.Flow.apply`, :meth:`~oflibnumpy.Flow.invert`, and :func:`~oflibnumpy.combine_flows`
+           :meth:`~oflibnumpy.Flow.apply`, :meth:`~oflibnumpy.Flow.invert`, and :meth:`~oflibnumpy.Flow.combine_with`
            methods, and can be very slow (several seconds) due to calling :func:`scipy.interpolate.griddata` multiple
            times. The table below aids decision-making with regards to which reference a flow field should be provided
            in to obtain the fastest result.
@@ -1285,7 +1285,7 @@ class Flow(object):
         in the field, the difference will not be noticeable. However, if the flow vectors of `f2` vary throughout
         the field, such as with a rotation around some point, it will!
 
-        In this case (corresponding to calling :func:`combine_flows(f1, f2, mode=3)<combine_flows>`), and if the
+        In this case (corresponding to calling :func:`f1.combine_with(f2, mode=3)<combine_with>`), and if the
         flow reference :attr:`ref` is ``s`` ("source"), the solution is to first apply the inverse of `f1` to `f2`,
         essentially linking up each location `E1` back to `S1`, and *then* to add up the flow vectors. Analogous
         observations apply for the other permutations of flow combinations and reference :attr:`ref` values.
@@ -1355,7 +1355,7 @@ class Flow(object):
                 # slightly faster in tests
                 # F1_s = F2_s - F2_s-as-t.combine_with(F3_s^-1_t, 3){F2_s}
                 # result = flow - self.switch_ref().combine_with(flow.invert('t'), mode=3).apply(self)
-                # To avoid call to combine_flows and associated overhead, do the corresponding operations directly:
+                # To avoid call to combine_with and associated overhead, do the corresponding operations directly:
                 flow_inv_t = flow.invert('t')
                 result = flow - (flow_inv_t + flow_inv_t.apply(self.switch_ref())).apply(self)
             elif self._ref == flow._ref == 't':
@@ -1369,7 +1369,7 @@ class Flow(object):
                 # self_s = self.switch_ref()
                 # result = flow.switch_ref() - self_s.combine_with(flow.invert('s'), mode=3).apply(self_s)
                 # result = result.switch_ref()
-                # To avoid call to combine_flows and associated overhead, do the corresponding operations directly:
+                # To avoid call to combine_with and associated overhead, do the corresponding operations directly:
                 self_s = self.switch_ref()
                 result = flow.switch_ref() - (self_s + self_s.invert(ref='t').apply(flow.invert('s'))).apply(self_s)
                 result = result.switch_ref()
