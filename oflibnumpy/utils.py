@@ -551,9 +551,9 @@ def track_pts(
     :param int_out: Boolean determining whether output points are returned as rounded integers, defaults to
         ``False``
     :param s_exact_mode: Boolean determining whether the necessary flow interpolation will be done using
-        :func:`scipy.interpolate.griddata`, if the flow has the reference :attr:`ref` value of ``s`` ("source").
-        Defaults to ``False``, which means a less exact, but around 2 orders of magnitude faster bilinear
-        interpolation method will be used. This is recommended for normal point tracking applications.
+        :func:`scipy.interpolate.griddata`, if the flow has the reference :attr:`~oflibnumpy.Flow.ref` value of
+        ``s`` ("source"). Defaults to ``False``, which means a less exact, but around 2 orders of magnitude faster
+        bilinear interpolation method will be used. This is recommended for normal point tracking applications.
     :return: Numpy array of warped ('tracked') points, and optionally a numpy array of the point tracking status
     """
 

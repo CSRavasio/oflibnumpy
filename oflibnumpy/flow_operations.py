@@ -164,7 +164,8 @@ def combine_flows(
 
 
 def switch_flow_ref(flow: nd, input_ref: str) -> nd:
-    """Recalculate flow vectors to correspond to a switched flow reference (see Flow reference :attr:`ref`)
+    """Recalculate flow vectors to correspond to a switched flow reference (see Flow reference
+    :attr:`~oflibnumpy.Flow.ref`)
 
     :param flow: The flow field as a numpy array of shape :math:`(H, W, 2)`
     :param input_ref: The reference of the input flow field, either ``s`` or ``t``
@@ -233,12 +234,11 @@ def valid_source(flow: nd, ref: str) -> nd:
 def get_flow_padding(flow: nd, ref: str) -> nd:
     """Determine necessary padding from the flow field:
 
-    - When the flow reference is ``t`` ("target"), this corresponds to the padding needed in
-      a source image which ensures that every flow vector in :attr:`vecs` marked as valid by the
-      mask :attr:`mask` will find a value in the source domain to warp towards the target domain. I.e. any invalid
-      locations in the area :math:`H \\times W` of the target domain (see :func:`~oflibnumpy.valid_target`) are
-      purely due to no valid flow vector being available to pull a source value to this target location, rather than
-      no source value being available in the first place.
+    - When the flow reference is ``t`` ("target"), this corresponds to the padding needed in a source image which
+      ensures that every flow vector will find a value in the source domain to warp towards the target domain.
+      I.e. any invalid locations in the area :math:`H \\times W` of the target domain (see
+      :func:`~oflibnumpy.valid_target`) are purely due to no valid flow vector being available to pull a
+      source value to this target location, rather than no source value being available in the first place.
     - When the flow reference is ``s`` ("source"), this corresponds to the padding needed for
       the flow itself, so that applying it to a source image will result in no input image information being lost in
       the warped output, i.e each input image pixel will come to lie inside the padded area.
