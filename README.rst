@@ -42,7 +42,8 @@ A user's guide as well as full documentation of the library is available at Read
 
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_rotation.png
   :width: 50%
-  :alt: Visualisation of optical flow representing a rotation
+
+**Above:** Visualisation of optical flow representing a rotation
 
 .. code-block:: python
 
@@ -58,7 +59,8 @@ A user's guide as well as full documentation of the library is available at Read
 
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation.png
   :width: 50%
-  :alt: Visualisation of optical flow representing a rotation, translated to the right, using the custom flow class
+
+**Above:** Visualisation of optical flow representing a rotation, translated to the right, using the custom flow class
 
 .. code-block:: python
 
@@ -69,7 +71,8 @@ A user's guide as well as full documentation of the library is available at Read
 
 .. image:: https://raw.githubusercontent.com/RViMLab/oflibnumpy/main/docs/_static/flow_translated_rotation_arrows.png
   :width: 50%
-  :alt: Visualisation of optical flow representing a rotation, translated to the right, using the custom flow class
+
+**Above:** Visualisation of optical flow representing a rotation, translated to the right, using the custom flow class
 
 
 Installation
