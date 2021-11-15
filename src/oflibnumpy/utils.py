@@ -445,17 +445,17 @@ def load_sintel(path: str) -> nd:
 
     if not isinstance(path, str):
         raise TypeError("Error loading flow from Sintel data: Path needs to be a string")
-    file = open(path, 'rb')
-    if file.read(4).decode('ascii') != 'PIEH':
-        raise ValueError("Error loading flow from Sintel data: Path not a valid .flo file")
-    w, h = int.from_bytes(file.read(4), 'little'), int.from_bytes(file.read(4), 'little')
-    if 99999 < w < 1:
-        raise ValueError("Error loading flow from Sintel data: Invalid width read from file ('{}')".format(w))
-    if 99999 < h < 1:
-        raise ValueError("Error loading flow from Sintel data: Invalid height read from file ('{}')".format(h))
-    dt = np.dtype('float32')
-    dt = dt.newbyteorder('<')
-    flow = np.fromfile(file, dtype=dt).reshape(h, w, 2)
+    with open(path, 'rb') as file:
+        if file.read(4).decode('ascii') != 'PIEH':
+            raise ValueError("Error loading flow from Sintel data: Path not a valid .flo file")
+        w, h = int.from_bytes(file.read(4), 'little'), int.from_bytes(file.read(4), 'little')
+        if 99999 < w < 1:
+            raise ValueError("Error loading flow from Sintel data: Invalid width read from file ('{}')".format(w))
+        if 99999 < h < 1:
+            raise ValueError("Error loading flow from Sintel data: Invalid height read from file ('{}')".format(h))
+        dt = np.dtype('float32')
+        dt = dt.newbyteorder('<')
+        flow = np.fromfile(file, dtype=dt).reshape(h, w, 2)
     return flow
 
 
