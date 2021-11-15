@@ -16,11 +16,13 @@ import math
 import cv2
 import numpy as np
 from scipy.ndimage import rotate, shift
-from oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, validate_flow_array, \
+import sys
+sys.path.append('..')
+from src.oflibnumpy.utils import get_valid_ref, get_valid_padding, validate_shape, validate_flow_array, \
     matrix_from_transforms, matrix_from_transform, flow_from_matrix, bilinear_interpolation, apply_flow, \
     points_inside_area, threshold_vectors, from_matrix, from_transforms, load_kitti, load_sintel, load_sintel_mask, \
     resize_flow, is_zero_flow, track_pts
-from oflibnumpy.flow_class import Flow
+from src.oflibnumpy.flow_class import Flow
 
 
 class TestValidityChecks(unittest.TestCase):

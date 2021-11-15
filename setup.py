@@ -19,7 +19,7 @@ with open("README.rst", "r") as readme_file:
 
 setup(
     name='oflibnumpy',
-    version='1.0.0',
+    version='1.1.0',
     description='Optical flow library using a custom flow class based on NumPy arrays',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -47,6 +47,7 @@ setup(
         'Source': 'https://github.com/RViMLab/oflibnumpy',
         'Tracker': 'https://github.com/RViMLab/oflibnumpy/issues',
     },
+    package_dir={'': 'src'},
     packages=['oflibnumpy'],
     install_requires=[
         'numpy',

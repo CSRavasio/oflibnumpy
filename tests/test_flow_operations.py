@@ -14,10 +14,12 @@
 import unittest
 import cv2
 import numpy as np
-from oflibnumpy.flow_class import Flow
-from oflibnumpy.flow_operations import combine_flows, switch_flow_ref, invert_flow, valid_target, valid_source, \
+import sys
+sys.path.append('..')
+from src.oflibnumpy.flow_class import Flow
+from src.oflibnumpy.flow_operations import combine_flows, switch_flow_ref, invert_flow, valid_target, valid_source, \
     get_flow_padding, get_flow_matrix, visualise_flow, visualise_flow_arrows
-from oflibnumpy.utils import matrix_from_transforms
+from src.oflibnumpy.utils import matrix_from_transforms
 
 
 class TestFlowOperations(unittest.TestCase):

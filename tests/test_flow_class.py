@@ -15,8 +15,10 @@ import unittest
 import numpy as np
 import cv2
 import math
-from oflibnumpy.utils import matrix_from_transforms, apply_flow, resize_flow
-from oflibnumpy.flow_class import Flow
+import sys
+sys.path.append('..')
+from src.oflibnumpy.utils import matrix_from_transforms, apply_flow, resize_flow
+from src.oflibnumpy.flow_class import Flow
 
 
 class TestFlow(unittest.TestCase):
