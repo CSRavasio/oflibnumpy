@@ -93,3 +93,4 @@ Contents
     usage
     documentation
     licensing
+    changelog
