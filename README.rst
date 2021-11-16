@@ -114,3 +114,15 @@ College London (KCL), supervised by:
 This code is licensed under the `MIT License`_.
 
 .. _MIT License: https://opensource.org/licenses/MIT
+
+If you use this code, please acknowledge us with the following citation:
+
+.. code-block::
+
+    @article{ravasio_oflib,
+      title={oflibnumpy & oflibpytorch: Optical Flow Handling and Manipulation in Python},
+      author={Ravasio, Claudio S and Da Cruz, Lyndon and Bergeles, Christos},
+      journal={Journal of Open Research Software (JORS)},
+      year={2021},
+      note={In press}
+    }
