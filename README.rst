@@ -117,7 +117,7 @@ This code is licensed under the `MIT License`_.
 
 If you use this code, please acknowledge us with the following citation:
 
-.. code-block::
+.. code-block:: plaintext
 
     @article{ravasio_oflib,
       title={oflibnumpy & oflibpytorch: Optical Flow Handling and Manipulation in Python},
