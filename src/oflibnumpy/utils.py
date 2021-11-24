@@ -227,7 +227,7 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str, mask: np.ndarray 
             raise TypeError("Error applying flow to a target: Mask needs to be boolean")
 
     field = flow.astype('float32')
-    if np.all(np.linalg.norm(flow, axis=-1) <= DEFAULT_THRESHOLD):  # If the flow field is actually 0 or very close
+    if is_zero_flow(flow, thresholded=True):
         return target
     if ref == 't':
         field *= -1  # Due to the direction in which cv2.remap defines the flow vectors
