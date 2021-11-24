@@ -71,7 +71,7 @@ def validate_shape(shape: Any):
 def validate_flow_array(flow, error_string: str = None) -> nd:
     """Checks flow array for validity, ensures the flow is returned with dtype ``float32``
 
-    :param flow: Flow array to be checked, should be a numpy array of shape :math:`(H, W, 2) containing floats
+    :param flow: Flow array to be checked, should be a numpy array of shape :math:`(H, W, 2)` containing floats
     :param error_string: Optional string to be added before the error message
     :return: Flow numpy array with dtype ``float32``
     """
