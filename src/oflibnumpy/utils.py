@@ -212,6 +212,8 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str, mask: np.ndarray 
     # Input validity check
     ref = get_valid_ref(ref)
     flow = validate_flow_array(flow, "Error applying flow to a target: ")
+    if is_zero_flow(flow, thresholded=True):
+        return target
     if not isinstance(target, np.ndarray):
         raise TypeError("Error applying flow to a target: Target needs to be a numpy array")
     if target.ndim < 2 or target.ndim > 3:
@@ -227,8 +229,6 @@ def apply_flow(flow: np.ndarray, target: np.ndarray, ref: str, mask: np.ndarray 
             raise TypeError("Error applying flow to a target: Mask needs to be boolean")
 
     field = flow.astype('float32')
-    if is_zero_flow(flow, thresholded=True):
-        return target
     if ref == 't':
         field *= -1  # Due to the direction in which cv2.remap defines the flow vectors
         field[:, :, 0] += np.arange(field.shape[1])
