@@ -326,12 +326,13 @@ class TestThresholdVectors(unittest.TestCase):
         vecs[1, 0, 0] = 1e-4
         vecs[2, 0, 0] = 1e-3
         vecs[3, 0, 0] = 1
-        thresholded = threshold_vectors(vecs, threshold=1e-3)
-        self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 0, 1e-3, 1]))
-        thresholded = threshold_vectors(vecs, threshold=1e-4)
-        self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 1e-4, 1e-3, 1]))
-        thresholded = threshold_vectors(vecs, threshold=1e-5)
-        self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [1e-5, 1e-4, 1e-3, 1]))
+        for use_mag in [True, False]:
+            thresholded = threshold_vectors(vecs, threshold=1e-3, use_mag=use_mag)
+            self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 0, 1e-3, 1]))
+            thresholded = threshold_vectors(vecs, threshold=1e-4, use_mag=use_mag)
+            self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [0, 1e-4, 1e-3, 1]))
+            thresholded = threshold_vectors(vecs, threshold=1e-5, use_mag=use_mag)
+            self.assertIsNone(np.testing.assert_equal(thresholded[:4, 0, 0], [1e-5, 1e-4, 1e-3, 1]))
 
 
 class TestFromMatrix(unittest.TestCase):

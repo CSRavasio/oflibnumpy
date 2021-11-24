@@ -295,18 +295,24 @@ def points_inside_area(pts: np.ndarray, shape: Union[tuple, list]) -> np.ndarray
     return status_array
 
 
-def threshold_vectors(vecs: np.ndarray, threshold: Union[float, int] = None) -> np.ndarray:
+def threshold_vectors(vecs: np.ndarray, threshold: Union[float, int] = None, use_mag: bool = None) -> np.ndarray:
     """Sets all flow vectors with a magnitude below threshold to zero
 
     :param vecs: Input flow numpy array, shape H-W-2
     :param threshold: Threshold value as float or int, defaults to DEFAULT_THRESHOLD (top of file)
+    :param use_mag: Thresholding uses the vector magnitude instead of simply x and y values. Defaults to False
     :return: Flow array with vector magnitudes below the threshold set to 0
     """
 
     threshold = DEFAULT_THRESHOLD if threshold is None else threshold
-    mags = np.linalg.norm(vecs, axis=-1)
+    use_mag = False if use_mag is None else use_mag
+
     f = vecs.copy()
-    f[mags < threshold] = 0
+    if use_mag:
+        mags = np.linalg.norm(vecs, axis=-1)
+        f[mags < threshold] = 0
+    else:
+        f[vecs < threshold] = 0
     return f
 
 
