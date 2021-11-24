@@ -1353,24 +1353,24 @@ class Flow(object):
             if self._ref == flow._ref == 's':
                 # Explanation: f1 is (f3 minus f2), when S2 is moved to S3, achieved by applying f2 to move S2 to E3,
                 # then inverted(f3) to move from E3 to S3.
-                # F1_s = F2_s - F2_s.combine_with(F3_s^-1_s, 3){F2_s}
+                # F1_s = F3_s - F2_s.combine_with(F3_s^-1_s, 3){F2_s}
                 # result = flow - self.combine_with(flow.invert(), mode=3).apply(self)
                 #
                 # Alternative: this should take an equivalent amount of time (same number of griddata calls), but is
                 # slightly faster in tests
-                # F1_s = F2_s - F2_s-as-t.combine_with(F3_s^-1_t, 3){F2_s}
+                # F1_s = F3_s - F2_s-as-t.combine_with(F3_s^-1_t, 3){F2_s}
                 # result = flow - self.switch_ref().combine_with(flow.invert('t'), mode=3).apply(self)
                 # To avoid call to combine_with and associated overhead, do the corresponding operations directly:
                 flow_inv_t = flow.invert('t')
                 result = flow - (flow_inv_t + flow_inv_t.apply(self.switch_ref())).apply(self)
             elif self._ref == flow._ref == 't':
                 # Explanation: currently no native implementation to ref 't', so just "translated" from ref 's'
-                # F1_t = (F2_t-as-s - F2_t.combine_with(F3_t^-1_t, 3){F2_t-as-s})_as-t
+                # F1_t = (F3_t-as-s - F2_t.combine_with(F3_t^-1_t, 3){F2_t-as-s})_as-t
                 # result = flow.switch_ref() - self.combine_with(flow.invert(), mode=3).apply(self.switch_ref())
                 # result = result.switch_ref()
                 #
                 # Alternative: saves one call to griddata. However, test shows barely a difference - not sure why
-                # F1_t = (F2_t-as-s - F2_t-as-s.combine_with(F3_t^-1_s, 3){F2_t-as-s})_as-t
+                # F1_t = (F3_t-as-s - F2_t-as-s.combine_with(F3_t^-1_s, 3){F2_t-as-s})_as-t
                 # self_s = self.switch_ref()
                 # result = flow.switch_ref() - self_s.combine_with(flow.invert('s'), mode=3).apply(self_s)
                 # result = result.switch_ref()
