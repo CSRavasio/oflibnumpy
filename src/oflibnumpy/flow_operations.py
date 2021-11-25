@@ -170,7 +170,7 @@ def switch_flow_ref(flow: nd, input_ref: str) -> nd:
     :return: Flow field as a numpy array of shape :math:`(H, W, 2)`
     """
 
-    f = Flow(flow, get_valid_ref(input_ref)).switch_ref()
+    f = Flow(flow, input_ref).switch_ref()
     return f.vecs
 
 
@@ -184,9 +184,8 @@ def invert_flow(flow: nd, input_ref: str, output_ref: str = None) -> nd:
     :return: Flow field as a numpy array of shape :math:`(H, W, 2)`
     """
 
-    i_ref = get_valid_ref(input_ref)
-    o_ref = i_ref if output_ref is None else get_valid_ref(output_ref)
-    f = Flow(flow, i_ref).invert(o_ref)
+    output_ref = input_ref if output_ref is None else output_ref
+    f = Flow(flow, input_ref).invert(output_ref)
     return f.vecs
 
 
