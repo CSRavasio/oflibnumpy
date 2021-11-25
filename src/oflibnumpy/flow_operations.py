@@ -157,8 +157,7 @@ def combine_flows(
         result = input_1.combine_with(input_2, mode=mode, thresholded=thresholded)
         return result
 
-    r = get_valid_ref(ref)
-    result = Flow(input_1, ref=r).combine_with(Flow(input_2, ref=r), mode=mode, thresholded=thresholded)
+    result = Flow(input_1, ref).combine_with(Flow(input_2, ref), mode=mode, thresholded=thresholded)
     return result.vecs
 
 
@@ -230,7 +229,7 @@ def valid_source(flow: nd, ref: str) -> nd:
     return Flow(flow, ref).valid_source()
 
 
-def get_flow_padding(flow: nd, ref: str) -> nd:
+def get_flow_padding(flow: nd, ref: str) -> list:
     """Determine necessary padding from the flow field:
 
     - When the flow reference is ``t`` ("target"), this corresponds to the padding needed in a source image which
