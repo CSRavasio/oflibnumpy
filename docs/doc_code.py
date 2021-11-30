@@ -1,7 +1,9 @@
 import numpy as np
 import cv2
-import oflibnumpy as of
-from oflibnumpy.utils import show_masked_image
+import sys
+sys.path.append('..')
+import src.oflibnumpy as of
+from src.oflibnumpy.utils import show_masked_image
 
 
 # # # # Usage / Visualisation
