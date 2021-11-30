@@ -19,7 +19,7 @@ with open("README.rst", "r") as readme_file:
 
 setup(
     name='oflibnumpy',
-    version='1.1.0',
+    version='1.1.1',
     description='Optical flow library using a custom flow class based on NumPy arrays',
     long_description=long_description,
     long_description_content_type='text/x-rst',
