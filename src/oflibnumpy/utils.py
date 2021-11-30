@@ -425,7 +425,10 @@ def from_transforms(transform_list: list, shape: Union[list, tuple], ref: str) -
 
 def load_kitti(path: str) -> Union[List[nd], nd]:
     """Loads the flow field contained in KITTI ``uint16`` png images files, including the valid pixels.
-    Follows the official instructions on how to read the provided .png files
+    Follows the official instructions on how to read the provided .png files on the
+    `KITTI optical flow dataset website`_.
+
+    .. _KITTI optical flow dataset website: http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow
 
     :param path: String containing the path to the KITTI flow data (``uint16``, .png file)
     :return: A numpy array with the KITTI flow data (including valid pixels)
@@ -442,8 +445,10 @@ def load_kitti(path: str) -> Union[List[nd], nd]:
 
 
 def load_sintel(path: str) -> nd:
-    """Loads the flow field contained in Sintel .flo byte files. Follows the official instructions provided with
-    the Sintel .flo data.
+    """Loads the flow field contained in Sintel .flo byte files. Follows the official instructions provided
+    alongside the .flo data on the `Sintel optical flow dataset website`_.
+
+    .. _Sintel optical flow dataset website: http://sintel.is.tue.mpg.de/
 
     :param path: String containing the path to the Sintel flow data (.flo byte file, little Endian)
     :return: A numpy array containing the Sintel flow data
@@ -466,11 +471,14 @@ def load_sintel(path: str) -> nd:
 
 
 def load_sintel_mask(path: str) -> nd:
-    """Loads the invalid pixels contained in Sintel .png mask files. Follows the official instructions provided
-    with the .flo data.
+    """Loads the invalid pixels contained in Sintel .png mask files, as a boolean mask marking valid pixels with
+    ``True``. Follows the official instructions provided alongside the .flo data on the
+    `Sintel optical flow dataset website`_.
+
+    .. _Sintel optical flow dataset website: http://sintel.is.tue.mpg.de/
 
     :param path: String containing the path to the Sintel invalid pixel data (.png, black and white)
-    :return: A numpy array containing the Sintel invalid pixels (mask) data
+    :return: A boolean numpy array containing the Sintel valid pixels (mask) data
     """
 
     if not isinstance(path, str):
