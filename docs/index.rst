@@ -10,7 +10,7 @@ written from scratch, but also contains useful wrappers for specific functions f
 ``remap``, to integrate them with the custom flow field class introduced by oflibnumpy. If you use this code, please
 acknowledge us with the following citation:
 
-.. code-block:: plaintext
+.. code-block::
 
     @article{ravasio_oflib,
       title     = {oflibnumpy {\&} oflibpytorch: Optical Flow Handling and Manipulation in Python},
