@@ -312,7 +312,7 @@ def threshold_vectors(vecs: np.ndarray, threshold: Union[float, int] = None, use
         mags = np.linalg.norm(vecs, axis=-1)
         f[mags < threshold] = 0
     else:
-        f[vecs < threshold] = 0
+        f[(vecs < threshold) & (vecs > -threshold)] = 0
     return f
 
 
