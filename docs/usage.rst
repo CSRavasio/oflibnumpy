@@ -228,7 +228,7 @@ section ":ref:`Combining Flows`"):
     flow_2 = of.Flow.from_transforms([['scaling', 100, 50, 0.7]], shape)
 
     # Combine the flow fields
-    result = flow.combine_with(flow_2, mode=3)
+    result = flow_1.combine_with(flow_2, mode=3)
 
 .. image:: ../docs/_static/usage_mask_flow1.png
     :width: 49%
