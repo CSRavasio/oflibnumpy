@@ -15,7 +15,7 @@ import cv2
 import numpy as np
 from typing import Union
 from .flow_class import Flow
-from .utils import validate_shape, get_valid_ref
+from .utils import validate_shape
 
 
 FlowAlias = 'Flow'
