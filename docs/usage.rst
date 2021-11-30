@@ -30,6 +30,13 @@ or using one of three special constructors:
 - :meth:`~oflibnumpy.Flow.from_transforms` requires a list of transforms, a desired shape :math:`(H, W)`, and
   optionally the flow reference or a mask. The given transforms are converted into a transformation matrix, from which
   a flow field is constructed as in :meth:`~oflibnumpy.Flow.from_matrix`.
+- :meth:`~oflibnumpy.Flow.from_kitti` loads the flow field (and optionally the valid pixels) from ``uint16`` ``png``
+  image files, as provided in the `KITTI optical flow dataset`_.
+- :meth:`~oflibnumpy.Flow.from_sintel` loads the flow field (and optionally the valid pixels) from ``flo`` files,
+  as provided in the `Sintel optical flow dataset`_.
+
+.. _KITTI optical flow dataset: http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow
+.. _Sintel optical flow dataset: http://sintel.is.tue.mpg.de/
 
 Flow objects can be copied with :meth:`~oflibnumpy.Flow.copy`, resized with :meth:`~oflibnumpy.Flow.resize`, padded
 with :meth:`~oflibnumpy.Flow.pad`, and sliced using square brackets ``[]`` analogous to numpy slicing, which calls
